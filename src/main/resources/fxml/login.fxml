@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.*?>
+<?import javafx.scene.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="anchorPane" prefHeight="280.0" prefWidth="400.0" stylesheets="@../styles/camada.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.wildcat.camada.controller.LoginController">
+    <children>
+        <Label fx:id="lblLogin" alignment="CENTER" contentDisplay="CENTER" layoutX="50.0" layoutY="37.0" text="Introduce tus credenciales" textAlignment="CENTER">
+         <font>
+            <Font name="System Bold" size="24.0" />
+         </font></Label>
+        <TextField fx:id="username" layoutX="85.0" layoutY="92.0" prefHeight="36.0" prefWidth="231.0" promptText="Nombre de usuario" />
+        <PasswordField fx:id="password" layoutX="85.0" layoutY="143.0" onAction="#login" prefHeight="36.0" prefWidth="231.0" promptText="Contraseña" />
+        <Button fx:id="btnLogin" layoutX="198.0" layoutY="195.0" mnemonicParsing="false" onAction="#login" prefHeight="31.0" prefWidth="118.0" styleClass="primary" text="Entrar" textFill="WHITE">
+            <font>
+                <Font size="15.0" />
+            </font>
+         <cursor>
+            <Cursor fx:constant="DEFAULT" />
+         </cursor>
+      </Button>
+      <ProgressIndicator fx:id="progressIndicator" layoutX="175.0" layoutY="102.0" visible="false" />
+    </children>
+    <opaqueInsets>
+        <Insets />
+    </opaqueInsets>
+</AnchorPane>
