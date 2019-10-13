@@ -31,7 +31,7 @@ public class TableUtils {
             @Override
             protected void updateItem(Date item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty) {
+                if (item == null || empty) {
                     setText(null);
                 } else {
                     setText(format.format(item));

@@ -21,8 +21,9 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Collaborator implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+	private static final long serialVersionUID = 1L;
+	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
     @Column(name = "name")
