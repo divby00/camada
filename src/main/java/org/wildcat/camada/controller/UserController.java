@@ -5,26 +5,19 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
@@ -33,7 +26,7 @@ import org.wildcat.camada.entity.CamadaUser;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.utils.AlertUtils;
 import org.wildcat.camada.utils.FilterUtils;
-import org.wildcat.camada.utils.TableUtils;
+import org.wildcat.camada.service.TableCommonService;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
@@ -115,9 +108,13 @@ public class UserController implements Initializable {
     private StageManager stageManager;
 
     @Resource
+    private final TableCommonService tableCommonService;
+
+    @Resource
     private final CamadaUserService camadaUserService;
 
-    public UserController(CamadaUserService camadaUserService) {
+    public UserController(TableCommonService tableCommonService, CamadaUserService camadaUserService) {
+        this.tableCommonService = tableCommonService;
         this.camadaUserService = camadaUserService;
     }
 
@@ -205,25 +202,25 @@ public class UserController implements Initializable {
         });
 
         isAdmin.setCellValueFactory(c -> new SimpleBooleanProperty(c.getValue().getIsAdmin()));
-        isAdmin.setCellFactory(p -> getBooleanTableCell());
+        isAdmin.setCellFactory(p -> tableCommonService.getBooleanTableCell(CheckBoxParam.IS_ADMIN, listTable));
 
         isVirtualSponsor.setCellValueFactory(c -> new SimpleBooleanProperty(c.getValue().getIsVirtualSponsor()));
-        isVirtualSponsor.setCellFactory(p -> getBooleanTableCell());
+        isVirtualSponsor.setCellFactory(p -> tableCommonService.getBooleanTableCell(CheckBoxParam.IS_VIRTUAL_SPONSOR, listTable));
 
         isPresentialSponsor.setCellValueFactory(c -> new SimpleBooleanProperty(c.getValue().getIsPresentialSponsor()));
-        isPresentialSponsor.setCellFactory(p -> getBooleanTableCell());
+        isPresentialSponsor.setCellFactory(p -> tableCommonService.getBooleanTableCell(CheckBoxParam.IS_PRESENTIAL_SPONSOR, listTable));
 
         isPartner.setCellValueFactory(c -> new SimpleBooleanProperty(c.getValue().getIsPartner()));
-        isPartner.setCellFactory(p -> getBooleanTableCell());
+        isPartner.setCellFactory(p -> tableCommonService.getBooleanTableCell(CheckBoxParam.IS_PARTNER, listTable));
 
         isVolunteer.setCellValueFactory(c -> new SimpleBooleanProperty(c.getValue().getIsVolunteer()));
-        isVolunteer.setCellFactory(p -> getBooleanTableCell());
+        isVolunteer.setCellFactory(p -> tableCommonService.getBooleanTableCell(CheckBoxParam.IS_VOLUNTEER, listTable));
 
         activationDate.setCellValueFactory(new PropertyValueFactory<>("activationDate"));
         lastConnection.setCellValueFactory(new PropertyValueFactory<>("lastConnection"));
 
-        activationDate.setCellFactory(column -> TableUtils.getDateTableCell("dd/MM/yyyy"));
-        lastConnection.setCellFactory(column -> TableUtils.getDateTableCell("dd/MM/yyyy HH:mm:ss"));
+        activationDate.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy"));
+        lastConnection.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy HH:mm:ss"));
 
         // Populate table
         Iterable<CamadaUser> camadaUsers = camadaUserService.findAll();
@@ -262,39 +259,6 @@ public class UserController implements Initializable {
 
     }
 
-    private TableCell<CamadaUser, Boolean> getBooleanTableCell() {
-        CheckBox checkBox = new CheckBox();
-        TableCell<CamadaUser, Boolean> tableCell = new TableCell<CamadaUser, Boolean>() {
-            @Override
-            protected void updateItem(Boolean item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) return;
-                setGraphic(checkBox);
-                checkBox.setSelected(item);
-            }
-        };
-        checkBox.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
-            if (validate(checkBox, event)) {
-                CamadaUser item = (CamadaUser) tableCell.getTableRow().getItem();
-                camadaUserService.save(item);
-                listTable.refresh();
-            }
-        });
-        checkBox.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-            if (event.getCode() == KeyCode.SPACE) {
-              if (validate(checkBox, event)) {
-                  CamadaUser item = (CamadaUser) tableCell.getTableRow().getItem();
-                  camadaUserService.save(item);
-                  listTable.refresh();
-              }
-            }
-        });
-
-        tableCell.setAlignment(Pos.CENTER);
-        tableCell.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-        return tableCell;
-    }
-
     public void filterChange(ActionEvent event) {
     }
 
@@ -319,17 +283,6 @@ public class UserController implements Initializable {
         FilterUtils.mapField(map, "is_presential_sponsor", filterPresentialSponsor.isSelected());
         FilterUtils.mapField(map, "is_volunteer", filterVolunteer.isSelected());
         return map;
-    }
-
-    private boolean validate(CheckBox checkBox, Event event) {
-        boolean result = false;
-        event.consume();
-        ButtonType buttonType = AlertUtils.showUpdateAlert(Boolean.toString(checkBox.isSelected()), Boolean.toString(!checkBox.isSelected()));
-        if (buttonType == ButtonType.YES) {
-            checkBox.setSelected(!checkBox.isSelected());
-            result = true;
-        }
-        return result;
     }
 
 }
