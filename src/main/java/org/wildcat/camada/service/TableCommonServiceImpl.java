@@ -1,14 +1,17 @@
 package org.wildcat.camada.service;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.Event;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.wildcat.camada.controller.CheckBoxParam;
+import org.wildcat.camada.controller.CustomTableColumn;
 import org.wildcat.camada.entity.CamadaUser;
 import org.wildcat.camada.utils.AlertUtils;
 
@@ -42,7 +45,32 @@ public class TableCommonServiceImpl implements TableCommonService {
         return cell;
     }
 
-    public TableCell<CamadaUser, Boolean> getBooleanTableCell(CheckBoxParam param, TableView tableView) {
+    @Override
+    public void initTextFieldTableCell(TableColumn<CamadaUser, String> column, String columnName, CustomTableColumn param, TableView table) {
+        column.setCellValueFactory(new PropertyValueFactory<>(columnName));
+        column.setCellFactory(TextFieldTableCell.forTableColumn());
+        column.setOnEditCommit(event -> {
+            String newValue = event.getNewValue();
+            String oldValue = param.getOldValue(event);
+            if (newValue.equals(oldValue))
+                return;
+            ButtonType buttonType = AlertUtils.showUpdateAlert(oldValue, newValue);
+            if (buttonType == ButtonType.YES) {
+                param.setNewValue(event, newValue, camadaUserService);
+            } else {
+                param.setOldValue(event, oldValue);
+                table.refresh();
+            }
+        });
+    }
+
+    @Override
+    public void initCheckBoxTableCell(TableColumn<CamadaUser, Boolean> column, CustomTableColumn param, TableView<CamadaUser> table) {
+        column.setCellValueFactory(c -> new SimpleBooleanProperty(param.getBooleanProperty(c)));
+        column.setCellFactory(p -> getCheckBoxTableCell(param, table));
+    }
+
+    private TableCell<CamadaUser, Boolean> getCheckBoxTableCell(CustomTableColumn param, TableView table) {
         CheckBox checkBox = new CheckBox();
         TableCell<CamadaUser, Boolean> tableCell = new TableCell<CamadaUser, Boolean>() {
             @Override
@@ -56,18 +84,18 @@ public class TableCommonServiceImpl implements TableCommonService {
         checkBox.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
             if (validate(checkBox, event)) {
                 CamadaUser item = (CamadaUser) tableCell.getTableRow().getItem();
-                param.apply(item, checkBox);
+                param.setBooleanProperty(item, checkBox);
                 camadaUserService.save(item);
-                tableView.refresh();
+                table.refresh();
             }
         });
         checkBox.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (event.getCode() == KeyCode.SPACE) {
                 if (validate(checkBox, event)) {
                     CamadaUser item = (CamadaUser) tableCell.getTableRow().getItem();
-                    param.apply(item, checkBox);
+                    param.setBooleanProperty(item, checkBox);
                     camadaUserService.save(item);
-                    tableView.refresh();
+                    table.refresh();
                 }
             }
         });
@@ -76,7 +104,6 @@ public class TableCommonServiceImpl implements TableCommonService {
         tableCell.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
         return tableCell;
     }
-
 
     private boolean validate(CheckBox checkBox, Event event) {
         boolean result = false;
@@ -88,4 +115,5 @@ public class TableCommonServiceImpl implements TableCommonService {
         }
         return result;
     }
+
 }

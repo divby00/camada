@@ -59,4 +59,8 @@ public class CamadaUserServiceImpl implements CamadaUserService {
         camadaUserRepository.delete(user);
     }
 
+    @Override
+    public <T> void saveEntity(T camadaUser) {
+        save((CamadaUser) camadaUser);
+    }
 }

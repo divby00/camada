@@ -132,11 +132,11 @@
                   <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
                </padding>
             </VBox>
-            <TableView fx:id="listTable" editable="true" prefHeight="666.0" prefWidth="1060.0">
+            <TableView fx:id="table" editable="true" prefHeight="666.0" prefWidth="1060.0">
               <columns>
                 <TableColumn fx:id="userName" prefWidth="169.0" text="Nombre de usuario" />
-                <TableColumn fx:id="name" prefWidth="99.0" text="Nombre" />
-                  <TableColumn fx:id="surname" prefWidth="75.0" text="Apellido" />
+                <TableColumn fx:id="firstName" prefWidth="99.0" text="Nombre" />
+                  <TableColumn fx:id="lastName" prefWidth="75.0" text="Apellido" />
                   <TableColumn fx:id="email" prefWidth="75.0" text="Email" />
                   <TableColumn fx:id="isAdmin" prefWidth="75.0" text="Acceso administrador" />
                   <TableColumn fx:id="isPartner" prefWidth="75.0" text="Acceso socios" />

@@ -4,7 +4,7 @@ import org.wildcat.camada.entity.CamadaUser;
 
 import java.util.Optional;
 
-public interface CamadaUserService {
+public interface CamadaUserService extends SavingService {
     boolean authenticate(String user, String password);
     CamadaUser getUser();
     Iterable<CamadaUser> findAll();
