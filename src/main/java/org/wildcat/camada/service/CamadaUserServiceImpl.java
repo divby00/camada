@@ -3,11 +3,14 @@ package org.wildcat.camada.service;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Service;
 import org.wildcat.camada.entity.CamadaUser;
+import org.wildcat.camada.entity.CustomQuery;
 import org.wildcat.camada.repository.CamadaUserRepository;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class CamadaUserServiceImpl implements CamadaUserService {
@@ -36,6 +39,18 @@ public class CamadaUserServiceImpl implements CamadaUserService {
     }
 
     @Override
+    public Set<CustomQuery> getCustomQueriesByUserId(Long id) {
+        return camadaUserRepository.findById(id)
+                .map(CamadaUser::getCustomQueries)
+                .orElse(new HashSet<>());
+    }
+
+    @Override
+    public Optional<CamadaUser> findById(Long id) {
+        return camadaUserRepository.findById(id);
+    }
+
+    @Override
     public Iterable<CamadaUser> findAll() {
         return camadaUserRepository.findAll();
     }
@@ -50,10 +65,6 @@ public class CamadaUserServiceImpl implements CamadaUserService {
         return camadaUserRepository.findByName(name);
     }
 
-    public CamadaUser getUser() {
-        return camadaUser;
-    }
-
     @Override
     public void delete(CamadaUser user) {
         camadaUserRepository.delete(user);
@@ -63,4 +74,9 @@ public class CamadaUserServiceImpl implements CamadaUserService {
     public <T> void saveEntity(T camadaUser) {
         save((CamadaUser) camadaUser);
     }
+
+    public CamadaUser getUser() {
+        return camadaUser;
+    }
+
 }

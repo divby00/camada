@@ -5,14 +5,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "camada_user")
@@ -21,8 +18,8 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CamadaUser implements Serializable {
-	private static final long serialVersionUID = 1L;
-	@Id
+    private static final long serialVersionUID = 1L;
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
@@ -52,4 +49,9 @@ public class CamadaUser implements Serializable {
     private Boolean isPartner;
     @Column(name = "is_active")
     private Boolean isActive;
+    @ManyToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
+    @JoinTable(name = "camada_user_custom_query"
+            , joinColumns = {@JoinColumn(name = "camada_user_id")}
+            , inverseJoinColumns = {@JoinColumn(name = "custom_query_id")})
+    Set<CustomQuery> customQueries = new HashSet<>();
 }

@@ -76,7 +76,10 @@ public class TableCommonServiceImpl implements TableCommonService {
             @Override
             protected void updateItem(Boolean item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) return;
+                if (empty || item == null) {
+                    setGraphic(null);
+                    return;
+                }
                 setGraphic(checkBox);
                 checkBox.setSelected(item);
             }
