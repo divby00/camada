@@ -54,7 +54,7 @@ public class TableCommonServiceImpl implements TableCommonService {
             String oldValue = param.getOldValue(event);
             if (newValue.equals(oldValue))
                 return;
-            ButtonType buttonType = AlertUtils.showUpdateAlert(oldValue, newValue);
+            ButtonType buttonType = AlertUtils.showUpdate(oldValue, newValue);
             if (buttonType == ButtonType.YES) {
                 param.setNewValue(event, newValue, camadaUserService);
             } else {
@@ -111,7 +111,7 @@ public class TableCommonServiceImpl implements TableCommonService {
     private boolean validate(CheckBox checkBox, Event event) {
         boolean result = false;
         event.consume();
-        ButtonType buttonType = AlertUtils.showUpdateAlert(Boolean.toString(checkBox.isSelected()), Boolean.toString(!checkBox.isSelected()));
+        ButtonType buttonType = AlertUtils.showUpdate(Boolean.toString(checkBox.isSelected()), Boolean.toString(!checkBox.isSelected()));
         if (buttonType == ButtonType.YES) {
             checkBox.setSelected(!checkBox.isSelected());
             result = true;

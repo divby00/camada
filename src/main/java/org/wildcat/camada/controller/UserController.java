@@ -10,6 +10,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +23,12 @@ import org.wildcat.camada.enumerations.CustomTableColumn;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.CustomQueryService;
 import org.wildcat.camada.service.TableCommonService;
+import org.wildcat.camada.utils.AlertUtils;
+import org.wildcat.camada.utils.CsvUtils;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
+import java.io.File;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
@@ -75,6 +79,18 @@ public class UserController implements Initializable {
     @FXML
     private ComboBox<CustomQuery> customQueries;
 
+    @FXML
+    private Button btnNew;
+
+    @FXML
+    private Button btnImport;
+
+    @FXML
+    private Button btnExport;
+
+    @FXML
+    private Button btnPdf;
+
     @Lazy
     @Autowired
     private StageManager stageManager;
@@ -97,7 +113,6 @@ public class UserController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        Long userId = camadaUserService.getUser().getId();
         List<CustomQuery> queries = customQueryService.findAllBySection(FxmlView.USER);
         customQueries.setItems(FXCollections.observableList(queries));
         Callback<ListView<CustomQuery>, ListCell<CustomQuery>> comboCellFactory = new Callback<ListView<CustomQuery>, ListCell<CustomQuery>>() {
@@ -116,6 +131,7 @@ public class UserController implements Initializable {
                 };
             }
         };
+
         customQueries.valueProperty().addListener((obs, oldVal, newVal) -> {
             // Populate table & prepare filtering
             table.setItems(null);
@@ -137,12 +153,13 @@ public class UserController implements Initializable {
         });
         customQueries.setButtonCell(comboCellFactory.call(null));
         customQueries.setCellFactory(comboCellFactory);
+        customQueries.getSelectionModel().selectFirst();
 
         // Init table
-        tableCommonService.initTextFieldTableCell(userName, "name", CustomTableColumn.NAME, table);;
-        tableCommonService.initTextFieldTableCell(firstName, "firstName", CustomTableColumn.FIRST_NAME, table);;
-        tableCommonService.initTextFieldTableCell(lastName, "lastName", CustomTableColumn.LAST_NAME, table);;
-        tableCommonService.initTextFieldTableCell(email, "email", CustomTableColumn.EMAIL, table);;
+        tableCommonService.initTextFieldTableCell(userName, "name", CustomTableColumn.NAME, table);
+        tableCommonService.initTextFieldTableCell(firstName, "firstName", CustomTableColumn.FIRST_NAME, table);
+        tableCommonService.initTextFieldTableCell(lastName, "lastName", CustomTableColumn.LAST_NAME, table);
+        tableCommonService.initTextFieldTableCell(email, "email", CustomTableColumn.EMAIL, table);
         tableCommonService.initCheckBoxTableCell(isAdmin, CustomTableColumn.IS_ADMIN, table);
         tableCommonService.initCheckBoxTableCell(isVirtualSponsor, CustomTableColumn.IS_VIRTUAL_SPONSOR, table);
         tableCommonService.initCheckBoxTableCell(isPresentialSponsor, CustomTableColumn.IS_PRESENTIAL_SPONSOR, table);
@@ -153,8 +170,11 @@ public class UserController implements Initializable {
         activationDate.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy"));
         lastConnection.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy HH:mm:ss"));
 
-
         // Add context menu for deleting rows
+        addContextMenu();
+    }
+
+    private void addContextMenu() {
         table.setRowFactory(tableView -> {
             final TableRow<CamadaUser> row = new TableRow<CamadaUser>() {
                 @Override
@@ -167,9 +187,8 @@ public class UserController implements Initializable {
             final ContextMenu rowMenu = new ContextMenu();
             MenuItem removeItem = new MenuItem("Borrar usuario");
             removeItem.setOnAction(event -> {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "¿Quieres borrar el usuario?'", ButtonType.YES, ButtonType.NO);
-                alert.showAndWait();
-                if (alert.getResult() == ButtonType.YES) {
+                ButtonType buttonType = AlertUtils.showConfirmation("¿Quieres borrar el usuario?");
+                if (buttonType == ButtonType.YES) {
                     CamadaUser user = row.getItem();
                     camadaUserService.delete(user);
                     table.getItems().remove(user);
@@ -183,11 +202,24 @@ public class UserController implements Initializable {
                     .otherwise((ContextMenu) null));
             return row;
         });
-
     }
 
     public void goToHome(ActionEvent event) {
         stageManager.switchScene(FxmlView.DASHBOARD);
     }
 
+    public void exportCSV(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Guardar fichero CSV");
+        File file = fileChooser.showSaveDialog(this.stageManager.getPrimaryStage());
+        if (file != null) {
+            ObservableList<CamadaUser> items = table.getItems();
+            String[] csvHeader = {
+                    "id", "nombreUsuario", "nombre", "apellido", "email", "administrador",
+                    "padrinoVirtual", "padrinoPresencial", "socio", "voluntario", "fechaActivacion",
+                    "ultimaConexion", "activo"
+            };
+            CsvUtils.export(items, csvHeader, file.getAbsolutePath());
+        }
+    }
 }

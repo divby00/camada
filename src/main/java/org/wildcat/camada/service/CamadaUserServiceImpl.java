@@ -75,4 +75,8 @@ public class CamadaUserServiceImpl implements CamadaUserService {
         return camadaUser;
     }
 
+    public Optional<CamadaUser> findById(Long id) {
+        return camadaUserRepository.findById(id);
+    }
+
 }

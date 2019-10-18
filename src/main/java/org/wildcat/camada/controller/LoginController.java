@@ -51,7 +51,7 @@ public class LoginController implements Initializable {
             stageManager.switchScene(FxmlView.DASHBOARD);
         } else {
             progressIndicator.setVisible(false);
-            AlertUtils.error(resources, "logic.accesserror.title", "login.accesserror.unabletocheckidentity", "login.accesserror.inputvalidusername");
+            AlertUtils.showError("Nombre de usuario o contraseña incorrectos");
         }
     }
 
