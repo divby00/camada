@@ -8,8 +8,6 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Table(name = "camada_user")
@@ -49,9 +47,4 @@ public class CamadaUser implements Serializable {
     private Boolean isPartner;
     @Column(name = "is_active")
     private Boolean isActive;
-    @ManyToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
-    @JoinTable(name = "camada_user_custom_query"
-            , joinColumns = {@JoinColumn(name = "camada_user_id")}
-            , inverseJoinColumns = {@JoinColumn(name = "custom_query_id")})
-    Set<CustomQuery> customQueries = new HashSet<>();
 }

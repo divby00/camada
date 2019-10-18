@@ -11,7 +11,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.wildcat.camada.controller.CustomTableColumn;
+import org.wildcat.camada.enumerations.CustomTableColumn;
 import org.wildcat.camada.entity.CamadaUser;
 import org.wildcat.camada.utils.AlertUtils;
 

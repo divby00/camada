@@ -84,12 +84,17 @@ public enum FxmlView {
             return "/fxml/volunteer.fxml";
         }
     };
+
     public abstract String getTitle();
+
     public abstract String getFxmlFile();
+
     private boolean resizable;
+    private String label;
 
     FxmlView(boolean resizable) {
         this.resizable = resizable;
+        this.label = name();
     }
 
     public boolean getResizable() {
@@ -100,7 +105,11 @@ public enum FxmlView {
         return new Image(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("camada_small.png")));
     }
 
-    String getStringFromResourceBundle(String key){
+    public String getLabel() {
+        return this.label;
+    }
+
+    String getStringFromResourceBundle(String key) {
         return ResourceBundle.getBundle("camada").getString(key);
     }
 

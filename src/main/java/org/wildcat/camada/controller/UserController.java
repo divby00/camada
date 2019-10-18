@@ -10,6 +10,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.util.Callback;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -17,13 +18,17 @@ import org.springframework.stereotype.Controller;
 import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.entity.CamadaUser;
 import org.wildcat.camada.entity.CustomQuery;
+import org.wildcat.camada.enumerations.CustomTableColumn;
 import org.wildcat.camada.service.CamadaUserService;
+import org.wildcat.camada.service.CustomQueryService;
 import org.wildcat.camada.service.TableCommonService;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
 import java.net.URL;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.ResourceBundle;
 
 @Controller
 public class UserController implements Initializable {
@@ -80,17 +85,58 @@ public class UserController implements Initializable {
     @Resource
     private final CamadaUserService camadaUserService;
 
-    public UserController(TableCommonService tableCommonService, CamadaUserService camadaUserService) {
+    @Resource
+    private final CustomQueryService customQueryService;
+
+    public UserController(TableCommonService tableCommonService, CamadaUserService camadaUserService,
+                          CustomQueryService customQueryService) {
         this.tableCommonService = tableCommonService;
         this.camadaUserService = camadaUserService;
+        this.customQueryService = customQueryService;
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         Long userId = camadaUserService.getUser().getId();
-        Set<CustomQuery> customQueriesSet = camadaUserService.getCustomQueriesByUserId(userId);
-        ArrayList<CustomQuery> customQueries = new ArrayList<>(customQueriesSet);
-        this.customQueries.setItems(FXCollections.observableList(customQueries));
+        List<CustomQuery> queries = customQueryService.findAllBySection(FxmlView.USER);
+        customQueries.setItems(FXCollections.observableList(queries));
+        Callback<ListView<CustomQuery>, ListCell<CustomQuery>> comboCellFactory = new Callback<ListView<CustomQuery>, ListCell<CustomQuery>>() {
+            @Override
+            public ListCell<CustomQuery> call(ListView<CustomQuery> l) {
+                return new ListCell<CustomQuery>() {
+                    @Override
+                    protected void updateItem(CustomQuery item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (item == null || empty) {
+                            setGraphic(null);
+                        } else {
+                            setText(item.getDescription());
+                        }
+                    }
+                };
+            }
+        };
+        customQueries.valueProperty().addListener((obs, oldVal, newVal) -> {
+            // Populate table & prepare filtering
+            table.setItems(null);
+            Iterable<CamadaUser> camadaUsers = camadaUserService.findAllByCustomQuery(newVal);
+            ObservableList<CamadaUser> tableData = FXCollections.observableList((List<CamadaUser>) camadaUsers);
+            FilteredList<CamadaUser> filteredData = new FilteredList<>(tableData, p -> true);
+            filter.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredData.setPredicate(user -> {
+                    return newValue == null || newValue.isEmpty()
+                            || StringUtils.containsIgnoreCase(user.getName(), newValue)
+                            || StringUtils.containsIgnoreCase(user.getFirstName(), newValue)
+                            || StringUtils.containsIgnoreCase(user.getLastName(), newValue)
+                            || StringUtils.containsIgnoreCase(user.getEmail(), newValue);
+                });
+            });
+            SortedList<CamadaUser> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(table.comparatorProperty());
+            table.setItems(sortedData);
+        });
+        customQueries.setButtonCell(comboCellFactory.call(null));
+        customQueries.setCellFactory(comboCellFactory);
 
         // Init table
         tableCommonService.initTextFieldTableCell(userName, "name", CustomTableColumn.NAME, table);;
@@ -107,22 +153,6 @@ public class UserController implements Initializable {
         activationDate.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy"));
         lastConnection.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy HH:mm:ss"));
 
-        // Populate table & prepare filtering
-        Iterable<CamadaUser> camadaUsers = camadaUserService.findAll();
-        ObservableList<CamadaUser> tableData = FXCollections.observableList((List<CamadaUser>) camadaUsers);
-        FilteredList<CamadaUser> filteredData = new FilteredList<>(tableData, p -> true);
-        filter.textProperty().addListener((observable, oldValue, newValue) -> {
-            filteredData.setPredicate(user -> {
-                return newValue == null || newValue.isEmpty()
-                        || StringUtils.containsIgnoreCase(user.getName(), newValue)
-                        || StringUtils.containsIgnoreCase(user.getFirstName(), newValue)
-                        || StringUtils.containsIgnoreCase(user.getLastName(), newValue)
-                        || StringUtils.containsIgnoreCase(user.getEmail(), newValue);
-            });
-        });
-        SortedList<CamadaUser> sortedData = new SortedList<>(filteredData);
-        sortedData.comparatorProperty().bind(table.comparatorProperty());
-        table.setItems(sortedData);
 
         // Add context menu for deleting rows
         table.setRowFactory(tableView -> {

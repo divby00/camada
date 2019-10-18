@@ -50,9 +50,9 @@ insert into camada.camada_user (name, password, is_active, first_name, last_name
 insert into camada.camada_user (name, password, is_active, first_name, last_name, email, activation_date, is_admin, is_virtual_sponsor, is_presential_sponsor, is_volunteer, is_partner)
     value ('user023', sha1('user001'), true, 'User', '023', 'email2@domain.com', now(), false, false, false, false, false);
 insert into camada.camada_user (name, password, is_active, first_name, last_name, email, activation_date, is_admin, is_virtual_sponsor, is_presential_sponsor, is_volunteer, is_partner)
-    value ('user024', sha1('user001'), true, 'User', '024', 'email2@domain.com', now(), false, false, false, false, false);
+    value ('user024', sha1('user001'), false, 'User', '024', 'email2@domain.com', now(), false, false, false, false, false);
 insert into camada.camada_user (name, password, is_active, first_name, last_name, email, activation_date, is_admin, is_virtual_sponsor, is_presential_sponsor, is_volunteer, is_partner)
-    value ('user025', sha1('user001'), true, 'User', '025', 'email2@domain.com', now(), false, false, false, false, false);
+    value ('user025', sha1('user001'), false, 'User', '025', 'email2@domain.com', now(), false, false, false, false, false);
 insert into camada.camada_user (name, password, is_active, first_name, last_name, email, activation_date, is_admin, is_virtual_sponsor, is_presential_sponsor, is_volunteer, is_partner)
     value ('user026', sha1('user001'), true, 'User', '026', 'email2@domain.com', now(), false, false, false, false, false);
 insert into camada.camada_user (name, password, is_active, first_name, last_name, email, activation_date, is_admin, is_virtual_sponsor, is_presential_sponsor, is_volunteer, is_partner)
@@ -98,7 +98,7 @@ insert into camada.camada_user (name, password, is_active, first_name, last_name
 insert into camada.camada_user (name, password, is_active, first_name, last_name, email, activation_date, is_admin, is_virtual_sponsor, is_presential_sponsor, is_volunteer, is_partner)
     value ('user047', sha1('user001'), true, 'User', '047', 'email2@domain.com', now(), false, false, false, false, false);
 insert into camada.camada_user (name, password, is_active, first_name, last_name, email, activation_date, is_admin, is_virtual_sponsor, is_presential_sponsor, is_volunteer, is_partner)
-    value ('user048', sha1('user001'), true, 'User', '048', 'email2@domain.com', now(), false, false, false, false, false);
+    value ('user048', sha1('user001'), false, 'User', '048', 'email2@domain.com', now(), false, false, false, false, false);
 insert into camada.camada_user (name, password, is_active, first_name, last_name, email, activation_date, is_admin, is_virtual_sponsor, is_presential_sponsor, is_volunteer, is_partner)
     value ('user049', sha1('user001'), true, 'User', '049', 'email2@domain.com', now(), false, false, false, false, false);
 insert into camada.camada_user (name, password, is_active, first_name, last_name, email, activation_date, is_admin, is_virtual_sponsor, is_presential_sponsor, is_volunteer, is_partner)
@@ -134,11 +134,19 @@ insert into camada.camada_user (name, password, is_active, first_name, last_name
 insert into camada.camada_user (name, password, is_active, first_name, last_name, email, activation_date, is_admin, is_virtual_sponsor, is_presential_sponsor, is_volunteer, is_partner)
     value ('user065', sha1('user001'), true, 'User', '065', 'email2@domain.com', now(), false, false, false, false, false);
 insert into camada.camada_user (name, password, is_active, first_name, last_name, email, activation_date, is_admin, is_virtual_sponsor, is_presential_sponsor, is_volunteer, is_partner)
-    value ('user066', sha1('user001'), true, 'User', '066', 'email2@domain.com', now(), false, false, false, false, false);
+    value ('user066', sha1('user001'), false, 'User', '066', 'email2@domain.com', now(), false, false, false, false, false);
 insert into camada.camada_user (name, password, is_active, first_name, last_name, email, activation_date, is_admin, is_virtual_sponsor, is_presential_sponsor, is_volunteer, is_partner)
-    value ('user067', sha1('user001'), true, 'User', '067', 'email2@domain.com', now(), false, false, false, false, false);
+    value ('user067', sha1('user001'), false, 'User', '067', 'email2@domain.com', now(), false, false, false, false, false);
 insert into camada.camada_user (name, password, is_active, first_name, last_name, email, activation_date, is_admin, is_virtual_sponsor, is_presential_sponsor, is_volunteer, is_partner)
     value ('user068', sha1('user001'), true, 'User', '068', 'email2@domain.com', now(), false, false, false, false, false);
 insert into camada.camada_user (name, password, is_active, first_name, last_name, email, activation_date, is_admin, is_virtual_sponsor, is_presential_sponsor, is_volunteer, is_partner)
-    value ('user069', sha1('user001'), true, 'User', '069', 'email2@domain.com', now(), false, false, false, false, false);
+    value ('user069', sha1('user001'), false, 'User', '069', 'email2@domain.com', now(), false, false, false, false, false);
+commit;
+
+
+delete from custom_query;
+insert into custom_query (description, query)
+    value ('Usuarios activos', 'ACTIVE_USERS');
+insert into custom_query (description, query)
+    value ('Usuarios inactivos', 'INACTIVE_USERS');
 commit;

@@ -4,13 +4,16 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Service;
 import org.wildcat.camada.entity.CamadaUser;
 import org.wildcat.camada.entity.CustomQuery;
+import org.wildcat.camada.enumerations.CamadaQuery;
 import org.wildcat.camada.repository.CamadaUserRepository;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+
+import static org.wildcat.camada.enumerations.CamadaQuery.valueOf;
 
 @Service
 public class CamadaUserServiceImpl implements CamadaUserService {
@@ -39,30 +42,23 @@ public class CamadaUserServiceImpl implements CamadaUserService {
     }
 
     @Override
-    public Set<CustomQuery> getCustomQueriesByUserId(Long id) {
-        return camadaUserRepository.findById(id)
-                .map(CamadaUser::getCustomQueries)
-                .orElse(new HashSet<>());
-    }
-
-    @Override
-    public Optional<CamadaUser> findById(Long id) {
-        return camadaUserRepository.findById(id);
-    }
-
-    @Override
-    public Iterable<CamadaUser> findAll() {
-        return camadaUserRepository.findAll();
+    public List<CamadaUser> findAllByCustomQuery(CustomQuery customQuery) {
+        List<CamadaUser> camadaUsers = new ArrayList<>();
+        CamadaQuery query = valueOf(customQuery.getQuery());
+        switch (query) {
+            case ACTIVE_USERS:
+                camadaUsers = camadaUserRepository.findAllByIsActiveTrue();
+                break;
+            case INACTIVE_USERS:
+                camadaUsers = camadaUserRepository.findAllByIsActiveFalse();
+                break;
+        }
+        return camadaUsers;
     }
 
     @Override
     public void save(CamadaUser camadaUser) {
         camadaUserRepository.save(camadaUser);
-    }
-
-    @Override
-    public Optional<CamadaUser> findByName(String name) {
-        return camadaUserRepository.findByName(name);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package org.wildcat.camada.controller;
+package org.wildcat.camada.enumerations;
 
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableColumn;
