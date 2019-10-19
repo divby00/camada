@@ -25,6 +25,7 @@ import org.wildcat.camada.service.CustomQueryService;
 import org.wildcat.camada.service.TableCommonService;
 import org.wildcat.camada.utils.AlertUtils;
 import org.wildcat.camada.utils.CsvUtils;
+import org.wildcat.camada.utils.PdfUtils;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
@@ -220,6 +221,16 @@ public class UserController implements Initializable {
                     "ultimaConexion", "activo"
             };
             CsvUtils.export(items, csvHeader, file.getAbsolutePath());
+        }
+    }
+
+    public void exportPdf(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Guardar fichero CSV");
+        File file = fileChooser.showSaveDialog(this.stageManager.getPrimaryStage());
+        if (file != null) {
+            ObservableList<CamadaUser> items = table.getItems();
+            PdfUtils.export(items, file.getAbsolutePath());
         }
     }
 }
