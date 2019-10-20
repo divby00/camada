@@ -32,6 +32,7 @@ import org.wildcat.camada.view.FxmlView;
 import javax.annotation.Resource;
 import java.io.File;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -266,7 +267,24 @@ public class UserController implements Initializable {
         File file = fileChooser.showSaveDialog(this.stageManager.getPrimaryStage());
         if (file != null) {
             ObservableList<CamadaUser> items = table.getItems();
-            PdfUtils.export(items, file.getAbsolutePath());
+            Task<Boolean> pdfTask = new Task<Boolean>() {
+                @Override
+                protected Boolean call() throws Exception {
+                    return PdfUtils.export(items, file.getAbsolutePath());
+                }
+            };
+            progressIndicator.visibleProperty().bind(pdfTask.runningProperty());
+            new Thread(pdfTask).start();
+            pdfTask.setOnSucceeded(workerState -> {
+                if (pdfTask.getValue()) {
+                    AlertUtils.showInfo(MessageFormat.format("El fichero {0} se ha guardado correctamente.", file.getName()));
+                } else {
+                    AlertUtils.showError(MessageFormat.format("Ha habido un problema al guardar el fichero {0}.", file.getName()));
+                }
+            });
+            pdfTask.setOnFailed(workerState -> {
+                AlertUtils.showError(MessageFormat.format("Ha habido un problema al guardar el fichero {0}.", file.getName()));
+            });
         }
     }
 

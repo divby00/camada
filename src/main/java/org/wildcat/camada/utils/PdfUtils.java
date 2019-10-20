@@ -9,15 +9,14 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.text.MessageFormat;
 
 public class PdfUtils {
 
-    public static void main(String ... args) {
+    public static void main(String... args) {
         export(null, "data.pdf");
     }
 
-    public static void export(ObservableList<CamadaUser> items, String fileName) {
+    public static Boolean export(ObservableList<CamadaUser> items, String fileName) {
         boolean result = false;
         try {
             ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
@@ -34,7 +33,7 @@ public class PdfUtils {
 
             String html = templateEngine.process("test", context);
             OutputStream outputStream = new FileOutputStream(fileName);
-            ITextRenderer renderer = new ITextRenderer(4.1666f, 1);
+            ITextRenderer renderer = new ITextRenderer();
             renderer.setDocumentFromString(html);
             renderer.layout();
             renderer.createPDF(outputStream);
@@ -43,11 +42,6 @@ public class PdfUtils {
             result = true;
         } catch (Exception ignored) {
         }
-        if (result) {
-            AlertUtils.showInfo(MessageFormat.format("El fichero {0} se ha guardado correctamente.", fileName));
-        } else {
-            AlertUtils.showError(MessageFormat.format("Ha habido un problema al guardar el fichero {0}.", fileName));
-        }
-
+        return result;
     }
 }
