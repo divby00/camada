@@ -9,6 +9,7 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.time.LocalDateTime;
 
 public class PdfUtils {
 
@@ -29,7 +30,8 @@ public class PdfUtils {
             templateEngine.setTemplateResolver(templateResolver);
 
             Context context = new Context();
-            context.setVariable("name", "Laura");
+            context.setVariable("headingTitle", "Listado de usuarios");
+            context.setVariable("headingDate", LocalDateTime.now());
 
             String html = templateEngine.process("test", context);
             OutputStream outputStream = new FileOutputStream(fileName);
