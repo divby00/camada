@@ -1,5 +1,6 @@
 package org.wildcat.camada.controller;
 
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -45,14 +46,27 @@ public class LoginController implements Initializable {
 
     @FXML
     public void login(ActionEvent event) {
-        progressIndicator.setVisible(true);
-        if (camadaUserService.authenticate(username.getText(), password.getText())) {
-            progressIndicator.setVisible(false);
-            stageManager.switchScene(FxmlView.DASHBOARD);
-        } else {
-            progressIndicator.setVisible(false);
-            AlertUtils.showError("Nombre de usuario o contraseña incorrectos");
-        }
+        Task<Boolean> authenticateTask = new Task<Boolean>() {
+            @Override
+            protected Boolean call() throws Exception {
+                return camadaUserService.authenticate(username.getText(), password.getText());
+            }
+        };
+        progressIndicator.visibleProperty().bind(authenticateTask.runningProperty());
+        new Thread(authenticateTask).start();
+        authenticateTask.setOnSucceeded(worker -> {
+            if (authenticateTask.getValue()) {
+                stageManager.switchScene(FxmlView.DASHBOARD);
+            } else {
+                AlertUtils.showError("Nombre de usuario o contraseña incorrectos");
+            }
+        });
+        authenticateTask.setOnFailed(worker -> {
+            AlertUtils.showError("No se puede comprobar la autenticidad del usuario");
+        });
+        authenticateTask.setOnCancelled(worker -> {
+            AlertUtils.showError("No se puede comprobar la autenticidad del usuario");
+        });
     }
 
     @Override

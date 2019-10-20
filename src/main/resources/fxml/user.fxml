@@ -96,6 +96,7 @@
                         </Button>
                      </children>
                   </HBox>
+                  <ProgressIndicator fx:id="progressIndicator" layoutX="582.0" layoutY="25.0" prefHeight="50.0" prefWidth="50.0" AnchorPane.leftAnchor="582.0" AnchorPane.rightAnchor="581.0" />
                </children>
             </AnchorPane>
             <AnchorPane style="-fx-background-color: #f3daaa;">
@@ -103,7 +104,6 @@
                   <Insets />
                </VBox.margin>
                <children>
-                  <ProgressIndicator fx:id="progressIndicator" layoutX="628.0" layoutY="9.0" prefHeight="20.0" prefWidth="20.0" AnchorPane.leftAnchor="628.0" AnchorPane.rightAnchor="628.0" />
                   <HBox spacing="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="0.0">
                      <children>
                         <ComboBox fx:id="customQueries" prefWidth="200.0" />

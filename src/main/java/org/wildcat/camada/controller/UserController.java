@@ -142,6 +142,13 @@ public class UserController implements Initializable {
         initTable();
     }
 
+    private void initCustomQueriesCombo() {
+        Callback<ListView<CustomQuery>, ListCell<CustomQuery>> comboCellFactory = getComboCellFactory();
+        customQueries.setCellFactory(comboCellFactory);
+        customQueries.setButtonCell(comboCellFactory.call(null));
+        customQueries.getSelectionModel().selectFirst();
+    }
+
     private void initTable() {
         tableCommonService.initTextFieldTableCell(userName, "name", CustomTableColumn.NAME, table);
         tableCommonService.initTextFieldTableCell(firstName, "firstName", CustomTableColumn.FIRST_NAME, table);
@@ -157,13 +164,6 @@ public class UserController implements Initializable {
         activationDate.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy"));
         lastConnection.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy HH:mm:ss"));
         addContextMenu();
-    }
-
-    private void initCustomQueriesCombo() {
-        Callback<ListView<CustomQuery>, ListCell<CustomQuery>> comboCellFactory = getComboCellFactory();
-        customQueries.setCellFactory(comboCellFactory);
-        customQueries.setButtonCell(comboCellFactory.call(null));
-        customQueries.getSelectionModel().selectFirst();
     }
 
     private Callback<ListView<CustomQuery>, ListCell<CustomQuery>> getComboCellFactory() {
