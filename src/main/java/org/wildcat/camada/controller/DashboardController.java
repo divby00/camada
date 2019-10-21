@@ -76,12 +76,12 @@ public class DashboardController implements Initializable {
         } else {
             greeting.setText("");
         }
-        boolean isAdmin = user.map(CamadaUser::getIsAdmin).orElse(false);
+        boolean showAdmin = user.map(CamadaUser::getIsAdmin).orElse(false);
         boolean showSponsorContainer = user.map(u -> u.getIsPresentialSponsor() || u.getIsVirtualSponsor()).orElse(false);
         boolean showPartnerContainer = user.map(CamadaUser::getIsPartner).orElse(false);
         boolean showVolunteerContainer = user.map(CamadaUser::getIsVolunteer).orElse(false);
         actionContainer.getChildren().clear();
-        if (isAdmin) {
+        if (showAdmin) {
             actionContainer.getChildren().add(userContainer);
         }
         if (showPartnerContainer) {

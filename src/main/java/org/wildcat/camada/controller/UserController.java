@@ -77,13 +77,13 @@ public class UserController implements Initializable {
     private TableColumn<CamadaUser, Date> lastConnection;
 
     @FXML
-    private TextField filter;
+    private TextField searchTextField;
 
     @FXML
     private ProgressIndicator progressIndicator;
 
     @FXML
-    private ComboBox<CustomQuery> customQueries;
+    private ComboBox<CustomQuery> customQueriesComboBox;
 
     @Lazy
     @Autowired
@@ -119,17 +119,17 @@ public class UserController implements Initializable {
 
         taskCustomQueries.setOnSucceeded(workerStateEvent -> {
             ObservableList<CustomQuery> queries = taskCustomQueries.getValue();
-            customQueries.setItems(queries);
+            customQueriesComboBox.setItems(queries);
             initCustomQueriesCombo();
 
-            Task<ObservableList<CamadaUser>> taskCamadaUsers = getObservableListTask(customQueries.getValue());
+            Task<ObservableList<CamadaUser>> taskCamadaUsers = getObservableListTask(customQueriesComboBox.getValue());
             progressIndicator.visibleProperty().bind(taskCamadaUsers.runningProperty());
             new Thread(taskCamadaUsers).start();
             taskCamadaUsers.setOnSucceeded(workerState -> {
                 setTableItems(taskCamadaUsers);
             });
 
-            customQueries.valueProperty().addListener((obs, oldVal, newVal) -> {
+            customQueriesComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
                 Task<ObservableList<CamadaUser>> taskCamadaUsersListener = getObservableListTask(newVal);
                 progressIndicator.visibleProperty().bind(taskCamadaUsersListener.runningProperty());
                 new Thread(taskCamadaUsersListener).start();
@@ -144,9 +144,9 @@ public class UserController implements Initializable {
 
     private void initCustomQueriesCombo() {
         Callback<ListView<CustomQuery>, ListCell<CustomQuery>> comboCellFactory = getComboCellFactory();
-        customQueries.setCellFactory(comboCellFactory);
-        customQueries.setButtonCell(comboCellFactory.call(null));
-        customQueries.getSelectionModel().selectFirst();
+        customQueriesComboBox.setCellFactory(comboCellFactory);
+        customQueriesComboBox.setButtonCell(comboCellFactory.call(null));
+        customQueriesComboBox.getSelectionModel().selectFirst();
     }
 
     private void initTable() {
@@ -188,7 +188,7 @@ public class UserController implements Initializable {
     private void setTableItems(Task<ObservableList<CamadaUser>> task) {
         ObservableList<CamadaUser> tableData = task.getValue();
         FilteredList<CamadaUser> filteredData = new FilteredList<>(tableData, p -> true);
-        filter.textProperty().addListener((observable, oldValue, newValue) -> {
+        searchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             filteredData.setPredicate(user -> {
                 return newValue == null || newValue.isEmpty()
                         || StringUtils.containsIgnoreCase(user.getName(), newValue)
@@ -242,11 +242,11 @@ public class UserController implements Initializable {
         });
     }
 
-    public void goToHome(ActionEvent event) {
+    public void onHomeButtonAction(ActionEvent event) {
         stageManager.switchScene(FxmlView.DASHBOARD);
     }
 
-    public void exportCSV(ActionEvent event) {
+    public void onExportCsvButtonAction(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Guardar fichero CSV");
         File file = fileChooser.showSaveDialog(this.stageManager.getPrimaryStage());
@@ -261,7 +261,7 @@ public class UserController implements Initializable {
         }
     }
 
-    public void exportPdf(ActionEvent event) {
+    public void onExportPdfButtonAction(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Guardar fichero CSV");
         File file = fileChooser.showSaveDialog(this.stageManager.getPrimaryStage());
@@ -286,6 +286,10 @@ public class UserController implements Initializable {
                 AlertUtils.showError(MessageFormat.format("Ha habido un problema al guardar el fichero {0}.", file.getName()));
             });
         }
+    }
+
+    public void onNewButtonAction(ActionEvent event) {
+
     }
 
     abstract static class CamadaUserTask<V> extends Task<V> {

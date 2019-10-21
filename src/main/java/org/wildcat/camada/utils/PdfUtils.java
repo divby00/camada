@@ -33,7 +33,7 @@ public class PdfUtils {
             context.setVariable("headingTitle", "Listado de usuarios");
             context.setVariable("headingDate", LocalDateTime.now());
 
-            String html = templateEngine.process("test", context);
+            String html = templateEngine.process("index", context);
             OutputStream outputStream = new FileOutputStream(fileName);
             ITextRenderer renderer = new ITextRenderer();
             renderer.setDocumentFromString(html);

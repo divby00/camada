@@ -41,7 +41,7 @@
                   </ImageView>
                   <HBox layoutX="503.0" layoutY="31.0" spacing="20.0" AnchorPane.rightAnchor="14.0">
                      <children>
-                        <Button fx:id="btnNew" alignment="CENTER_RIGHT" contentDisplay="CENTER" layoutX="453.0" layoutY="31.0" mnemonicParsing="false" styleClass="primary" text="Crear usuario nuevo" textAlignment="RIGHT" textFill="WHITE" AnchorPane.rightAnchor="687.0">
+                        <Button fx:id="newButton" alignment="CENTER_RIGHT" contentDisplay="CENTER" layoutX="453.0" layoutY="31.0" mnemonicParsing="false" onAction="#onNewButtonAction" styleClass="primary" text="Crear usuario nuevo" textAlignment="RIGHT" textFill="WHITE" AnchorPane.rightAnchor="687.0">
                            <font>
                               <Font size="18.0" />
                            </font>
@@ -49,7 +49,7 @@
                               <Tooltip text="Añadir un usuario nuevo" />
                            </tooltip>
                         </Button>
-                        <Button fx:id="btnImport" alignment="CENTER_RIGHT" contentDisplay="CENTER" layoutX="607.0" layoutY="31.0" mnemonicParsing="false" styleClass="primary" textAlignment="CENTER" textFill="WHITE" AnchorPane.rightAnchor="490.0">
+                        <Button fx:id="importButton" alignment="CENTER_RIGHT" contentDisplay="CENTER" layoutX="607.0" layoutY="31.0" mnemonicParsing="false" styleClass="primary" textAlignment="CENTER" textFill="WHITE" AnchorPane.rightAnchor="490.0">
                            <font>
                               <Font size="18.0" />
                            </font>
@@ -64,7 +64,7 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="btnExport" alignment="CENTER" contentDisplay="CENTER" layoutX="803.0" layoutY="31.0" mnemonicParsing="false" onAction="#exportCSV" styleClass="primary" textAlignment="CENTER" textFill="WHITE" AnchorPane.rightAnchor="317.0">
+                        <Button fx:id="exportCsvButton" alignment="CENTER" contentDisplay="CENTER" layoutX="803.0" layoutY="31.0" mnemonicParsing="false" onAction="#onExportCsvButtonAction" styleClass="primary" textAlignment="CENTER" textFill="WHITE" AnchorPane.rightAnchor="317.0">
                            <font>
                               <Font size="18.0" />
                            </font>
@@ -79,7 +79,7 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="btnPdf" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#exportPdf" styleClass="primary" textAlignment="CENTER" textFill="WHITE">
+                        <Button fx:id="exportPdfButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#onExportPdfButtonAction" styleClass="primary" textAlignment="CENTER" textFill="WHITE">
                            <font>
                               <Font size="18.0" />
                            </font>
@@ -106,9 +106,9 @@
                <children>
                   <HBox spacing="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="0.0">
                      <children>
-                        <ComboBox fx:id="customQueries" prefWidth="200.0" />
+                        <ComboBox fx:id="customQueriesComboBox" prefWidth="200.0" />
                         <Separator orientation="VERTICAL" />
-                        <TextField fx:id="filter" />
+                        <TextField fx:id="searchTextField" />
                         <ImageView fitHeight="20.0" fitWidth="20.0" nodeOrientation="INHERIT" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@../search.png" />
@@ -121,7 +121,7 @@
                   </HBox>
                   <HBox alignment="CENTER_LEFT" layoutX="1162.0" layoutY="-2.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="0.0">
                      <children>
-                        <ToggleButton fx:id="navHomeButton" mnemonicParsing="false" onAction="#goToHome" text="Inicio">
+                        <ToggleButton fx:id="homeButton" mnemonicParsing="false" onAction="#onHomeButtonAction" text="Inicio">
                            <styleClass>
                               <String fx:value="first" />
                               <String fx:value="xs" />
