@@ -9,8 +9,8 @@ import java.util.Optional;
 
 @Repository
 public interface CamadaUserRepository extends CrudRepository<CamadaUser, Long> {
-    Optional<CamadaUser> findByName(String name);
     Optional<CamadaUser> findById(Long id);
+    Optional<CamadaUser> findByName(String name);
     List<CamadaUser> findAllByIsActiveTrue();
     List<CamadaUser> findAllByIsActiveFalse();
 }

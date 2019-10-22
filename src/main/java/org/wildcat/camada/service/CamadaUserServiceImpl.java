@@ -79,4 +79,9 @@ public class CamadaUserServiceImpl implements CamadaUserService {
         return camadaUserRepository.findById(id);
     }
 
+    @Override
+    public Optional<CamadaUser> findByName(String name) {
+        return camadaUserRepository.findByName(name);
+    }
+
 }

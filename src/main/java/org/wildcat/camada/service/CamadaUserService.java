@@ -10,6 +10,7 @@ public interface CamadaUserService extends SavingService {
     boolean authenticate(String user, String password);
     CamadaUser getUser();
     Optional<CamadaUser> findById(Long id);
+    Optional<CamadaUser> findByName(String name);
     List<CamadaUser> findAllByCustomQuery(CustomQuery customQuery);
     void save(CamadaUser camadaUser);
     void delete(CamadaUser user);
