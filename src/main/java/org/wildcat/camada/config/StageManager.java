@@ -3,7 +3,7 @@ package org.wildcat.camada.config;
 import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.wildcat.camada.view.FxmlView;
@@ -25,27 +25,43 @@ public class StageManager {
 
     public void switchScene(final FxmlView view) {
         Parent viewRootNodeHierarchy = loadViewNodeHierarchy(view.getFxmlFile());
-        show(viewRootNodeHierarchy, view.getTitle(), view.getIcon(), view.getResizable());
+        if (view.isModal()) {
+            showModalScene(viewRootNodeHierarchy, view);
+        } else {
+            show(viewRootNodeHierarchy, view);
+        }
     }
 
     public Stage getPrimaryStage() {
         return this.primaryStage;
     }
 
-    private void show(final Parent rootnode, String title, Image icon, boolean resizable) {
+    private void show(final Parent rootnode, FxmlView view) {
         Scene scene = prepareScene(rootnode);
-        primaryStage.setTitle(title);
+        primaryStage.setTitle(view.getTitle());
         primaryStage.setScene(scene);
         primaryStage.sizeToScene();
         primaryStage.centerOnScreen();
-        primaryStage.setResizable(resizable);
-        primaryStage.getIcons().add(icon);
+        primaryStage.setResizable(view.isResizable());
+        primaryStage.getIcons().add(view.getIcon());
 
         try {
             primaryStage.show();
         } catch (Exception exception) {
-            logAndExit ("Unable to show scene for title" + title,  exception);
+            logAndExit ("Unable to show scene for title" + view.getTitle(),  exception);
         }
+    }
+
+    private void showModalScene(Parent rootnode, FxmlView view) {
+        final Stage stage = new Stage();
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.initOwner(primaryStage);
+        stage.setTitle(view.getTitle());
+        stage.setResizable(view.isResizable());
+        stage.getIcons().add(view.getIcon());
+        Scene scene = new Scene(rootnode);
+        stage.setScene(scene);
+        stage.show();
     }
 
     private Scene prepareScene(Parent rootnode){

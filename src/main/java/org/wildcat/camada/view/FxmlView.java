@@ -32,12 +32,23 @@ public enum FxmlView {
     USER(true) {
         @Override
         public String getTitle() {
-            return getStringFromResourceBundle("user.title");
+            return "La Camada - " + getStringFromResourceBundle("user.title");
         }
 
         @Override
         public String getFxmlFile() {
             return "/fxml/user.fxml";
+        }
+    },
+    NEW_USER(false, true) {
+        @Override
+        public String getTitle() {
+            return getStringFromResourceBundle("user.title");
+        }
+
+        @Override
+        public String getFxmlFile() {
+            return "/fxml/new_user.fxml";
         }
     },
     PARTNER(true) {
@@ -90,14 +101,26 @@ public enum FxmlView {
     public abstract String getFxmlFile();
 
     private boolean resizable;
+    private boolean modal;
     private String label;
 
     FxmlView(boolean resizable) {
         this.resizable = resizable;
         this.label = name();
+        this.modal = false;
     }
 
-    public boolean getResizable() {
+    FxmlView(boolean resizable, boolean modal) {
+        this.resizable = resizable;
+        this.label = name();
+        this.modal = modal;
+    }
+
+    public boolean isModal() {
+        return this.modal;
+    }
+
+    public boolean isResizable() {
         return this.resizable;
     }
 
@@ -108,6 +131,7 @@ public enum FxmlView {
     public String getLabel() {
         return this.label;
     }
+
 
     String getStringFromResourceBundle(String key) {
         return ResourceBundle.getBundle("camada").getString(key);

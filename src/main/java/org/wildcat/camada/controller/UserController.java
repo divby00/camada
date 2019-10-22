@@ -289,12 +289,11 @@ public class UserController implements Initializable {
     }
 
     public void onNewButtonAction(ActionEvent event) {
-
+        this.stageManager.switchScene(FxmlView.NEW_USER);
     }
 
     abstract static class CamadaUserTask<V> extends Task<V> {
         CustomQuery customQuery;
-
         CamadaUserTask(CustomQuery customQuery) {
             this.customQuery = customQuery;
         }
