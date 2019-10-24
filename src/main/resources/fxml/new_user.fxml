@@ -8,85 +8,109 @@
 <?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="481.0" prefWidth="430.0" stylesheets="@../styles/camada.css" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.wildcat.camada.controller.NewUserController">
+<AnchorPane prefHeight="464.0" prefWidth="419.0" stylesheets="@../styles/camada.css" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.wildcat.camada.controller.NewUserController">
    <children>
-      <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <VBox prefHeight="462.0" prefWidth="419.0" AnchorPane.bottomAnchor="19.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <HBox spacing="10.0">
+            <AnchorPane>
                <children>
-                  <Label prefHeight="26.0" prefWidth="170.0" text="Nombre de usuario" />
-                  <TextField fx:id="inputUserName" onKeyReleased="#validate" prefHeight="28.0" prefWidth="230.0" />
-               </children>
-               <padding>
-                  <Insets bottom="5.0" left="10.0" right="10.0" top="10.0" />
-               </padding>
-            </HBox>
-            <HBox spacing="10.0">
-               <children>
-                  <Label ellipsisString="" prefHeight="26.0" prefWidth="170.0" text="Contraseña (1er acceso)" />
-                  <PasswordField fx:id="inputPassword" onKeyReleased="#validate" prefHeight="28.0" prefWidth="178.0" />
-                  <ToggleButton fx:id="toggleView" disable="true" mnemonicParsing="false" styleClass="primary">
-                     <graphic>
-                        <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../eye.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </ToggleButton>
-               </children>
-               <padding>
-                  <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
-               </padding>
-            </HBox>
-            <HBox spacing="10.0">
-               <children>
-                  <Label ellipsisString="" prefHeight="26.0" prefWidth="170.0" text="Contraseña (otra vez)" />
-                  <PasswordField fx:id="inputPasswordCheck" onKeyReleased="#validate" prefHeight="28.0" prefWidth="178.0" />
-               </children>
-               <padding>
-                  <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
-               </padding>
-            </HBox>
-            <HBox spacing="10.0">
-               <children>
-                  <Label prefHeight="26.0" prefWidth="170.0" text="Nombre real" />
-                  <TextField fx:id="inputFirstName" onKeyReleased="#validate" prefWidth="230.0" />
-               </children>
-               <padding>
-                  <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
-               </padding>
-            </HBox>
-            <HBox spacing="10.0">
-               <children>
-                  <Label prefHeight="26.0" prefWidth="170.0" text="Apellido" />
-                  <TextField fx:id="inputLastName" onKeyReleased="#validate" prefWidth="230.0" />
-               </children>
-               <padding>
-                  <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
-               </padding>
-            </HBox>
-            <HBox spacing="10.0">
-               <children>
-                  <Label prefHeight="26.0" prefWidth="170.0" text="Email" />
-                  <TextField fx:id="inputEmail" onKeyReleased="#validate" prefHeight="26.0" prefWidth="230.0">
-                     <HBox.margin>
-                        <Insets />
-                     </HBox.margin>
+                  <Label layoutX="14.0" layoutY="11.0" prefHeight="30.0" prefWidth="160.0" text="Nombre de usuario" />
+                  <TextField fx:id="inputUserName" layoutX="190.0" layoutY="10.0" onKeyReleased="#validate" prefHeight="28.0" prefWidth="219.0" AnchorPane.leftAnchor="190.0" AnchorPane.rightAnchor="10.0">
+                     <tooltip>
+                        <Tooltip text="El nombre de usuario debe tener letras y/o números, más de 6 caracteres y menos de 20" />
+                     </tooltip>
                   </TextField>
+                  <ImageView fx:id="imageUserName" fitHeight="20.0" fitWidth="20.0" layoutX="394.0" layoutY="15.0" pickOnBounds="true" preserveRatio="true" visible="false" AnchorPane.rightAnchor="15.0">
+                     <image>
+                        <Image url="@../exclamation.png" />
+                     </image>
+                  </ImageView>
                </children>
-               <padding>
-                  <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
-               </padding>
-            </HBox>
-            <HBox spacing="10.0">
+               <VBox.margin>
+                  <Insets bottom="5.0" />
+               </VBox.margin>
+            </AnchorPane>
+            <AnchorPane>
+               <children>
+                  <Label ellipsisString="" layoutX="14.0" prefHeight="30.0" prefWidth="160.0" text="Contraseña (1er acceso)" />
+                  <PasswordField fx:id="inputPassword" layoutX="190.0" onKeyReleased="#validate" prefHeight="28.0" prefWidth="219.0">
+                     <tooltip>
+                        <Tooltip text="La contraseña debe estar formada por letras mayúsculas y minúsculas, números y uno de los siguientes caracteres: @$#" />
+                     </tooltip></PasswordField>
+                  <ImageView fx:id="imagePassword" fitHeight="20.0" fitWidth="20.0" layoutX="412.0" layoutY="4.0" pickOnBounds="true" preserveRatio="true" visible="false" AnchorPane.rightAnchor="15.0">
+                     <image>
+                        <Image url="@../exclamation.png" />
+                     </image>
+                  </ImageView>
+               </children>
+               <VBox.margin>
+                  <Insets bottom="5.0" />
+               </VBox.margin>
+            </AnchorPane>
+            <AnchorPane>
+               <children>
+                  <Label ellipsisString="" layoutX="14.0" layoutY="1.0" prefHeight="30.0" prefWidth="160.0" text="Contraseña (otra vez)" />
+                  <PasswordField fx:id="inputPasswordCheck" layoutX="190.0" onKeyReleased="#validate" prefHeight="28.0" prefWidth="219.0" />
+                  <ImageView fx:id="imagePasswordCheck" fitHeight="20.0" fitWidth="20.0" layoutX="370.0" layoutY="4.0" pickOnBounds="true" preserveRatio="true" visible="false" AnchorPane.rightAnchor="15.0">
+                     <image>
+                        <Image url="@../exclamation.png" />
+                     </image>
+                  </ImageView>
+               </children>
+               <VBox.margin>
+                  <Insets bottom="5.0" />
+               </VBox.margin>
+            </AnchorPane>
+            <AnchorPane>
+               <children>
+                  <Label layoutX="14.0" prefHeight="30.0" prefWidth="160.0" text="Nombre real" />
+                  <TextField fx:id="inputFirstName" layoutX="190.0" onKeyReleased="#validate" prefWidth="219.0" />
+                  <ImageView fx:id="imageFirstName" fitHeight="20.0" fitWidth="20.0" layoutX="370.0" layoutY="4.0" pickOnBounds="true" preserveRatio="true" visible="false" AnchorPane.rightAnchor="15.0">
+                     <image>
+                        <Image url="@../exclamation.png" />
+                     </image>
+                  </ImageView>
+               </children>
+               <VBox.margin>
+                  <Insets bottom="5.0" />
+               </VBox.margin>
+            </AnchorPane>
+            <AnchorPane>
+               <children>
+                  <Label layoutX="14.0" prefHeight="30.0" prefWidth="160.0" text="Apellido" />
+                  <TextField fx:id="inputLastName" layoutX="190.0" onKeyReleased="#validate" prefWidth="219.0" />
+                  <ImageView fx:id="imageLastName" fitHeight="20.0" fitWidth="20.0" layoutX="370.0" layoutY="4.0" pickOnBounds="true" preserveRatio="true" visible="false" AnchorPane.rightAnchor="15.0">
+                     <image>
+                        <Image url="@../exclamation.png" />
+                     </image>
+                  </ImageView>
+               </children>
+               <VBox.margin>
+                  <Insets bottom="5.0" />
+               </VBox.margin>
+            </AnchorPane>
+            <AnchorPane>
+               <children>
+                  <Label layoutX="14.0" prefHeight="30.0" prefWidth="160.0" text="Email" />
+                  <TextField fx:id="inputEmail" layoutX="190.0" onKeyReleased="#validate" prefHeight="26.0" prefWidth="219.0" />
+                  <ImageView fx:id="imageEmail" fitHeight="20.0" fitWidth="20.0" layoutX="370.0" layoutY="4.0" pickOnBounds="true" preserveRatio="true" visible="false" AnchorPane.rightAnchor="15.0">
+                     <image>
+                        <Image url="@../exclamation.png" />
+                     </image>
+                  </ImageView>
+               </children>
+               <VBox.margin>
+                  <Insets bottom="5.0" />
+               </VBox.margin>
+            </AnchorPane>
+            <HBox prefHeight="35.0" prefWidth="526.0" spacing="10.0">
                <children>
                   <CheckBox fx:id="isAdmin" mnemonicParsing="false" text="Puede administrar usuarios" />
                </children>
@@ -136,7 +160,7 @@
             </HBox>
             <AnchorPane>
                <children>
-                  <Button fx:id="buttonSave" alignment="CENTER" contentDisplay="CENTER" disable="true" layoutX="175.0" layoutY="-1.0" mnemonicParsing="false" onAction="#onButtonSaveAction" styleClass="primary" text="Guardar" textAlignment="CENTER" />
+                  <Button fx:id="buttonSave" alignment="CENTER" contentDisplay="CENTER" disable="true" layoutX="170.0" mnemonicParsing="false" onAction="#onButtonSaveAction" styleClass="primary" text="Guardar" textAlignment="CENTER" />
                </children>
             </AnchorPane>
          </children>

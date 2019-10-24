@@ -4,22 +4,25 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
 import org.wildcat.camada.config.StageManager;
-import org.wildcat.camada.entity.CamadaUser;
 import org.wildcat.camada.service.CamadaUserService;
+import org.wildcat.camada.validator.EmailValidator;
+import org.wildcat.camada.validator.PasswordCheckValidator;
+import org.wildcat.camada.validator.PasswordValidator;
+import org.wildcat.camada.validator.TextFieldValidator;
 
 import javax.annotation.Resource;
 import java.net.URL;
-import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Controller
 public class NewUserController implements Initializable {
@@ -37,6 +40,18 @@ public class NewUserController implements Initializable {
     @FXML
     private TextField inputEmail;
     @FXML
+    private ImageView imageUserName;
+    @FXML
+    private ImageView imagePassword;
+    @FXML
+    private ImageView imagePasswordCheck;
+    @FXML
+    private ImageView imageFirstName;
+    @FXML
+    private ImageView imageLastName;
+    @FXML
+    private ImageView imageEmail;
+    @FXML
     private CheckBox isAdmin;
     @FXML
     private CheckBox isVirtualSponsor;
@@ -49,8 +64,6 @@ public class NewUserController implements Initializable {
     @FXML
     private Button buttonSave;
     @FXML
-    private ToggleButton toggleView;
-    @FXML
     private ProgressIndicator progressIndicator;
 
 
@@ -59,8 +72,13 @@ public class NewUserController implements Initializable {
     private StageManager stageManager;
 
     private ResourceBundle resources;
-    private Pattern passwordPattern;
-    private Pattern emailPattern;
+
+    private TextFieldValidator<TextField> userNameValidator;
+    private TextFieldValidator<TextField> firstNameValidator;
+    private TextFieldValidator<TextField> lastNameValidator;
+    private PasswordValidator<TextField> passwordValidator;
+    private PasswordCheckValidator<TextField> passwordCheckValidator;
+    private EmailValidator<TextField> emailValidator;
 
     @Resource
     private final CamadaUserService camadaUserService;
@@ -72,8 +90,18 @@ public class NewUserController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         this.resources = resources;
-        this.passwordPattern = Pattern.compile("(?=.*[a-z])(?=.*d)(?=.*[@#$%])(?=.*[A-Z]).{6,16}");
-        this.emailPattern = Pattern.compile("^[\\w-_.+]*[\\w-_.]@([\\w]+\\.)+[\\w]+[\\w]$");
+        this.imageUserName.managedProperty().bind(imageUserName.visibleProperty());
+        this.imagePassword.managedProperty().bind(imagePassword.visibleProperty());
+        this.imagePasswordCheck.managedProperty().bind(imagePasswordCheck.visibleProperty());
+        this.imageFirstName.managedProperty().bind(imageFirstName.visibleProperty());
+        this.imageLastName.managedProperty().bind(imageLastName.visibleProperty());
+        this.imageEmail.managedProperty().bind(imageEmail.visibleProperty());
+        this.userNameValidator = new TextFieldValidator<>(inputUserName, 4, 20);
+        this.firstNameValidator = new TextFieldValidator<>(inputFirstName, 4, 20);
+        this.lastNameValidator = new TextFieldValidator<>(inputLastName, 4, 20);
+        this.passwordValidator = new PasswordValidator<>(inputPassword);
+        this.passwordCheckValidator = new PasswordCheckValidator<>(inputPasswordCheck, inputPassword);
+        this.emailValidator = new EmailValidator<>(inputEmail);
     }
 
     @FXML
@@ -85,49 +113,42 @@ public class NewUserController implements Initializable {
         Task<Boolean> validationTask = new Task<Boolean>() {
             @Override
             protected Boolean call() throws Exception {
-                String userName = inputUserName.getText();
-                String password = inputPassword.getText();
-                String secondPassword = inputPasswordCheck.getText();
-                String firstName = inputFirstName.getText();
-                String lastName = inputLastName.getText();
-                String email = inputEmail.getText();
-                boolean isValidUserName = StringUtils.isNotBlank(userName) && StringUtils.isAlphanumeric(userName) && userName.length() > 4 && userName.length() < 20;
-                boolean isValidPassword = StringUtils.isNotBlank(password) && validatePassword(password);
-                boolean isValidSecondPassword = StringUtils.isNotBlank(secondPassword) && StringUtils.equals(secondPassword, password);
-                boolean isValidFirstName = StringUtils.isNotBlank(firstName) && StringUtils.isAlphanumeric(firstName) && firstName.length() > 4 && firstName.length() < 20;
-                boolean isValidLastName = StringUtils.isNotBlank(lastName) && StringUtils.isAlphanumeric(lastName) && lastName.length() > 4 && lastName.length() < 20;
-                boolean isValidEmail = StringUtils.isNotBlank(email) && validateEmail(email);
-                boolean result = isValidUserName && isValidPassword && isValidSecondPassword
+                boolean isValidUserName = userNameValidator.validate();
+                imageUserName.setVisible(!isValidUserName);
+
+                boolean isValidPassword = passwordValidator.validate();
+                imagePassword.setVisible(!isValidPassword);
+
+                boolean isValidPasswordCheck = passwordCheckValidator.validate();
+                imagePasswordCheck.setVisible(!isValidPasswordCheck);
+
+                boolean isValidFirstName = firstNameValidator.validate();
+                imageFirstName.setVisible(!isValidFirstName);
+
+                boolean isValidLastName = lastNameValidator.validate();
+                imageLastName.setVisible(!isValidLastName);
+
+                boolean isValidEmail = emailValidator.validate();
+                imageEmail.setVisible(!isValidEmail);
+
+                return isValidUserName && isValidPassword && isValidPasswordCheck
                         && isValidFirstName && isValidLastName && isValidEmail;
-                boolean userExists = false;
-                if (result) {
-                    Optional<CamadaUser> user = camadaUserService.findByName(userName);
-                    userExists = user.isPresent();
-                }
-                toggleView.setDisable(StringUtils.isBlank(password));
-                buttonSave.setDisable(!(result && !userExists));
-                return result && !userExists;
             }
         };
         progressIndicator.visibleProperty().bind(validationTask.runningProperty());
         new Thread(validationTask).start();
         validationTask.setOnSucceeded(workerState -> {
-            if (validationTask.getValue()) {
-
-            } else {
-                // User exists
-            }
+            buttonSave.setDisable(!validationTask.getValue());
         });
-    }
-
-    private boolean validatePassword(String password) {
-        Matcher matcher = passwordPattern.matcher(password);
-        return matcher.matches();
-    }
-
-    private boolean validateEmail(String email) {
-        Matcher matcher = emailPattern.matcher(email);
-        return matcher.matches();
+        validationTask.setOnRunning(workerState -> {
+            buttonSave.setDisable(true);
+        });
+        validationTask.setOnCancelled(workerState -> {
+            buttonSave.setDisable(true);
+        });
+        validationTask.setOnFailed(workerState -> {
+            buttonSave.setDisable(true);
+        });
     }
 
 }
