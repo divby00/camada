@@ -12,6 +12,6 @@ public interface CamadaUserService extends SavingService {
     Optional<CamadaUser> findById(Long id);
     Optional<CamadaUser> findByName(String name);
     List<CamadaUser> findAllByCustomQuery(CustomQuery customQuery);
-    void save(CamadaUser camadaUser);
+    CamadaUser save(CamadaUser camadaUser);
     void delete(CamadaUser user);
 }

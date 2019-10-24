@@ -57,8 +57,8 @@ public class CamadaUserServiceImpl implements CamadaUserService {
     }
 
     @Override
-    public void save(CamadaUser camadaUser) {
-        camadaUserRepository.save(camadaUser);
+    public CamadaUser save(CamadaUser camadaUser) {
+        return camadaUserRepository.save(camadaUser);
     }
 
     @Override
