@@ -16,6 +16,7 @@ public class StageManager {
 
     private static final Logger LOG = getLogger(StageManager.class);
     private final Stage primaryStage;
+    private Stage modalStage;
     private final SpringFXMLLoader springFXMLLoader;
 
     public StageManager(SpringFXMLLoader springFXMLLoader, Stage stage) {
@@ -36,6 +37,10 @@ public class StageManager {
         return this.primaryStage;
     }
 
+    public Stage getModalStage() {
+        return this.modalStage;
+    }
+
     private void show(final Parent rootnode, FxmlView view) {
         Scene scene = prepareScene(rootnode);
         primaryStage.setTitle(view.getTitle());
@@ -53,15 +58,15 @@ public class StageManager {
     }
 
     private void showModalScene(Parent rootnode, FxmlView view) {
-        final Stage stage = new Stage();
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.initOwner(primaryStage);
-        stage.setTitle(view.getTitle());
-        stage.setResizable(view.isResizable());
-        stage.getIcons().add(view.getIcon());
+        modalStage = new Stage();
+        modalStage.initModality(Modality.APPLICATION_MODAL);
+        modalStage.initOwner(primaryStage);
+        modalStage.setTitle(view.getTitle());
+        modalStage.setResizable(view.isResizable());
+        modalStage.getIcons().add(view.getIcon());
         Scene scene = new Scene(rootnode);
-        stage.setScene(scene);
-        stage.show();
+        modalStage.setScene(scene);
+        modalStage.show();
     }
 
     private Scene prepareScene(Parent rootNode){

@@ -90,9 +90,6 @@ public class UserController implements Initializable {
     private StageManager stageManager;
 
     @Resource
-    private final NewUserController newUserController;
-
-    @Resource
     private final TableCommonService tableCommonService;
 
     @Resource
@@ -103,9 +100,8 @@ public class UserController implements Initializable {
 
     private ObservableList<CamadaUser> tableData;
 
-    public UserController(NewUserController newUserController, TableCommonService tableCommonService,
-                          CamadaUserService camadaUserService, CustomQueryService customQueryService) {
-        this.newUserController = newUserController;
+    public UserController(TableCommonService tableCommonService, CamadaUserService camadaUserService,
+                          CustomQueryService customQueryService) {
         this.tableCommonService = tableCommonService;
         this.camadaUserService = camadaUserService;
         this.customQueryService = customQueryService;
@@ -141,6 +137,7 @@ public class UserController implements Initializable {
                 new Thread(taskCamadaUsersListener).start();
                 taskCamadaUsersListener.setOnSucceeded(workerState -> {
                     setTableItems(taskCamadaUsersListener);
+                    searchTextField.setText(StringUtils.EMPTY);
                 });
             });
         });
@@ -195,7 +192,6 @@ public class UserController implements Initializable {
     }
 
     public void onNewButtonAction(ActionEvent event) {
-        newUserController.setParentData(tableData, table);
         this.stageManager.switchScene(FxmlView.NEW_USER);
     }
 

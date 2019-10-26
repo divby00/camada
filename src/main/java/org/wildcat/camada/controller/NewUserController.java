@@ -10,7 +10,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
+import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.entity.CamadaUser;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.utils.AlertUtils;
@@ -18,6 +21,7 @@ import org.wildcat.camada.validator.EmailValidator;
 import org.wildcat.camada.validator.PasswordCheckValidator;
 import org.wildcat.camada.validator.PasswordValidator;
 import org.wildcat.camada.validator.TextFieldValidator;
+import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
 import java.net.URL;
@@ -66,6 +70,10 @@ public class NewUserController implements Initializable {
     private Button buttonSave;
     @FXML
     private ProgressIndicator progressIndicator;
+
+    @Lazy
+    @Autowired
+    private StageManager stageManager;
 
     private ResourceBundle resources;
     private TableView<CamadaUser> table;
@@ -151,8 +159,8 @@ public class NewUserController implements Initializable {
                     CamadaUser camadaUser = saveUserTask.getValue();
                     if (camadaUser != null) {
                         AlertUtils.showInfo("El usuario se ha dado de alta correctamente");
-                        this.tableData.add(camadaUser);
-                        this.table.refresh();
+                        this.stageManager.getModalStage().close();
+                        this.stageManager.switchScene(FxmlView.USER);
                     } else {
                         AlertUtils.showError("No se ha podido dar de alta al usuario");
                     }

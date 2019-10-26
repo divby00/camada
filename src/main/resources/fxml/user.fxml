@@ -27,6 +27,11 @@
          <children>
             <AnchorPane prefHeight="100.0" prefWidth="1280.0" style="-fx-background-color: #94bfd8;" stylesheets="@../styles/camada.css">
                <children>
+                  <ImageView fitHeight="120.0" fitWidth="689.0" layoutX="597.0" pickOnBounds="true" preserveRatio="true" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <image>
+                        <Image url="@../back02.png" />
+                     </image>
+                  </ImageView>
                   <Label layoutX="136.0" layoutY="15.0" text="Usuarios" textFill="WHITE" AnchorPane.leftAnchor="125.0">
                      <font>
                         <Font name="System Bold" size="48.0" />
