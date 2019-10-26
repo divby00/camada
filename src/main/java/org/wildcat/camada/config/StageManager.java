@@ -64,13 +64,13 @@ public class StageManager {
         stage.show();
     }
 
-    private Scene prepareScene(Parent rootnode){
+    private Scene prepareScene(Parent rootNode){
         Scene scene = primaryStage.getScene();
 
         if (scene == null) {
-            scene = new Scene(rootnode);
+            scene = new Scene(rootNode);
         }
-        scene.setRoot(rootnode);
+        scene.setRoot(rootNode);
         return scene;
     }
 

@@ -1,20 +1,16 @@
 package org.wildcat.camada.controller;
 
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
-import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.entity.CamadaUser;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.utils.AlertUtils;
@@ -71,13 +67,9 @@ public class NewUserController implements Initializable {
     @FXML
     private ProgressIndicator progressIndicator;
 
-
-    @Lazy
-    @Autowired
-    private StageManager stageManager;
-
     private ResourceBundle resources;
-
+    private TableView<CamadaUser> table;
+    private ObservableList<CamadaUser> tableData;
     private TextFieldValidator<TextField> userNameValidator;
     private TextFieldValidator<TextField> firstNameValidator;
     private TextFieldValidator<TextField> lastNameValidator;
@@ -107,6 +99,13 @@ public class NewUserController implements Initializable {
         this.passwordValidator = new PasswordValidator<>(inputPassword);
         this.passwordCheckValidator = new PasswordCheckValidator<>(inputPasswordCheck, inputPassword);
         this.emailValidator = new EmailValidator<>(inputEmail);
+        // TODO: Remove this!!
+        this.inputUserName.setText("Usuario00");
+        this.inputFirstName.setText("Usuario00");
+        this.inputLastName.setText("Usuario00");
+        this.inputEmail.setText("emailme@dot.com");
+        this.inputPassword.setText("Usuario00#");
+        this.inputPasswordCheck.setText("Usuario00#");
     }
 
     @FXML
@@ -125,9 +124,9 @@ public class NewUserController implements Initializable {
             if (result) {
                 AlertUtils.showError("Lo siento, no puedes usar ese nombre de usuario porque ya está elegido");
             } else {
-                Task<Boolean> saveUserTask = new Task<Boolean>() {
+                Task<CamadaUser> saveUserTask = new Task<CamadaUser>() {
                     @Override
-                    protected Boolean call() throws Exception {
+                    protected CamadaUser call() throws Exception {
                         CamadaUser camadaUser = CamadaUser.builder()
                                 .name(inputUserName.getText())
                                 .firstName(inputFirstName.getText())
@@ -143,14 +142,17 @@ public class NewUserController implements Initializable {
                                 .activationDate(new Date())
                                 .build();
                         CamadaUser savedUser = camadaUserService.save(camadaUser);
-                        return savedUser != null;
+                        return savedUser;
                     }
                 };
                 progressIndicator.visibleProperty().bind(saveUserTask.runningProperty());
                 new Thread(saveUserTask).start();
                 saveUserTask.setOnSucceeded(saveWorker -> {
-                    if (saveUserTask.getValue()) {
+                    CamadaUser camadaUser = saveUserTask.getValue();
+                    if (camadaUser != null) {
                         AlertUtils.showInfo("El usuario se ha dado de alta correctamente");
+                        this.tableData.add(camadaUser);
+                        this.table.refresh();
                     } else {
                         AlertUtils.showError("No se ha podido dar de alta al usuario");
                     }
@@ -162,6 +164,12 @@ public class NewUserController implements Initializable {
                     AlertUtils.showError("No se ha podido dar de alta al usuario");
                 });
             }
+        });
+        userExistsTask.setOnCancelled(worker -> {
+            AlertUtils.showError("Ha habido un problema al consultar el nombre del usuario");
+        });
+        userExistsTask.setOnFailed(worker -> {
+            AlertUtils.showError("Ha habido un problema al consultar el nombre del usuario");
         });
     }
 
@@ -185,10 +193,18 @@ public class NewUserController implements Initializable {
         boolean isValidEmail = emailValidator.validate();
         imageEmail.setVisible(!isValidEmail);
 
+        boolean fieldsAreNotEmpty = StringUtils.isNotBlank(inputUserName.getText()) && StringUtils.isNotBlank(inputFirstName.getText())
+                && StringUtils.isNotBlank(inputLastName.getText()) && StringUtils.isNotBlank(inputPassword.getText())
+                && StringUtils.isNotBlank(inputPasswordCheck.getText()) && StringUtils.isNotBlank(inputEmail.getText());
+
         boolean result = isValidUserName && isValidPassword && isValidPasswordCheck
-                && isValidFirstName && isValidLastName && isValidEmail;
+                && isValidFirstName && isValidLastName && isValidEmail && fieldsAreNotEmpty;
 
         buttonSave.setDisable(!result);
     }
 
+    void setParentData(ObservableList<CamadaUser> tableData, TableView<CamadaUser> table) {
+        this.table = table;
+        this.tableData = tableData;
+    }
 }

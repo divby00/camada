@@ -90,6 +90,9 @@ public class UserController implements Initializable {
     private StageManager stageManager;
 
     @Resource
+    private final NewUserController newUserController;
+
+    @Resource
     private final TableCommonService tableCommonService;
 
     @Resource
@@ -98,8 +101,11 @@ public class UserController implements Initializable {
     @Resource
     private final CustomQueryService customQueryService;
 
-    public UserController(TableCommonService tableCommonService, CamadaUserService camadaUserService,
-                          CustomQueryService customQueryService) {
+    private ObservableList<CamadaUser> tableData;
+
+    public UserController(NewUserController newUserController, TableCommonService tableCommonService,
+                          CamadaUserService camadaUserService, CustomQueryService customQueryService) {
+        this.newUserController = newUserController;
         this.tableCommonService = tableCommonService;
         this.camadaUserService = camadaUserService;
         this.customQueryService = customQueryService;
@@ -140,106 +146,6 @@ public class UserController implements Initializable {
         });
 
         initTable();
-    }
-
-    private void initCustomQueriesCombo() {
-        Callback<ListView<CustomQuery>, ListCell<CustomQuery>> comboCellFactory = getComboCellFactory();
-        customQueriesComboBox.setCellFactory(comboCellFactory);
-        customQueriesComboBox.setButtonCell(comboCellFactory.call(null));
-        customQueriesComboBox.getSelectionModel().selectFirst();
-    }
-
-    private void initTable() {
-        tableCommonService.initTextFieldTableCell(userName, "name", CustomTableColumn.NAME, table);
-        tableCommonService.initTextFieldTableCell(firstName, "firstName", CustomTableColumn.FIRST_NAME, table);
-        tableCommonService.initTextFieldTableCell(lastName, "lastName", CustomTableColumn.LAST_NAME, table);
-        tableCommonService.initTextFieldTableCell(email, "email", CustomTableColumn.EMAIL, table);
-        tableCommonService.initCheckBoxTableCell(isAdmin, CustomTableColumn.IS_ADMIN, table);
-        tableCommonService.initCheckBoxTableCell(isVirtualSponsor, CustomTableColumn.IS_VIRTUAL_SPONSOR, table);
-        tableCommonService.initCheckBoxTableCell(isPresentialSponsor, CustomTableColumn.IS_PRESENTIAL_SPONSOR, table);
-        tableCommonService.initCheckBoxTableCell(isPartner, CustomTableColumn.IS_PARTNER, table);
-        tableCommonService.initCheckBoxTableCell(isVolunteer, CustomTableColumn.IS_VOLUNTEER, table);
-        activationDate.setCellValueFactory(new PropertyValueFactory<>("activationDate"));
-        lastConnection.setCellValueFactory(new PropertyValueFactory<>("lastConnection"));
-        activationDate.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy"));
-        lastConnection.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy HH:mm:ss"));
-        addContextMenu();
-    }
-
-    private Callback<ListView<CustomQuery>, ListCell<CustomQuery>> getComboCellFactory() {
-        return new Callback<ListView<CustomQuery>, ListCell<CustomQuery>>() {
-            @Override
-            public ListCell<CustomQuery> call(ListView<CustomQuery> l) {
-                return new ListCell<CustomQuery>() {
-                    @Override
-                    protected void updateItem(CustomQuery item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (item == null || empty) {
-                            setGraphic(null);
-                        } else {
-                            setText(item.getDescription());
-                        }
-                    }
-                };
-            }
-        };
-    }
-
-    private void setTableItems(Task<ObservableList<CamadaUser>> task) {
-        ObservableList<CamadaUser> tableData = task.getValue();
-        FilteredList<CamadaUser> filteredData = new FilteredList<>(tableData, p -> true);
-        searchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
-            filteredData.setPredicate(user -> {
-                return newValue == null || newValue.isEmpty()
-                        || StringUtils.containsIgnoreCase(user.getName(), newValue)
-                        || StringUtils.containsIgnoreCase(user.getFirstName(), newValue)
-                        || StringUtils.containsIgnoreCase(user.getLastName(), newValue)
-                        || StringUtils.containsIgnoreCase(user.getEmail(), newValue);
-            });
-        });
-        SortedList<CamadaUser> sortedData = new SortedList<>(filteredData);
-        sortedData.comparatorProperty().bind(table.comparatorProperty());
-        table.setItems(sortedData);
-    }
-
-    private Task<ObservableList<CamadaUser>> getObservableListTask(CustomQuery value) {
-        return new CamadaUserTask<ObservableList<CamadaUser>>(value) {
-            @Override
-            protected ObservableList<CamadaUser> call() throws Exception {
-                List<CamadaUser> allByCustomQuery = camadaUserService.findAllByCustomQuery(value);
-                return FXCollections.observableList(allByCustomQuery);
-            }
-        };
-    }
-
-    private void addContextMenu() {
-        table.setRowFactory(tableView -> {
-            final TableRow<CamadaUser> row = new TableRow<CamadaUser>() {
-                @Override
-                protected void updateItem(CamadaUser user, boolean empty) {
-                    super.updateItem(user, empty);
-                }
-            };
-
-            // Add context menu to the row
-            final ContextMenu rowMenu = new ContextMenu();
-            MenuItem removeItem = new MenuItem("Borrar usuario");
-            removeItem.setOnAction(event -> {
-                ButtonType buttonType = AlertUtils.showConfirmation("¿Quieres borrar el usuario?");
-                if (buttonType == ButtonType.YES) {
-                    CamadaUser user = row.getItem();
-                    camadaUserService.delete(user);
-                    table.getItems().remove(user);
-                }
-            });
-            rowMenu.getItems().addAll(removeItem);
-
-            // only display context menu for non-null items:
-            row.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(row.itemProperty()))
-                    .then(rowMenu)
-                    .otherwise((ContextMenu) null));
-            return row;
-        });
     }
 
     public void onHomeButtonAction(ActionEvent event) {
@@ -289,7 +195,112 @@ public class UserController implements Initializable {
     }
 
     public void onNewButtonAction(ActionEvent event) {
+        newUserController.setParentData(tableData, table);
         this.stageManager.switchScene(FxmlView.NEW_USER);
+    }
+
+    private void initCustomQueriesCombo() {
+        Callback<ListView<CustomQuery>, ListCell<CustomQuery>> comboCellFactory = getComboCellFactory();
+        customQueriesComboBox.setCellFactory(comboCellFactory);
+        customQueriesComboBox.setButtonCell(comboCellFactory.call(null));
+        customQueriesComboBox.getSelectionModel().selectFirst();
+    }
+
+    private void initTable() {
+        tableCommonService.initTextFieldTableCell(userName, "name", CustomTableColumn.NAME, table);
+        tableCommonService.initTextFieldTableCell(firstName, "firstName", CustomTableColumn.FIRST_NAME, table);
+        tableCommonService.initTextFieldTableCell(lastName, "lastName", CustomTableColumn.LAST_NAME, table);
+        tableCommonService.initTextFieldTableCell(email, "email", CustomTableColumn.EMAIL, table);
+        tableCommonService.initCheckBoxTableCell(isAdmin, CustomTableColumn.IS_ADMIN, table);
+        tableCommonService.initCheckBoxTableCell(isVirtualSponsor, CustomTableColumn.IS_VIRTUAL_SPONSOR, table);
+        tableCommonService.initCheckBoxTableCell(isPresentialSponsor, CustomTableColumn.IS_PRESENTIAL_SPONSOR, table);
+        tableCommonService.initCheckBoxTableCell(isPartner, CustomTableColumn.IS_PARTNER, table);
+        tableCommonService.initCheckBoxTableCell(isVolunteer, CustomTableColumn.IS_VOLUNTEER, table);
+        activationDate.setCellValueFactory(new PropertyValueFactory<>("activationDate"));
+        lastConnection.setCellValueFactory(new PropertyValueFactory<>("lastConnection"));
+        activationDate.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy"));
+        lastConnection.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy HH:mm:ss"));
+        addContextMenu();
+    }
+
+    private Callback<ListView<CustomQuery>, ListCell<CustomQuery>> getComboCellFactory() {
+        return new Callback<ListView<CustomQuery>, ListCell<CustomQuery>>() {
+            @Override
+            public ListCell<CustomQuery> call(ListView<CustomQuery> l) {
+                return new ListCell<CustomQuery>() {
+                    @Override
+                    protected void updateItem(CustomQuery item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (item == null || empty) {
+                            setGraphic(null);
+                        } else {
+                            setText(item.getDescription());
+                        }
+                    }
+                };
+            }
+        };
+    }
+
+    private void setTableItems(Task<ObservableList<CamadaUser>> task) {
+        tableData = task.getValue();
+        FilteredList<CamadaUser> filteredData = new FilteredList<>(tableData, p -> true);
+        searchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredData.setPredicate(user -> {
+                return newValue == null || newValue.isEmpty()
+                        || StringUtils.containsIgnoreCase(user.getName(), newValue)
+                        || StringUtils.containsIgnoreCase(user.getFirstName(), newValue)
+                        || StringUtils.containsIgnoreCase(user.getLastName(), newValue)
+                        || StringUtils.containsIgnoreCase(user.getEmail(), newValue);
+            });
+            SortedList<CamadaUser> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(table.comparatorProperty());
+            table.setItems(FXCollections.observableList(sortedData));
+        });
+        SortedList<CamadaUser> sortedData = new SortedList<>(filteredData);
+        sortedData.comparatorProperty().bind(table.comparatorProperty());
+        table.setItems(FXCollections.observableList(filteredData));
+    }
+
+    private Task<ObservableList<CamadaUser>> getObservableListTask(CustomQuery value) {
+        return new CamadaUserTask<ObservableList<CamadaUser>>(value) {
+            @Override
+            protected ObservableList<CamadaUser> call() throws Exception {
+                List<CamadaUser> allByCustomQuery = camadaUserService.findAllByCustomQuery(value);
+                return FXCollections.observableList(allByCustomQuery);
+            }
+        };
+    }
+
+    private void addContextMenu() {
+        table.setRowFactory(tableView -> {
+            final TableRow<CamadaUser> row = new TableRow<CamadaUser>() {
+                @Override
+                protected void updateItem(CamadaUser user, boolean empty) {
+                    super.updateItem(user, empty);
+                }
+            };
+
+            // Add context menu to the row
+            final ContextMenu rowMenu = new ContextMenu();
+            MenuItem removeItem = new MenuItem("Borrar usuario");
+            removeItem.setOnAction(event -> {
+                ButtonType buttonType = AlertUtils.showConfirmation("¿Quieres borrar el usuario?");
+                if (buttonType == ButtonType.YES) {
+                    CamadaUser user = row.getItem();
+                    camadaUserService.delete(user);
+                    tableData.remove(user);
+                    table.refresh();
+                }
+            });
+            rowMenu.getItems().addAll(removeItem);
+
+            // only display context menu for non-null items:
+            row.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(row.itemProperty()))
+                    .then(rowMenu)
+                    .otherwise((ContextMenu) null));
+            return row;
+        });
     }
 
     abstract static class CamadaUserTask<V> extends Task<V> {
@@ -298,4 +309,5 @@ public class UserController implements Initializable {
             this.customQuery = customQuery;
         }
     }
+
 }
