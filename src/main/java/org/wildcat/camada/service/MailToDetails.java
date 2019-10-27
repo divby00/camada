@@ -15,5 +15,6 @@ public class MailToDetails {
     private String message;
     private String fileName;
     private String attachment;
+    private Boolean isHtml;
 
 }

@@ -1,29 +1,29 @@
 package org.wildcat.camada.controller;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.TextField;
-import org.apache.commons.lang3.StringUtils;
+import javafx.scene.control.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
 import org.wildcat.camada.config.StageManager;
+import org.wildcat.camada.entity.CamadaUser;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.MailService;
 import org.wildcat.camada.service.MailToDetails;
+import org.wildcat.camada.service.PasswordGenerator;
 import org.wildcat.camada.utils.AlertUtils;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
 import java.net.URL;
+import java.text.MessageFormat;
+import java.util.Optional;
 import java.util.ResourceBundle;
+
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Controller
 public class LoginController implements Initializable {
@@ -57,6 +57,15 @@ public class LoginController implements Initializable {
         this.mailService = mailService;
     }
 
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        this.resources = resources;
+        linkForgottenPassword.visibleProperty().bind(username.textProperty().isEqualTo("").not());
+        // TODO: Remove this!
+        username.setText("admin");
+        password.setText("admin");
+    }
+
     @FXML
     public void login(ActionEvent event) {
         Task<Boolean> authenticateTask = new Task<Boolean>() {
@@ -71,35 +80,71 @@ public class LoginController implements Initializable {
             if (authenticateTask.getValue()) {
                 stageManager.switchScene(FxmlView.DASHBOARD);
             } else {
-                AlertUtils.showError("Nombre de usuario o contraseña incorrectos");
+                AlertUtils.showError("Nombre de usuario o contraseña incorrectos.");
             }
         });
         authenticateTask.setOnFailed(worker -> {
-            AlertUtils.showError("No se puede comprobar la autenticidad del usuario");
+            AlertUtils.showError("No se puede comprobar la autenticidad del usuario.");
         });
         authenticateTask.setOnCancelled(worker -> {
-            AlertUtils.showError("No se puede comprobar la autenticidad del usuario");
+            AlertUtils.showError("No se puede comprobar la autenticidad del usuario.");
         });
-    }
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        this.resources = resources;
-        BooleanProperty booleanProperty = new SimpleBooleanProperty(StringUtils.isNotBlank(username.getText()));
-        //linkForgottenPassword.visibleProperty().bind(booleanProperty);
-        // TODO: Remove this!
-        username.setText("admin");
-        password.setText("admin");
     }
 
     public void onLinkForgottenPasswordClicked(ActionEvent event) {
-        MailToDetails mailDetails = MailToDetails.builder()
-                .to("") // TODO: Add a valid email here
-                .message("<html><head></head><body><h1>Testing HTML mail with attachment</h1><ul><li>one</li><li>two</li></ul></body></html>")
-                .fileName("file.txt")
-                .attachment("ˁ(OᴥO)ˀ")
-                .build();
-        mailService.send(mailDetails);
+        String message = MessageFormat.format("Se mandará un email con la nueva contraseña a la dirección de correo asociada al usuario.", username.getText());
+        ButtonType pressedButton = AlertUtils.showConfirmation(message);
+        if (ButtonType.YES == pressedButton) {
+            sendEmail();
+        }
+    }
+
+    private void sendEmail() {
+        Task<String> fetchEmailTask = new Task<String>() {
+            @Override
+            protected String call() throws Exception {
+                Optional<CamadaUser> camadaUser = camadaUserService.findByName(username.getText());
+                return camadaUser.map(CamadaUser::getEmail).orElse(EMPTY);
+            }
+
+        };
+        progressIndicator.visibleProperty().bind(fetchEmailTask.runningProperty());
+        new Thread(fetchEmailTask).start();
+
+        fetchEmailTask.setOnSucceeded(worker -> {
+            final String email = fetchEmailTask.getValue();
+            Task<Boolean> sendingEmailTask = new Task<Boolean>() {
+                @Override
+                protected Boolean call() throws Exception {
+                    String subject = "Recuperación de contraseña de La Camada";
+                    String message = "Hola.\nAquí tienes una contraseña nueva para La Camada:\n"
+                            + PasswordGenerator.generate()
+                            + "\nSi no has solicitado nada ignora este email, por favor.\nGracias.\n¡Hasta luego!";
+                    MailToDetails mailDetails = MailToDetails.builder().to(email).subject(subject).message(message).isHtml(false).build();
+                    return mailService.send(mailDetails);
+                }
+            };
+            progressIndicator.visibleProperty().bind(sendingEmailTask.runningProperty());
+            new Thread(sendingEmailTask).start();
+            sendingEmailTask.setOnSucceeded(emailWorker -> {
+                Boolean result = sendingEmailTask.getValue();
+                String message = (result) ? "Se ha envíado correctamente el email de recuperación."
+                        : "Ha ocurrido un error al enviar el email de recuperación.";
+                AlertUtils.showInfo(message);
+            });
+            sendingEmailTask.setOnCancelled(emailWorker -> {
+                AlertUtils.showInfo("Ha ocurrido un error al enviar el email de recuperación.");
+            });
+            sendingEmailTask.setOnFailed(emailWorker -> {
+                AlertUtils.showInfo("Ha ocurrido un error al enviar el email de recuperación.");
+            });
+        });
+        fetchEmailTask.setOnFailed(worker -> {
+            AlertUtils.showError("No se ha podido recuperar la información del usuario.");
+        });
+        fetchEmailTask.setOnCancelled(worker -> {
+            AlertUtils.showError("No se ha podido recuperar la información del usuario.");
+        });
     }
 
 }
