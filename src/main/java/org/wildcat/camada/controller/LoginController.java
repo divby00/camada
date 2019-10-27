@@ -107,7 +107,6 @@ public class LoginController implements Initializable {
             @Override
             protected Optional<CamadaUser> call() throws Exception {
                 return camadaUserService.findByName(username.getText());
-                //return camadaUser.map(CamadaUser::getEmail).orElse(EMPTY);
             }
 
         };

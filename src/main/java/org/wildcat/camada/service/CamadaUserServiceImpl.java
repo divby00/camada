@@ -33,13 +33,15 @@ public class CamadaUserServiceImpl implements CamadaUserService {
     public boolean authenticate(String name, String password) {
         Optional<CamadaUser> camadaUser = camadaUserRepository.findByName(name);
         camadaUser.ifPresent(user -> {
+            String temporaryPassword = user.getTmpPassword();
             String userInputPassword = DigestUtils.sha1Hex(password);
             Date tomorrow = user.getTmpPasswordExpiration();
-            Instant instant = tomorrow.toInstant();
-            ZonedDateTime zdt = instant.atZone(ZoneId.systemDefault());
-            LocalDateTime tomorrowLocalDate = zdt.toLocalDateTime();
-            String temporaryPassword = user.getTmpPassword();
-            if (StringUtils.isNotBlank(temporaryPassword)) {
+
+            if (StringUtils.isNotBlank(temporaryPassword) && tomorrow != null) {
+                Instant instant = tomorrow.toInstant();
+                ZonedDateTime zdt = instant.atZone(ZoneId.systemDefault());
+                LocalDateTime tomorrowLocalDate = zdt.toLocalDateTime();
+
                 if (LocalDateTime.now().isBefore(tomorrowLocalDate)) {
                     if (user.getTmpPassword().equals(userInputPassword)) {
                         user.setTmpPassword(null);
@@ -55,6 +57,7 @@ public class CamadaUserServiceImpl implements CamadaUserService {
                     save(user);
                 }
             }
+
             if (user.getPassword().equals(userInputPassword)) {
                 user.setLastConnection(new Date());
                 this.camadaUser = user;
