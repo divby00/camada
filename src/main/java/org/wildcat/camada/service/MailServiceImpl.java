@@ -21,6 +21,9 @@ public class MailServiceImpl implements MailService {
     @Value("${mail.username}")
     private String userName;
 
+    @Value("${mail.password}")
+    private String password;
+
     @Value("${mail.official.name}")
     private String officialName;
 
@@ -43,7 +46,6 @@ public class MailServiceImpl implements MailService {
     public boolean send(MailToDetails mailToDetails) {
         boolean result = false;
         try {
-            String password = ""; // TODO: Add the password
             Properties props = new Properties();
             props.put("mail.smtp.auth", smtpAuth);
             props.put("mail.smtp.starttls.enable", enableTls);
