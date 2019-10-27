@@ -25,6 +25,9 @@ public class CamadaUser implements Serializable {
     @ToString.Exclude
     @Column(name = "password")
     private String password;
+    @ToString.Exclude
+    @Column(name = "tmp_password")
+    private String tmpPassword;
     @Column(name = "first_name")
     private String firstName;
     @Column(name = "last_name")
@@ -45,6 +48,9 @@ public class CamadaUser implements Serializable {
     private Date activationDate;
     @Column(name = "last_connection")
     private Date lastConnection;
+    @ToString.Exclude
+    @Column(name = "tmp_password_expiration")
+    private Date tmpPasswordExpiration;
     @Column(name = "is_active")
     private Boolean isActive;
 

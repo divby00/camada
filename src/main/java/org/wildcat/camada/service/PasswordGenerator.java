@@ -18,8 +18,8 @@ public class PasswordGenerator {
 
         List<String> charCategories = Arrays.asList(LOWER, DIGITS, UPPER, PUNCTUATION);
 
-        int position = 0;
-        String charCategory = "";
+        int position;
+        String charCategory;
         for (int i = 0; i < length / 4; i++) {
             for (int a = 0; a < 4; a++) {
                 charCategory = charCategories.get(a);

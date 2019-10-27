@@ -1,6 +1,7 @@
 package org.wildcat.camada.service;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.wildcat.camada.entity.CamadaUser;
 import org.wildcat.camada.entity.CustomQuery;
@@ -8,6 +9,7 @@ import org.wildcat.camada.enumerations.CamadaQuery;
 import org.wildcat.camada.repository.CamadaUserRepository;
 
 import javax.annotation.Resource;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -32,10 +34,31 @@ public class CamadaUserServiceImpl implements CamadaUserService {
         Optional<CamadaUser> camadaUser = camadaUserRepository.findByName(name);
         camadaUser.ifPresent(user -> {
             String userInputPassword = DigestUtils.sha1Hex(password);
+            Date tomorrow = user.getTmpPasswordExpiration();
+            Instant instant = tomorrow.toInstant();
+            ZonedDateTime zdt = instant.atZone(ZoneId.systemDefault());
+            LocalDateTime tomorrowLocalDate = zdt.toLocalDateTime();
+            String temporaryPassword = user.getTmpPassword();
+            if (StringUtils.isNotBlank(temporaryPassword)) {
+                if (LocalDateTime.now().isBefore(tomorrowLocalDate)) {
+                    if (user.getTmpPassword().equals(userInputPassword)) {
+                        user.setTmpPassword(null);
+                        user.setTmpPasswordExpiration(null);
+                        user.setPassword(temporaryPassword);
+                        user.setLastConnection(new Date());
+                        this.camadaUser = user;
+                        save(user);
+                    }
+                } else {
+                    user.setTmpPassword(null);
+                    user.setTmpPasswordExpiration(null);
+                    save(user);
+                }
+            }
             if (user.getPassword().equals(userInputPassword)) {
-                this.camadaUser = user;
                 user.setLastConnection(new Date());
-                camadaUserRepository.save(user);
+                this.camadaUser = user;
+                save(user);
             }
         });
         return this.camadaUser != null;
