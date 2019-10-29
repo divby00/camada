@@ -72,6 +72,9 @@ public class CamadaUserServiceImpl implements CamadaUserService {
         List<CamadaUser> camadaUsers = new ArrayList<>();
         CamadaQuery query = valueOf(customQuery.getQuery());
         switch (query) {
+            case ACTIVE_AND_INACTIVE_USERS:
+                camadaUsers = (List<CamadaUser>) camadaUserRepository.findAll();
+                break;
             case ACTIVE_USERS:
                 camadaUsers = camadaUserRepository.findAllByIsActiveTrue();
                 break;

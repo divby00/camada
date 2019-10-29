@@ -1,6 +1,7 @@
 package org.wildcat.camada.enumerations;
 
 public enum CamadaQuery {
+    ACTIVE_AND_INACTIVE_USERS("user"),
     ACTIVE_USERS("user"),
     INACTIVE_USERS("user");
 

@@ -146,6 +146,8 @@ commit;
 
 delete from custom_query;
 insert into custom_query (description, query)
+    value ('Todos los usuarios', 'ACTIVE_AND_INACTIVE_USERS');
+insert into custom_query (description, query)
     value ('Usuarios activos', 'ACTIVE_USERS');
 insert into custom_query (description, query)
     value ('Usuarios inactivos', 'INACTIVE_USERS');
