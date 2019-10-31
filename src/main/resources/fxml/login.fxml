@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
@@ -11,7 +17,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="anchorPane" prefHeight="280.0" prefWidth="400.0" stylesheets="@../styles/camada.css" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.wildcat.camada.controller.LoginController">
+<AnchorPane fx:id="anchorPane" prefHeight="280.0" prefWidth="400.0" stylesheets="@../styles/camada.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.wildcat.camada.controller.LoginController">
     <children>
         <Label fx:id="lblLogin" alignment="CENTER" contentDisplay="CENTER" layoutX="12.0" layoutY="37.0" prefHeight="92.0" prefWidth="400.0" text="Introduce tus credenciales" textAlignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <font>
@@ -28,7 +34,7 @@
          </cursor>
       </Button>
       <ProgressIndicator fx:id="progressIndicator" layoutX="176.0" layoutY="115.0" prefHeight="50.0" prefWidth="50.0" visible="false" />
-      <Hyperlink fx:id="linkForgottenPassword" layoutX="110.0" layoutY="239.0" onAction="#onLinkForgottenPasswordClicked" text="He olvidado la contraseña" underline="true" AnchorPane.leftAnchor="110.0" AnchorPane.rightAnchor="110.0" />
+      <Hyperlink fx:id="linkForgottenPassword" alignment="CENTER" layoutX="15.0" layoutY="239.0" onAction="#onLinkForgottenPasswordClicked" text="He olvidado la contraseña" textAlignment="CENTER" underline="true" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" />
     </children>
     <opaqueInsets>
         <Insets />

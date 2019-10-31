@@ -1,6 +1,5 @@
 package org.wildcat.camada.controller;
 
-import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -8,11 +7,12 @@ import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
-import javafx.util.Callback;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -31,11 +31,9 @@ import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.ResourceBundle;
 
 @Controller
 public class UserController extends BaseGridController<CamadaUser> {

@@ -107,13 +107,6 @@ public class NewUserController implements Initializable {
         this.passwordValidator = new PasswordValidator<>(inputPassword);
         this.passwordCheckValidator = new PasswordCheckValidator<>(inputPasswordCheck, inputPassword);
         this.emailValidator = new EmailValidator<>(inputEmail);
-        // TODO: Remove this!!
-        this.inputUserName.setText("Usuario00");
-        this.inputFirstName.setText("Usuario00");
-        this.inputLastName.setText("Usuario00");
-        this.inputEmail.setText("emailme@dot.com");
-        this.inputPassword.setText("Usuario00#");
-        this.inputPasswordCheck.setText("Usuario00#");
     }
 
     @FXML
@@ -211,8 +204,4 @@ public class NewUserController implements Initializable {
         buttonSave.setDisable(!result);
     }
 
-    void setParentData(ObservableList<CamadaUser> tableData, TableView<CamadaUser> table) {
-        this.table = table;
-        this.tableData = tableData;
-    }
 }

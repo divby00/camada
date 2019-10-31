@@ -8,6 +8,6 @@ import java.util.Date;
 
 public interface TableCommonService {
     TableCell<CamadaUser, Date> getDateTableCell(String pattern);
-    void initTextFieldTableCell(TableColumn<CamadaUser, String> column, String columnName, CustomTableColumn param, TableView table);
-    void initCheckBoxTableCell(TableColumn<CamadaUser, Boolean> column, CustomTableColumn param, TableView<CamadaUser> listTable);
+    void initTextFieldTableCell(TableColumn<CamadaUser, String> column, String columnName, CustomTableColumn param, TableView table, ProgressIndicator progressIndicator);
+    void initCheckBoxTableCell(TableColumn<CamadaUser, Boolean> column, CustomTableColumn param, TableView<CamadaUser> listTable, ProgressIndicator progressIndicator);
 }
