@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 @Controller
-public class UserController implements Initializable {
+public class UserController extends BaseGridController<CamadaUser> {
 
     @FXML
     private TableView<CamadaUser> table;
@@ -82,9 +82,6 @@ public class UserController implements Initializable {
     @FXML
     private ProgressIndicator progressIndicator;
 
-    @FXML
-    private ComboBox<CustomQuery> customQueriesComboBox;
-
     @Lazy
     @Autowired
     private StageManager stageManager;
@@ -95,54 +92,60 @@ public class UserController implements Initializable {
     @Resource
     private final CamadaUserService camadaUserService;
 
-    @Resource
-    private final CustomQueryService customQueryService;
-
-    private ObservableList<CamadaUser> tableData;
-
     public UserController(TableCommonService tableCommonService, CamadaUserService camadaUserService,
                           CustomQueryService customQueryService) {
+        super(customQueryService);
         this.tableCommonService = tableCommonService;
         this.camadaUserService = camadaUserService;
-        this.customQueryService = customQueryService;
     }
 
     @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        Task<ObservableList<CustomQuery>> taskCustomQueries = new Task<ObservableList<CustomQuery>>() {
-            @Override
-            protected ObservableList<CustomQuery> call() throws Exception {
-                List<CustomQuery> queries = customQueryService.findAllBySection(FxmlView.USER);
-                return FXCollections.observableList(queries);
-            }
-        };
-        progressIndicator.visibleProperty().bind(taskCustomQueries.runningProperty());
-        new Thread(taskCustomQueries).start();
+    public void initTable() {
+        tableCommonService.initTextFieldTableCell(userName, "name", CustomTableColumn.NAME, table, progressIndicator);
+        tableCommonService.initTextFieldTableCell(firstName, "firstName", CustomTableColumn.FIRST_NAME, table, progressIndicator);
+        tableCommonService.initTextFieldTableCell(lastName, "lastName", CustomTableColumn.LAST_NAME, table, progressIndicator);
+        tableCommonService.initTextFieldTableCell(email, "email", CustomTableColumn.EMAIL, table, progressIndicator);
+        tableCommonService.initCheckBoxTableCell(isAdmin, CustomTableColumn.IS_ADMIN, table, progressIndicator);
+        tableCommonService.initCheckBoxTableCell(isVirtualSponsor, CustomTableColumn.IS_VIRTUAL_SPONSOR, table, progressIndicator);
+        tableCommonService.initCheckBoxTableCell(isPresentialSponsor, CustomTableColumn.IS_PRESENTIAL_SPONSOR, table, progressIndicator);
+        tableCommonService.initCheckBoxTableCell(isPartner, CustomTableColumn.IS_PARTNER, table, progressIndicator);
+        tableCommonService.initCheckBoxTableCell(isVolunteer, CustomTableColumn.IS_VOLUNTEER, table, progressIndicator);
+        activationDate.setCellValueFactory(new PropertyValueFactory<>("activationDate"));
+        lastConnection.setCellValueFactory(new PropertyValueFactory<>("lastConnection"));
+        activationDate.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy"));
+        lastConnection.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy HH:mm:ss"));
+    }
 
-        taskCustomQueries.setOnSucceeded(workerStateEvent -> {
-            ObservableList<CustomQuery> queries = taskCustomQueries.getValue();
-            customQueriesComboBox.setItems(queries);
-            initCustomQueriesCombo();
-
-            Task<ObservableList<CamadaUser>> taskCamadaUsers = getObservableListTask(customQueriesComboBox.getValue());
-            progressIndicator.visibleProperty().bind(taskCamadaUsers.runningProperty());
-            new Thread(taskCamadaUsers).start();
-            taskCamadaUsers.setOnSucceeded(workerState -> {
-                setTableItems(taskCamadaUsers);
+    @Override
+    public void setTableItems(Task<ObservableList<CamadaUser>> task) {
+        tableData = task.getValue();
+        FilteredList<CamadaUser> filteredData = new FilteredList<>(tableData, p -> true);
+        searchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredData.setPredicate(user -> {
+                return newValue == null || newValue.isEmpty()
+                        || StringUtils.containsIgnoreCase(user.getName(), newValue)
+                        || StringUtils.containsIgnoreCase(user.getFirstName(), newValue)
+                        || StringUtils.containsIgnoreCase(user.getLastName(), newValue)
+                        || StringUtils.containsIgnoreCase(user.getEmail(), newValue);
             });
-
-            customQueriesComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
-                Task<ObservableList<CamadaUser>> taskCamadaUsersListener = getObservableListTask(newVal);
-                progressIndicator.visibleProperty().bind(taskCamadaUsersListener.runningProperty());
-                new Thread(taskCamadaUsersListener).start();
-                taskCamadaUsersListener.setOnSucceeded(workerState -> {
-                    setTableItems(taskCamadaUsersListener);
-                    searchTextField.setText(StringUtils.EMPTY);
-                });
-            });
+            SortedList<CamadaUser> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(table.comparatorProperty());
+            table.setItems(FXCollections.observableList(sortedData));
         });
+        SortedList<CamadaUser> sortedData = new SortedList<>(filteredData);
+        sortedData.comparatorProperty().bind(table.comparatorProperty());
+        table.setItems(FXCollections.observableList(filteredData));
+        table.refresh();
+    }
 
-        initTable();
+    @Override
+    List<CamadaUser> findAllByCustomQuery(CustomQuery value) {
+        return camadaUserService.findAllByCustomQuery(value);
+    }
+
+    @Override
+    void delete(CamadaUser item) {
+        camadaUserService.delete(item);
     }
 
     public void onHomeButtonAction(ActionEvent event) {
@@ -195,115 +198,5 @@ public class UserController implements Initializable {
         this.stageManager.switchScene(FxmlView.NEW_USER);
     }
 
-    private void initCustomQueriesCombo() {
-        Callback<ListView<CustomQuery>, ListCell<CustomQuery>> comboCellFactory = getComboCellFactory();
-        customQueriesComboBox.setCellFactory(comboCellFactory);
-        customQueriesComboBox.setButtonCell(comboCellFactory.call(null));
-        customQueriesComboBox.getSelectionModel().selectFirst();
-    }
-
-    private void initTable() {
-        tableCommonService.initTextFieldTableCell(userName, "name", CustomTableColumn.NAME, table);
-        tableCommonService.initTextFieldTableCell(firstName, "firstName", CustomTableColumn.FIRST_NAME, table);
-        tableCommonService.initTextFieldTableCell(lastName, "lastName", CustomTableColumn.LAST_NAME, table);
-        tableCommonService.initTextFieldTableCell(email, "email", CustomTableColumn.EMAIL, table);
-        tableCommonService.initCheckBoxTableCell(isAdmin, CustomTableColumn.IS_ADMIN, table);
-        tableCommonService.initCheckBoxTableCell(isVirtualSponsor, CustomTableColumn.IS_VIRTUAL_SPONSOR, table);
-        tableCommonService.initCheckBoxTableCell(isPresentialSponsor, CustomTableColumn.IS_PRESENTIAL_SPONSOR, table);
-        tableCommonService.initCheckBoxTableCell(isPartner, CustomTableColumn.IS_PARTNER, table);
-        tableCommonService.initCheckBoxTableCell(isVolunteer, CustomTableColumn.IS_VOLUNTEER, table);
-        activationDate.setCellValueFactory(new PropertyValueFactory<>("activationDate"));
-        lastConnection.setCellValueFactory(new PropertyValueFactory<>("lastConnection"));
-        activationDate.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy"));
-        lastConnection.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy HH:mm:ss"));
-        addContextMenu();
-    }
-
-    private Callback<ListView<CustomQuery>, ListCell<CustomQuery>> getComboCellFactory() {
-        return new Callback<ListView<CustomQuery>, ListCell<CustomQuery>>() {
-            @Override
-            public ListCell<CustomQuery> call(ListView<CustomQuery> l) {
-                return new ListCell<CustomQuery>() {
-                    @Override
-                    protected void updateItem(CustomQuery item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (item == null || empty) {
-                            setGraphic(null);
-                        } else {
-                            setText(item.getDescription());
-                        }
-                    }
-                };
-            }
-        };
-    }
-
-    private void setTableItems(Task<ObservableList<CamadaUser>> task) {
-        tableData = task.getValue();
-        FilteredList<CamadaUser> filteredData = new FilteredList<>(tableData, p -> true);
-        searchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
-            filteredData.setPredicate(user -> {
-                return newValue == null || newValue.isEmpty()
-                        || StringUtils.containsIgnoreCase(user.getName(), newValue)
-                        || StringUtils.containsIgnoreCase(user.getFirstName(), newValue)
-                        || StringUtils.containsIgnoreCase(user.getLastName(), newValue)
-                        || StringUtils.containsIgnoreCase(user.getEmail(), newValue);
-            });
-            SortedList<CamadaUser> sortedData = new SortedList<>(filteredData);
-            sortedData.comparatorProperty().bind(table.comparatorProperty());
-            table.setItems(FXCollections.observableList(sortedData));
-        });
-        SortedList<CamadaUser> sortedData = new SortedList<>(filteredData);
-        sortedData.comparatorProperty().bind(table.comparatorProperty());
-        table.setItems(FXCollections.observableList(filteredData));
-    }
-
-    private Task<ObservableList<CamadaUser>> getObservableListTask(CustomQuery value) {
-        return new CamadaUserTask<ObservableList<CamadaUser>>(value) {
-            @Override
-            protected ObservableList<CamadaUser> call() throws Exception {
-                List<CamadaUser> allByCustomQuery = camadaUserService.findAllByCustomQuery(value);
-                return FXCollections.observableList(allByCustomQuery);
-            }
-        };
-    }
-
-    private void addContextMenu() {
-        table.setRowFactory(tableView -> {
-            final TableRow<CamadaUser> row = new TableRow<CamadaUser>() {
-                @Override
-                protected void updateItem(CamadaUser user, boolean empty) {
-                    super.updateItem(user, empty);
-                }
-            };
-
-            // Add context menu to the row
-            final ContextMenu rowMenu = new ContextMenu();
-            MenuItem removeItem = new MenuItem("Borrar usuario");
-            removeItem.setOnAction(event -> {
-                ButtonType buttonType = AlertUtils.showConfirmation("¿Quieres borrar el usuario?");
-                if (buttonType == ButtonType.YES) {
-                    CamadaUser user = row.getItem();
-                    camadaUserService.delete(user);
-                    tableData.remove(user);
-                    table.refresh();
-                }
-            });
-            rowMenu.getItems().addAll(removeItem);
-
-            // only display context menu for non-null items:
-            row.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(row.itemProperty()))
-                    .then(rowMenu)
-                    .otherwise((ContextMenu) null));
-            return row;
-        });
-    }
-
-    abstract static class CamadaUserTask<V> extends Task<V> {
-        CustomQuery customQuery;
-        CamadaUserTask(CustomQuery customQuery) {
-            this.customQuery = customQuery;
-        }
-    }
 
 }

@@ -1,11 +1,13 @@
 package org.wildcat.camada.controller;
 
-import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -76,8 +78,6 @@ public class NewUserController implements Initializable {
     private StageManager stageManager;
 
     private ResourceBundle resources;
-    private TableView<CamadaUser> table;
-    private ObservableList<CamadaUser> tableData;
     private TextFieldValidator<TextField> userNameValidator;
     private TextFieldValidator<TextField> firstNameValidator;
     private TextFieldValidator<TextField> lastNameValidator;
