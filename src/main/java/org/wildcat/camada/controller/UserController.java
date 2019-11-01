@@ -91,7 +91,7 @@ public class UserController extends BaseGridController<CamadaUser> {
     private final CamadaUserService camadaUserService;
 
     public UserController(TableCommonService tableCommonService, CamadaUserService camadaUserService,
-                          CustomQueryService customQueryService) {
+            CustomQueryService customQueryService) {
         super(customQueryService);
         this.tableCommonService = tableCommonService;
         this.camadaUserService = camadaUserService;
@@ -129,6 +129,7 @@ public class UserController extends BaseGridController<CamadaUser> {
             SortedList<CamadaUser> sortedData = new SortedList<>(filteredData);
             sortedData.comparatorProperty().bind(table.comparatorProperty());
             table.setItems(FXCollections.observableList(sortedData));
+            table.refresh();
         });
         SortedList<CamadaUser> sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(table.comparatorProperty());
@@ -153,27 +154,25 @@ public class UserController extends BaseGridController<CamadaUser> {
     public void onExportCsvButtonAction(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Guardar fichero CSV");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV (*.csv)", "*.csv"));
+        fileChooser.setInitialFileName("*.csv");
         File file = fileChooser.showSaveDialog(this.stageManager.getPrimaryStage());
         if (file != null) {
-            ObservableList<CamadaUser> items = table.getItems();
-            String[] csvHeader = {
-                    "id", "nombreUsuario", "nombre", "apellido", "email", "administrador",
-                    "padrinoVirtual", "padrinoPresencial", "socio", "voluntario", "fechaActivacion",
-                    "ultimaConexion", "activo"
-            };
-            CsvUtils.export(items, csvHeader, file.getAbsolutePath());
+            CsvUtils.export(table, file.getAbsolutePath());
         }
     }
 
     public void onExportPdfButtonAction(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Guardar fichero CSV");
+        fileChooser.setTitle("Guardar fichero PDF");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF (*.pdf)", "*.pdf"));
+        fileChooser.setInitialFileName("*.pdf");
         File file = fileChooser.showSaveDialog(this.stageManager.getPrimaryStage());
         if (file != null) {
             ObservableList<CamadaUser> items = table.getItems();
             Task<Boolean> pdfTask = new Task<Boolean>() {
                 @Override
-                protected Boolean call() throws Exception {
+                protected Boolean call() {
                     return PdfUtils.export(items, file.getAbsolutePath());
                 }
             };
@@ -195,6 +194,5 @@ public class UserController extends BaseGridController<CamadaUser> {
     public void onNewButtonAction(ActionEvent event) {
         this.stageManager.switchScene(FxmlView.NEW_USER);
     }
-
 
 }

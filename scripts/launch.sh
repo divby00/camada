@@ -1,0 +1,1 @@
+java --module-path /usr/share/openjfx/lib --add-modules=javafx.controls,javafx.fxml,javafx.base,javafx.media,javafx.web,javafx.swing -jar './camada-0.0.1-SNAPSHOT.jar'
