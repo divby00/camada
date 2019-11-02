@@ -143,13 +143,13 @@ public class TableCommonServiceImpl implements TableCommonService {
         progressIndicator.visibleProperty().bind(updateCheckTask.runningProperty());
         checkBox.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
             if (validate(checkBox, event)) {
-                updateCheckBox(updateCheckTask);
+                updateCheckBox(updateCheckTask, progressIndicator);
             }
         });
         checkBox.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (event.getCode() == KeyCode.SPACE) {
                 if (validate(checkBox, event)) {
-                    updateCheckBox(updateCheckTask);
+                    updateCheckBox(updateCheckTask, progressIndicator);
                 }
             }
         });
@@ -159,7 +159,8 @@ public class TableCommonServiceImpl implements TableCommonService {
         return tableCell;
     }
 
-    private void updateCheckBox(Task<Boolean> updateCheckTask) {
+    private void updateCheckBox(Task<Boolean> updateCheckTask, ProgressIndicator progressIndicator) {
+        progressIndicator.visibleProperty().bind(updateCheckTask.runningProperty());
         new Thread(updateCheckTask).start();
         updateCheckTask.setOnSucceeded(worker -> {
             if (updateCheckTask.getValue()) {

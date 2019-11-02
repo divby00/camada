@@ -1,11 +1,13 @@
 package org.wildcat.camada.controller;
 
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.entity.CamadaUser;
 import org.wildcat.camada.service.CamadaUserService;
+import org.wildcat.camada.utils.AlertUtils;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
@@ -63,6 +66,12 @@ public class HomeController implements Initializable {
     @FXML
     private Hyperlink linkOpenBrowser;
 
+    @FXML
+    private ProgressIndicator progressIndicator;
+
+    @FXML
+    private VBox contentVbox;
+
     @Lazy
     @Autowired
     private StageManager stageManager;
@@ -78,37 +87,57 @@ public class HomeController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         String greetingMessage = resources.getString("home.greeting");
         String defaultGreetingMessage = resources.getString("home.greeting.default");
-        Long id = get(() -> camadaUserService.getUser().getId(), -1L);
-        Optional<CamadaUser> user = camadaUserService.findById(id);
-        String firstName = user.map(CamadaUser::getFirstName).orElse("");
-        if (StringUtils.isNotBlank(firstName)) {
-            greeting.setText(MessageFormat.format(greetingMessage, get(() -> firstName, defaultGreetingMessage)));
-        } else {
-            greeting.setText("");
-        }
-        boolean showAdmin = user.map(CamadaUser::getIsAdmin).orElse(false);
-        boolean showSponsorContainer = user.map(u -> u.getIsPresentialSponsor() || u.getIsVirtualSponsor()).orElse(false);
-        boolean showPartnerContainer = user.map(CamadaUser::getIsPartner).orElse(false);
-        boolean showVolunteerContainer = user.map(CamadaUser::getIsVolunteer).orElse(false);
-        actionContainer.getChildren().clear();
-        if (showAdmin) {
-            actionContainer.getChildren().add(userContainer);
-        }
-        if (showPartnerContainer) {
-            actionContainer.getChildren().add(partnerContainer);
-        }
-        if (showSponsorContainer) {
-            actionContainer.getChildren().add(sponsorContainer);
-        }
-        if (showVolunteerContainer) {
-            actionContainer.getChildren().add(volunteerContainer);
-        }
-        if (actionContainer.getChildren().size() < 1) {
-            whatToDo.setText(resources.getString("home.nopermission"));
-        }
+        final Long id = get(() -> camadaUserService.getUser().getId(), -1L);
+        Task<Optional<CamadaUser>> findUserTask = new Task<Optional<CamadaUser>>() {
+            @Override
+            protected Optional<CamadaUser> call() {
+                return camadaUserService.findById(id);
+            }
+        };
+        progressIndicator.visibleProperty().bind(findUserTask.runningProperty());
+        new Thread(findUserTask).start();
+        findUserTask.setOnSucceeded(worker -> {
+            Optional<CamadaUser> user = findUserTask.getValue();
+            String firstName = user.map(CamadaUser::getFirstName).orElse("");
+            if (StringUtils.isNotBlank(firstName)) {
+                greeting.setText(MessageFormat.format(greetingMessage, get(() -> firstName, defaultGreetingMessage)));
+            } else {
+                greeting.setText("");
+            }
+            boolean showAdmin = user.map(CamadaUser::getIsAdmin).orElse(false);
+            boolean showSponsorContainer = user.map(u -> u.getIsPresentialSponsor() || u.getIsVirtualSponsor()).orElse(false);
+            boolean showPartnerContainer = user.map(CamadaUser::getIsPartner).orElse(false);
+            boolean showVolunteerContainer = user.map(CamadaUser::getIsVolunteer).orElse(false);
+            actionContainer.getChildren().clear();
+            if (showAdmin) {
+                actionContainer.getChildren().add(userContainer);
+            }
+            if (showPartnerContainer) {
+                actionContainer.getChildren().add(partnerContainer);
+            }
+            if (showSponsorContainer) {
+                actionContainer.getChildren().add(sponsorContainer);
+            }
+            if (showVolunteerContainer) {
+                actionContainer.getChildren().add(volunteerContainer);
+            }
+            if (actionContainer.getChildren().size() < 1) {
+                whatToDo.setText(resources.getString("home.nopermission"));
+            }
+            contentVbox.setVisible(true);
+        });
+        findUserTask.setOnFailed(worker -> {
+            AlertUtils.showError("No se ha podido recuperar la información del usuario.");
+            contentVbox.setVisible(false);
+        });
+        findUserTask.setOnCancelled(worker -> {
+            AlertUtils.showError("No se ha podido recuperar la información del usuario.");
+            contentVbox.setVisible(false);
+        });
     }
 
-    public void managementButtonClicked(ActionEvent event) {
+    @FXML
+    public void onManagementButtonAction(ActionEvent event) {
         Button source = (Button) event.getSource();
         String id = source.getParent().getId();
         FxmlView fxmlView;
@@ -133,7 +162,7 @@ public class HomeController implements Initializable {
     }
 
     @FXML
-    public void onLinkOpenBrowserClicked(ActionEvent event) {
+    public void onLinkOpenBrowserAction(ActionEvent event) {
         if (Desktop.isDesktopSupported()) {
             try {
                 Desktop.getDesktop().browse(new URL(linkOpenBrowser.getText()).toURI());

@@ -43,6 +43,9 @@ public class LoginController implements Initializable {
     @FXML
     private Hyperlink linkForgottenPassword;
 
+    @FXML
+    private Button btnLogin;
+
     @Lazy
     @Autowired
     private StageManager stageManager;
@@ -64,14 +67,17 @@ public class LoginController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         this.resources = resources;
         this.camadaUserService.setUser(null);
-        linkForgottenPassword.visibleProperty().bind(username.textProperty().isEqualTo("").not());
+        linkForgottenPassword.disableProperty().bind(username.textProperty().isEmpty());
+        btnLogin.disableProperty().bind(username.textProperty().isEmpty().or(password.textProperty().isEmpty()));
+
         // TODO: Remove this!
         username.setText("admin");
-        password.setText("admin");
+        password.setText("a7U#y6I$k7E$");
     }
 
     @FXML
-    public void login(ActionEvent event) {
+    public void onBtnLoginAction(ActionEvent event) {
+        if (btnLogin.isDisabled()) return;
         Task<Boolean> authenticateTask = new Task<Boolean>() {
             @Override
             protected Boolean call() throws Exception {
@@ -95,7 +101,8 @@ public class LoginController implements Initializable {
         });
     }
 
-    public void onLinkForgottenPasswordClicked(ActionEvent event) {
+    @FXML
+    public void onLinkForgottenPasswordAction(ActionEvent event) {
         String message = MessageFormat.format("Se mandará un email con la nueva contraseña a la dirección de correo asociada al usuario.", username.getText());
         ButtonType pressedButton = AlertUtils.showConfirmation(message);
         if (ButtonType.YES == pressedButton) {
