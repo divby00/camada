@@ -4,27 +4,42 @@ import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.entity.CustomQuery;
 import org.wildcat.camada.service.CustomQueryService;
 import org.wildcat.camada.utils.AlertUtils;
+import org.wildcat.camada.utils.CsvUtils;
+import org.wildcat.camada.utils.PdfUtils;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
+import java.io.File;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.List;
+import java.util.Random;
 import java.util.ResourceBundle;
 
-public abstract class BaseGridController<T> implements Initializable {
+public abstract class BaseController<T> implements Initializable {
 
     ObservableList<T> tableData;
 
     @FXML
     private ProgressIndicator progressIndicator;
+
+    @FXML
+    private ImageView imageBanner;
 
     @FXML
     private ComboBox<CustomQuery> customQueriesComboBox;
@@ -38,9 +53,13 @@ public abstract class BaseGridController<T> implements Initializable {
     @Resource
     private final CustomQueryService customQueryService;
 
+    @Lazy
+    @Autowired
+    protected StageManager stageManager;
+
     private ResourceBundle resources;
 
-    protected BaseGridController(CustomQueryService customQueryService) {
+    protected BaseController(CustomQueryService customQueryService) {
         this.customQueryService = customQueryService;
     }
 
@@ -54,6 +73,11 @@ public abstract class BaseGridController<T> implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+
+        Random random = new Random(System.currentTimeMillis());
+        String name = "back0" + random.nextInt(3) + ".png";
+        imageBanner.setImage(new Image(name, true));
+
         this.resources = resources;
         Task<ObservableList<CustomQuery>> taskCustomQueries = new Task<ObservableList<CustomQuery>>() {
             @Override
@@ -74,7 +98,7 @@ public abstract class BaseGridController<T> implements Initializable {
             progressIndicator.visibleProperty().bind(taskTableItems.runningProperty());
             new Thread(taskTableItems).start();
             taskTableItems.setOnSucceeded(workerState -> {
-                //tableData = taskTableItems.getValue();
+                tableData = taskTableItems.getValue();
                 setTableItems(taskTableItems);
             });
             taskTableItems.setOnCancelled(workerState -> {
@@ -89,7 +113,7 @@ public abstract class BaseGridController<T> implements Initializable {
                 progressIndicator.visibleProperty().bind(taskListListener.runningProperty());
                 new Thread(taskListListener).start();
                 taskListListener.setOnSucceeded(workerState -> {
-                    //tableData = taskTableItems.getValue();
+                    tableData = taskListListener.getValue();
                     setTableItems(taskListListener);
                     searchTextField.setText(StringUtils.EMPTY);
                 });
@@ -109,6 +133,50 @@ public abstract class BaseGridController<T> implements Initializable {
         });
         initTable();
         addContextMenu();
+    }
+
+    public void onHomeButtonAction(ActionEvent event) {
+        stageManager.switchScene(FxmlView.HOME);
+    }
+
+    public void onExportCsvButtonAction(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Guardar fichero CSV");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV (*.csv)", "*.csv"));
+        fileChooser.setInitialFileName("*.csv");
+        File file = fileChooser.showSaveDialog(stageManager.getPrimaryStage());
+        if (file != null) {
+            CsvUtils.export(table, file.getAbsolutePath());
+        }
+    }
+
+    public void onExportPdfButtonAction(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Guardar fichero PDF");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF (*.pdf)", "*.pdf"));
+        fileChooser.setInitialFileName("*.pdf");
+        File file = fileChooser.showSaveDialog(this.stageManager.getPrimaryStage());
+        if (file != null) {
+            ObservableList items = table.getItems();
+            Task<Boolean> pdfTask = new Task<Boolean>() {
+                @Override
+                protected Boolean call() {
+                    return PdfUtils.export(items, file.getAbsolutePath());
+                }
+            };
+            progressIndicator.visibleProperty().bind(pdfTask.runningProperty());
+            new Thread(pdfTask).start();
+            pdfTask.setOnSucceeded(workerState -> {
+                if (pdfTask.getValue()) {
+                    AlertUtils.showInfo(MessageFormat.format("El fichero {0} se ha guardado correctamente.", file.getName()));
+                } else {
+                    AlertUtils.showError(MessageFormat.format("Ha habido un problema al guardar el fichero {0}.", file.getName()));
+                }
+            });
+            pdfTask.setOnFailed(workerState -> {
+                AlertUtils.showError(MessageFormat.format("Ha habido un problema al guardar el fichero {0}.", file.getName()));
+            });
+        }
     }
 
     private void initCustomQueriesCombo(ComboBox<CustomQuery> customQueriesComboBox) {

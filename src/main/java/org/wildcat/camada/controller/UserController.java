@@ -12,31 +12,22 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.stage.FileChooser;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
-import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.entity.CamadaUser;
 import org.wildcat.camada.entity.CustomQuery;
 import org.wildcat.camada.enumerations.CustomTableColumn;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.CustomQueryService;
 import org.wildcat.camada.service.TableCommonService;
-import org.wildcat.camada.utils.AlertUtils;
-import org.wildcat.camada.utils.CsvUtils;
-import org.wildcat.camada.utils.PdfUtils;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
-import java.io.File;
-import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
 
 @Controller
-public class UserController extends BaseGridController<CamadaUser> {
+public class UserController extends BaseController<CamadaUser> {
 
     @FXML
     private TableView<CamadaUser> table;
@@ -80,10 +71,6 @@ public class UserController extends BaseGridController<CamadaUser> {
     @FXML
     private ProgressIndicator progressIndicator;
 
-    @Lazy
-    @Autowired
-    private StageManager stageManager;
-
     @Resource
     private final TableCommonService tableCommonService;
 
@@ -91,7 +78,7 @@ public class UserController extends BaseGridController<CamadaUser> {
     private final CamadaUserService camadaUserService;
 
     public UserController(TableCommonService tableCommonService, CamadaUserService camadaUserService,
-            CustomQueryService customQueryService) {
+                          CustomQueryService customQueryService) {
         super(customQueryService);
         this.tableCommonService = tableCommonService;
         this.camadaUserService = camadaUserService;
@@ -116,7 +103,6 @@ public class UserController extends BaseGridController<CamadaUser> {
 
     @Override
     public void setTableItems(Task<ObservableList<CamadaUser>> task) {
-        tableData = task.getValue();
         FilteredList<CamadaUser> filteredData = new FilteredList<>(tableData, p -> true);
         searchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             filteredData.setPredicate(user -> {
@@ -145,50 +131,6 @@ public class UserController extends BaseGridController<CamadaUser> {
     @Override
     void delete(CamadaUser item) {
         camadaUserService.delete(item);
-    }
-
-    public void onHomeButtonAction(ActionEvent event) {
-        stageManager.switchScene(FxmlView.DASHBOARD);
-    }
-
-    public void onExportCsvButtonAction(ActionEvent event) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Guardar fichero CSV");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV (*.csv)", "*.csv"));
-        fileChooser.setInitialFileName("*.csv");
-        File file = fileChooser.showSaveDialog(this.stageManager.getPrimaryStage());
-        if (file != null) {
-            CsvUtils.export(table, file.getAbsolutePath());
-        }
-    }
-
-    public void onExportPdfButtonAction(ActionEvent event) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Guardar fichero PDF");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF (*.pdf)", "*.pdf"));
-        fileChooser.setInitialFileName("*.pdf");
-        File file = fileChooser.showSaveDialog(this.stageManager.getPrimaryStage());
-        if (file != null) {
-            ObservableList<CamadaUser> items = table.getItems();
-            Task<Boolean> pdfTask = new Task<Boolean>() {
-                @Override
-                protected Boolean call() {
-                    return PdfUtils.export(items, file.getAbsolutePath());
-                }
-            };
-            progressIndicator.visibleProperty().bind(pdfTask.runningProperty());
-            new Thread(pdfTask).start();
-            pdfTask.setOnSucceeded(workerState -> {
-                if (pdfTask.getValue()) {
-                    AlertUtils.showInfo(MessageFormat.format("El fichero {0} se ha guardado correctamente.", file.getName()));
-                } else {
-                    AlertUtils.showError(MessageFormat.format("Ha habido un problema al guardar el fichero {0}.", file.getName()));
-                }
-            });
-            pdfTask.setOnFailed(workerState -> {
-                AlertUtils.showError(MessageFormat.format("Ha habido un problema al guardar el fichero {0}.", file.getName()));
-            });
-        }
     }
 
     public void onNewButtonAction(ActionEvent event) {

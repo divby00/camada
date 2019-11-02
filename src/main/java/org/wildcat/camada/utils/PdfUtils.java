@@ -4,7 +4,6 @@ import javafx.collections.ObservableList;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
-import org.wildcat.camada.entity.CamadaUser;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.FileOutputStream;
@@ -17,7 +16,7 @@ public class PdfUtils {
         export(null, "data.pdf");
     }
 
-    public static Boolean export(ObservableList<CamadaUser> items, String fileName) {
+    public static <T> Boolean export(ObservableList<T> items, String fileName) {
         boolean result = false;
         try {
             ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();

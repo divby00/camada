@@ -5,6 +5,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -81,7 +82,7 @@ public class LoginController implements Initializable {
         new Thread(authenticateTask).start();
         authenticateTask.setOnSucceeded(worker -> {
             if (authenticateTask.getValue()) {
-                stageManager.switchScene(FxmlView.DASHBOARD);
+                stageManager.switchScene(FxmlView.HOME);
             } else {
                 AlertUtils.showError("Nombre de usuario o contraseña incorrectos.");
             }

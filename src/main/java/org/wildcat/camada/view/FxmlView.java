@@ -18,15 +18,15 @@ public enum FxmlView {
             return "/fxml/login.fxml";
         }
     },
-    DASHBOARD(true) {
+    HOME(true) {
         @Override
         public String getTitle() {
-            return "La Camada - " + getStringFromResourceBundle("dashboard.title");
+            return "La Camada - " + getStringFromResourceBundle("home.title");
         }
 
         @Override
         public String getFxmlFile() {
-            return "/fxml/dashboard.fxml";
+            return "/fxml/home.fxml";
         }
     },
     USER(true) {
@@ -54,7 +54,7 @@ public enum FxmlView {
     PARTNER(true) {
         @Override
         public String getTitle() {
-            return "La Camada - " + getStringFromResourceBundle("dashboard.title");
+            return "La Camada - " + getStringFromResourceBundle("home.title");
         }
 
         @Override
@@ -65,7 +65,7 @@ public enum FxmlView {
     SPONSOR(true) {
         @Override
         public String getTitle() {
-            return "La Camada - " + getStringFromResourceBundle("dashboard.title");
+            return "La Camada - " + getStringFromResourceBundle("home.title");
         }
 
         @Override
@@ -76,7 +76,7 @@ public enum FxmlView {
     VOLUNTEER(true) {
         @Override
         public String getTitle() {
-            return "La Camada - " + getStringFromResourceBundle("dashboard.title");
+            return "La Camada - " + getStringFromResourceBundle("home.title");
         }
 
         @Override
@@ -87,7 +87,7 @@ public enum FxmlView {
     NOT_FOUND(true) {
         @Override
         public String getTitle() {
-            return "La Camada - " + getStringFromResourceBundle("dashboard.title");
+            return "La Camada - " + getStringFromResourceBundle("home.title");
         }
 
         @Override
