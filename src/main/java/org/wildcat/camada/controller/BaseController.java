@@ -39,6 +39,9 @@ public abstract class BaseController<T> implements Initializable {
     private ProgressIndicator progressIndicator;
 
     @FXML
+    private Button signoffButton;
+
+    @FXML
     private ImageView imageBanner;
 
     @FXML
@@ -133,6 +136,10 @@ public abstract class BaseController<T> implements Initializable {
         });
         initTable();
         addContextMenu();
+    }
+
+    public void onSignoffButtonAction(ActionEvent event) {
+        stageManager.switchScene(FxmlView.LOGIN);
     }
 
     public void onHomeButtonAction(ActionEvent event) {

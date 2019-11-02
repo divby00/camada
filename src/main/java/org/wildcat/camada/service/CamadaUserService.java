@@ -8,10 +8,18 @@ import java.util.Optional;
 
 public interface CamadaUserService extends SavingService {
     boolean authenticate(String user, String password);
+
     CamadaUser getUser();
+
+    void setUser(CamadaUser user);
+
     Optional<CamadaUser> findById(Long id);
+
     Optional<CamadaUser> findByName(String name);
+
     List<CamadaUser> findAllByCustomQuery(CustomQuery customQuery);
+
     CamadaUser save(CamadaUser camadaUser);
+
     void delete(CamadaUser user);
 }

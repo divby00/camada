@@ -9,7 +9,10 @@ import org.wildcat.camada.enumerations.CamadaQuery;
 import org.wildcat.camada.repository.CamadaUserRepository;
 
 import javax.annotation.Resource;
-import java.time.*;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -98,6 +101,11 @@ public class CamadaUserServiceImpl implements CamadaUserService {
     @Override
     public <T> void saveEntity(T camadaUser) {
         save((CamadaUser) camadaUser);
+    }
+
+    @Override
+    public void setUser(CamadaUser user) {
+        this.camadaUser = user;
     }
 
     public CamadaUser getUser() {
