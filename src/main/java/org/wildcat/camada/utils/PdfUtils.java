@@ -1,6 +1,6 @@
 package org.wildcat.camada.utils;
 
-import javafx.collections.ObservableList;
+import javafx.scene.control.TableView;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.core.io.ClassPathResource;
@@ -15,15 +15,16 @@ import org.xhtmlrenderer.pdf.ITextUserAgent;
 import java.io.*;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Slf4j
 public class PdfUtils {
 
     public static void main(String... args) {
-        export(null, "date.pdf");
+        export(null, "Listado de usuarios", "date.pdf");
     }
 
-    public static <T> Boolean export(ObservableList<T> items, String fileName) {
+    public static <T> Boolean export(TableView<T> table, String title, String fileName) {
         boolean result = false;
         try {
             ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
@@ -34,10 +35,12 @@ public class PdfUtils {
 
             TemplateEngine templateEngine = new TemplateEngine();
             templateEngine.setTemplateResolver(templateResolver);
-
             Context context = new Context();
-            context.setVariable("headingTitle", "Listado de usuarios");
-            context.setVariable("headingDate", LocalDateTime.now());
+            context.setVariable("headingTitle", title);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            context.setVariable("headingDate", formatter.format(LocalDateTime.now()));
+            context.setVariable("tableHeaders", ReportUtils.getVisibleColumns(table));
+            context.setVariable("tableContent", ReportUtils.getRecordsMap(table));
 
             String html = templateEngine.process("index", context);
             OutputStream outputStream = new FileOutputStream(fileName);
@@ -92,25 +95,4 @@ public class PdfUtils {
             return is;
         }
     }
-
-    /*
-    class CustomTextUserAgent extends ITextUserAgent {
-        public CustomTextUserAgent(ITextOutputDevice outputDevice) {
-            super(outputDevice);
-        }
-
-        @Override
-        protected InputStream resolveAndOpenStream(String uri) {
-            if (uri.startsWith("file:")) {
-                String path = uri.substring("file:".length());
-
-                InputStream is = getClass().getClassLoader().getResourceAsStream(String.format("reports%s", path));
-                if (is != null) {
-                    return is;
-                }
-            }
-            return super.resolveAndOpenStream(uri);
-        }
-    }
-     */
 }

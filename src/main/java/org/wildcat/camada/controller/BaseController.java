@@ -164,11 +164,10 @@ public abstract class BaseController<T> implements Initializable {
         fileChooser.setInitialFileName("*.pdf");
         File file = fileChooser.showSaveDialog(this.stageManager.getPrimaryStage());
         if (file != null) {
-            ObservableList items = table.getItems();
             Task<Boolean> pdfTask = new Task<Boolean>() {
                 @Override
                 protected Boolean call() {
-                    return PdfUtils.export(items, file.getAbsolutePath());
+                    return PdfUtils.export(table, "Listado de usuarios", file.getAbsolutePath());
                 }
             };
             progressIndicator.visibleProperty().bind(pdfTask.runningProperty());

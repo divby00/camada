@@ -4,6 +4,8 @@ import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TableView;
 
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 class ReportUtils {
@@ -21,5 +23,17 @@ class ReportUtils {
         return table.getVisibleLeafColumns().stream()
                 .map(column -> column.getCellObservableValue(item).getValue())
                 .collect(Collectors.toList());
+    }
+
+    static <T> Map<String, List<?>> getRecordsMap(TableView<T> table) {
+        Map<String, List<?>> data = new TreeMap<>();
+        for (int i = 0; i < table.getItems().size(); ++i) {
+            T item = table.getItems().get(i);
+            List<?> row = table.getVisibleLeafColumns().stream()
+                    .map(column -> column.getCellObservableValue(item).getValue())
+                    .collect(Collectors.toList());
+            data.put(Integer.toString(i), row);
+        }
+        return data;
     }
 }

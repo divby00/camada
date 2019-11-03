@@ -55,20 +55,16 @@ thead {
     border: none;
 }
 
-/*
-.content th {
-    font-weight: bold;
+th {
+    font-size: 1.1em;
     color: white;
     padding: 4px 10px 4px 10px;
-}
- */
-
-div#page-number:before {
-    font-weight: 100;
     text-align: center;
-    position: fixed;
-    left: 0px;
-    right: 0px;
-    bottom: 1em;
-    content: 'Página ' counter(page);
+}
+
+td {
+    font-size: 1.0em;
+    padding: 4px 10px 4px 10px;
+    color: gray;
+    border-bottom: 1px solid #ccc;
 }

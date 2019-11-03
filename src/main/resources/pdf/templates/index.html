@@ -3,11 +3,19 @@
 <head>
     <meta charset="UTF-8"/>
     <link href="../../static/css/camada.css" rel="stylesheet" th:href="@{static/css/camada.css}"/>
+    <style>
+        @page {
+            @bottom-right {
+                font-size: 1.4em;
+                font-family: sans-serif;
+                content: "Página " counter(page) " de " counter(pages);
+            }
+        }
+    </style>
     <title></title>
 </head>
 <body>
     <div th:replace="fragments/header :: header"></div>
     <div th:replace="fragments/content :: content"></div>
-    <div th:replace="fragments/footer :: footer"></div>
 </body>
 </html>
