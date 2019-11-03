@@ -1,0 +1,74 @@
+@page {
+    margin: 1.5cm 1.5cm;
+    size: A4 portrait;
+}
+
+* {
+    margin: 0 auto;
+    font-family: sans-serif;
+    font-size: 1.2em;
+}
+
+.heading {
+    min-height: 150px;
+}
+
+.heading .logo {
+    margin-top: 0.5em;
+    margin-left: 0.5em;
+    float: left;
+    position: absolute;
+}
+
+.heading .title {
+    position: relative;
+    font-weight: 400;
+    font-size: 2em;
+    text-align: center;
+    padding-top: 1.5em;
+    color: #1e70b5;
+}
+
+.heading .date {
+    font-weight: lighter;
+    text-align: center;
+    margin-top: 0.2em;
+    color: gray;
+}
+
+.content {
+    position: absolute;
+    left: 0px;
+    margin-top: 10em;
+    width: 100% !important;
+}
+
+table {
+    border-spacing: 0px;
+    border-collapse: separate;
+    border-bottom: solid 1px #1e70b5;
+    width: 100%;
+}
+
+thead {
+    background-color: #94bfd8;
+    border: none;
+}
+
+/*
+.content th {
+    font-weight: bold;
+    color: white;
+    padding: 4px 10px 4px 10px;
+}
+ */
+
+div#page-number:before {
+    font-weight: 100;
+    text-align: center;
+    position: fixed;
+    left: 0px;
+    right: 0px;
+    bottom: 1em;
+    content: 'Página ' counter(page);
+}

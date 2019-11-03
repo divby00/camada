@@ -1,0 +1,15 @@
+<head>
+    <meta charset="UTF-8"/>
+    <link href="../../static/css/camada.css" rel="stylesheet" th:href="@{static/css/camada.css}" type="text/css"/>
+    <title></title>
+</head>
+
+<header th:fragment="header" xmlns:th="http://www.thymeleaf.org">
+    <div class="heading">
+        <span class="logo">
+            <img src="../../static/images/logo_camada.png" th:src="@{static/images/logo_camada.png}"/>
+        </span>
+        <div class="title">[[${{headingTitle}}]]</div>
+        <div class="date">[[${{headingDate}}]]</div>
+    </div>
+</header>
