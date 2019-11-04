@@ -16,13 +16,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
 import org.wildcat.camada.config.StageManager;
-import org.wildcat.camada.entity.CamadaUser;
+import org.wildcat.camada.persistence.entity.CamadaUser;
 import org.wildcat.camada.service.CamadaUserService;
-import org.wildcat.camada.utils.AlertUtils;
-import org.wildcat.camada.validator.EmailValidator;
-import org.wildcat.camada.validator.PasswordCheckValidator;
-import org.wildcat.camada.validator.PasswordValidator;
-import org.wildcat.camada.validator.TextFieldValidator;
+import org.wildcat.camada.service.utils.AlertUtils;
+import org.wildcat.camada.common.validator.impl.EmailValidatorImpl;
+import org.wildcat.camada.common.validator.impl.PasswordCheckValidatorImpl;
+import org.wildcat.camada.common.validator.impl.PasswordValidatorImpl;
+import org.wildcat.camada.common.validator.impl.TextFieldValidatorImpl;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
@@ -78,12 +78,12 @@ public class NewUserController implements Initializable {
     private StageManager stageManager;
 
     private ResourceBundle resources;
-    private TextFieldValidator<TextField> userNameValidator;
-    private TextFieldValidator<TextField> firstNameValidator;
-    private TextFieldValidator<TextField> lastNameValidator;
-    private PasswordValidator<TextField> passwordValidator;
-    private PasswordCheckValidator<TextField> passwordCheckValidator;
-    private EmailValidator<TextField> emailValidator;
+    private TextFieldValidatorImpl<TextField> userNameValidator;
+    private TextFieldValidatorImpl<TextField> firstNameValidator;
+    private TextFieldValidatorImpl<TextField> lastNameValidator;
+    private PasswordValidatorImpl<TextField> passwordValidator;
+    private PasswordCheckValidatorImpl<TextField> passwordCheckValidator;
+    private EmailValidatorImpl<TextField> emailValidator;
 
     @Resource
     private final CamadaUserService camadaUserService;
@@ -101,12 +101,12 @@ public class NewUserController implements Initializable {
         this.imageFirstName.managedProperty().bind(imageFirstName.visibleProperty());
         this.imageLastName.managedProperty().bind(imageLastName.visibleProperty());
         this.imageEmail.managedProperty().bind(imageEmail.visibleProperty());
-        this.userNameValidator = new TextFieldValidator<>(inputUserName, 4, 20);
-        this.firstNameValidator = new TextFieldValidator<>(inputFirstName, 4, 20);
-        this.lastNameValidator = new TextFieldValidator<>(inputLastName, 4, 20);
-        this.passwordValidator = new PasswordValidator<>(inputPassword);
-        this.passwordCheckValidator = new PasswordCheckValidator<>(inputPasswordCheck, inputPassword);
-        this.emailValidator = new EmailValidator<>(inputEmail);
+        this.userNameValidator = new TextFieldValidatorImpl<>(inputUserName, 4, 20);
+        this.firstNameValidator = new TextFieldValidatorImpl<>(inputFirstName, 4, 20);
+        this.lastNameValidator = new TextFieldValidatorImpl<>(inputLastName, 4, 20);
+        this.passwordValidator = new PasswordValidatorImpl<>(inputPassword);
+        this.passwordCheckValidator = new PasswordCheckValidatorImpl<>(inputPasswordCheck, inputPassword);
+        this.emailValidator = new EmailValidatorImpl<>(inputEmail);
     }
 
     @FXML

@@ -17,9 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
 import org.wildcat.camada.config.StageManager;
-import org.wildcat.camada.entity.CamadaUser;
+import org.wildcat.camada.persistence.entity.CamadaUser;
 import org.wildcat.camada.service.CamadaUserService;
-import org.wildcat.camada.utils.AlertUtils;
+import org.wildcat.camada.service.utils.AlertUtils;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
@@ -31,7 +31,7 @@ import java.text.MessageFormat;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-import static org.wildcat.camada.utils.GetUtils.get;
+import static org.wildcat.camada.service.utils.GetUtils.get;
 
 @Slf4j
 @Controller

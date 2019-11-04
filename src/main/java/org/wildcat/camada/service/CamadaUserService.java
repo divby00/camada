@@ -1,7 +1,7 @@
 package org.wildcat.camada.service;
 
-import org.wildcat.camada.entity.CamadaUser;
-import org.wildcat.camada.entity.CustomQuery;
+import org.wildcat.camada.persistence.entity.CamadaUser;
+import org.wildcat.camada.persistence.entity.CustomQuery;
 
 import java.util.List;
 import java.util.Optional;

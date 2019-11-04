@@ -16,11 +16,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.wildcat.camada.config.StageManager;
-import org.wildcat.camada.entity.CustomQuery;
+import org.wildcat.camada.persistence.entity.CustomQuery;
 import org.wildcat.camada.service.CustomQueryService;
-import org.wildcat.camada.utils.AlertUtils;
-import org.wildcat.camada.utils.CsvUtils;
-import org.wildcat.camada.utils.PdfUtils;
+import org.wildcat.camada.service.utils.AlertUtils;
+import org.wildcat.camada.service.utils.CsvUtils;
+import org.wildcat.camada.service.utils.PdfUtils;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;

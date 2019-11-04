@@ -1,8 +1,8 @@
 package org.wildcat.camada.service;
 
 import javafx.scene.control.*;
-import org.wildcat.camada.enumerations.CustomTableColumn;
-import org.wildcat.camada.entity.CamadaUser;
+import org.wildcat.camada.common.enumerations.CustomTableColumn;
+import org.wildcat.camada.persistence.entity.CamadaUser;
 
 import java.util.Date;
 

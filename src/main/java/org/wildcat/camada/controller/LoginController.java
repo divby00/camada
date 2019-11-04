@@ -10,12 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
 import org.wildcat.camada.config.StageManager;
-import org.wildcat.camada.entity.CamadaUser;
+import org.wildcat.camada.persistence.entity.CamadaUser;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.MailService;
-import org.wildcat.camada.service.MailToDetails;
-import org.wildcat.camada.service.PasswordGenerator;
-import org.wildcat.camada.utils.AlertUtils;
+import org.wildcat.camada.service.pojo.MailToDetails;
+import org.wildcat.camada.service.impl.PasswordGenerator;
+import org.wildcat.camada.service.utils.AlertUtils;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;

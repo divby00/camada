@@ -10,12 +10,9 @@ import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.context.annotation.Scope;
-import org.wildcat.camada.logging.ExceptionWriter;
 
 import javax.sql.DataSource;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ResourceBundle;
 
 @Configuration
@@ -36,17 +33,6 @@ public class AppJavaConfig {
 
     @Autowired
     SpringFXMLLoader springFXMLLoader;
-
-    /**
-     * Useful when dumping stack trace to a string for logging.
-     *
-     * @return ExceptionWriter contains logging utility methods
-     */
-    @Bean
-    @Scope("prototype")
-    public ExceptionWriter exceptionWriter() {
-        return new ExceptionWriter(new StringWriter());
-    }
 
     @Bean
     public ResourceBundle resourceBundle() {
