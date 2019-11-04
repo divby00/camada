@@ -47,7 +47,7 @@
                         </ImageView>
                         <HBox layoutX="503.0" layoutY="31.0" spacing="10.0" AnchorPane.bottomAnchor="40.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="41.0">
                             <children>
-                                <Button fx:id="newButton" alignment="CENTER_RIGHT" contentDisplay="CENTER" layoutX="453.0" layoutY="31.0" mnemonicParsing="false" onAction="#onNewButtonAction" styleClass="primary" text="Crear usuario nuevo" textAlignment="RIGHT" textFill="WHITE" AnchorPane.rightAnchor="687.0">
+                                <Button fx:id="newButton" alignment="CENTER_RIGHT" contentDisplay="CENTER" layoutX="453.0" layoutY="31.0" mnemonicParsing="false" onAction="#onNewButtonAction" styleClass="primary" text="Nuevo usuario" textAlignment="RIGHT" textFill="WHITE" AnchorPane.rightAnchor="687.0">
                                     <font>
                                         <Font size="18.0" />
                                     </font>
@@ -78,7 +78,7 @@
                                         <Font size="18.0" />
                                     </font>
                                     <tooltip>
-                                        <Tooltip text="Exportar el listado a CSV" />
+                                        <Tooltip text="Generar un CSV a partir del listado" />
                                     </tooltip>
                                     <graphic>
                                         <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
@@ -136,7 +136,7 @@
                                         <String fx:value="xs" />
                                     </styleClass>
                                 </ToggleButton>
-                                <ToggleButton disable="true" mnemonicParsing="false" selected="true" text="Usuarios">
+                                <ToggleButton fx:id="signoffButton" mnemonicParsing="false" onAction="#onSignoffButtonAction" text="Desconectar">
                                     <styleClass>
                                         <String fx:value="last" />
                                         <String fx:value="xs" />
@@ -145,25 +145,6 @@
                                         <Insets />
                                     </HBox.margin>
                                 </ToggleButton>
-                        <Button fx:id="signoffButton" mnemonicParsing="false" onAction="#onSignoffButtonAction">
-                           <HBox.margin>
-                              <Insets left="20.0" />
-                           </HBox.margin>
-                           <styleClass>
-                              <String fx:value="button" />
-                              <String fx:value="xs" />
-                           </styleClass>
-                           <graphic>
-                              <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                                 <image>
-                                    <Image url="@../sign-out-alt.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                           <tooltip>
-                              <Tooltip text="Cerrar la sesión" />
-                           </tooltip>
-                        </Button>
                             </children>
                             <padding>
                                 <Insets top="4.0" />

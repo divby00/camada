@@ -43,7 +43,7 @@ public enum FxmlView {
     NEW_USER(false, true) {
         @Override
         public String getTitle() {
-            return getStringFromResourceBundle("user.title");
+            return "Crear un usuario nuevo";
         }
 
         @Override

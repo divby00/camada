@@ -39,9 +39,6 @@ public abstract class BaseController<T> implements Initializable {
     private ProgressIndicator progressIndicator;
 
     @FXML
-    private Button signoffButton;
-
-    @FXML
     private ImageView imageBanner;
 
     @FXML
@@ -138,14 +135,17 @@ public abstract class BaseController<T> implements Initializable {
         addContextMenu();
     }
 
+    @FXML
     public void onSignoffButtonAction(ActionEvent event) {
         stageManager.switchScene(FxmlView.LOGIN);
     }
 
+    @FXML
     public void onHomeButtonAction(ActionEvent event) {
         stageManager.switchScene(FxmlView.HOME);
     }
 
+    @FXML
     public void onExportCsvButtonAction(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Guardar fichero CSV");
@@ -157,6 +157,7 @@ public abstract class BaseController<T> implements Initializable {
         }
     }
 
+    @FXML
     public void onExportPdfButtonAction(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Guardar fichero PDF");
