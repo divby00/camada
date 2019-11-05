@@ -4,13 +4,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Task;
 import javafx.event.Event;
 import javafx.geometry.Pos;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyCode;
@@ -18,12 +12,12 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.wildcat.camada.persistence.entity.CamadaUser;
 import org.wildcat.camada.common.enumerations.CustomTableColumn;
+import org.wildcat.camada.controller.pojo.AppTableColumn;
+import org.wildcat.camada.persistence.entity.CamadaUser;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.TableCommonService;
 import org.wildcat.camada.service.utils.AlertUtils;
-import org.wildcat.camada.common.validator.ValidatorPredicates;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -56,13 +50,13 @@ public class TableCommonServiceImpl implements TableCommonService {
     }
 
     @Override
-    public void initTextFieldTableCell(TableColumn<CamadaUser, String> column, String columnName, CustomTableColumn param, TableView table, ProgressIndicator progressIndicator) {
-        column.setCellValueFactory(new PropertyValueFactory<>(columnName));
-        column.setCellFactory(TextFieldTableCell.forTableColumn());
-        column.setOnEditCommit(event -> {
+    public <T> void initTextFieldTableCell(AppTableColumn<T> appColumn, TableView table, ProgressIndicator progressIndicator) {
+        appColumn.getColumn().setCellValueFactory(new PropertyValueFactory<>(appColumn.getColumnName()));
+        appColumn.getColumn().setCellFactory(TextFieldTableCell.forTableColumn());
+        appColumn.getColumn().setOnEditCommit(event -> {
             String newValue = event.getNewValue();
-            String oldValue = param.getOldValue(event);
-            boolean validates = ValidatorPredicates.isValidTextField.test(newValue, 4, 20);
+            String oldValue = appColumn.getCustomTableColumn().getOldValue(event);
+            boolean validates = appColumn.getValidator().validateString(newValue);
             if (newValue.equals(oldValue) || !validates) {
                 if (!validates) {
                     AlertUtils.showError("El campo es incorrecto.");
@@ -77,7 +71,7 @@ public class TableCommonServiceImpl implements TableCommonService {
                     protected Boolean call() {
                         boolean result = false;
                         try {
-                            param.setNewValue(event, newValue, camadaUserService);
+                            appColumn.getCustomTableColumn().setNewValue(event, newValue, camadaUserService);
                             result = true;
                         } catch (Exception ignored) {
                         }
@@ -101,7 +95,7 @@ public class TableCommonServiceImpl implements TableCommonService {
                     AlertUtils.showError("Ha ocurrido un error al actualizar el campo.");
                 });
             } else {
-                param.setOldValue(event, oldValue);
+                appColumn.getCustomTableColumn().setOldValue(event, oldValue);
                 table.refresh();
             }
         });

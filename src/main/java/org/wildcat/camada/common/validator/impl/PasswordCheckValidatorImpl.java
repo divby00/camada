@@ -4,6 +4,7 @@ import javafx.scene.control.TextField;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.NotImplementedException;
 import org.wildcat.camada.common.validator.Validator;
 import org.wildcat.camada.common.validator.ValidatorPredicates;
 
@@ -22,4 +23,10 @@ public class PasswordCheckValidatorImpl<T extends TextField> implements Validato
     public Boolean validate() {
         return biPredicate.test(textField.getText(), originalPasswordField.getText());
     }
+
+    @Override
+    public Boolean validateString(String text) {
+        throw new NotImplementedException("Not implemented");
+    }
+
 }

@@ -4,6 +4,7 @@ import javafx.scene.control.TextField;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.NotImplementedException;
 import org.wildcat.camada.common.validator.TriPredicate;
 import org.wildcat.camada.common.validator.Validator;
 import org.wildcat.camada.common.validator.ValidatorPredicates;
@@ -21,6 +22,11 @@ public class TextFieldValidatorImpl<T extends TextField> implements Validator {
     @Override
     public Boolean validate() {
         return triPredicate.test(textField.getText(), min, max);
+    }
+
+    @Override
+    public Boolean validateString(String text) {
+        throw new NotImplementedException("Not implemented");
     }
 
 }

@@ -58,7 +58,7 @@
                               <Insets right="10.0" />
                            </HBox.margin>
                                 </Button>
-                                <Button fx:id="importButton" alignment="CENTER_RIGHT" contentDisplay="CENTER" layoutX="607.0" layoutY="31.0" mnemonicParsing="false" styleClass="primary" textAlignment="CENTER" textFill="WHITE" AnchorPane.rightAnchor="490.0">
+                                <Button fx:id="importButton" alignment="CENTER_RIGHT" contentDisplay="CENTER" layoutX="607.0" layoutY="31.0" mnemonicParsing="false" onAction="#onImportButtonAction" styleClass="primary" textAlignment="CENTER" textFill="WHITE" AnchorPane.rightAnchor="490.0">
                                     <font>
                                         <Font size="18.0" />
                                     </font>

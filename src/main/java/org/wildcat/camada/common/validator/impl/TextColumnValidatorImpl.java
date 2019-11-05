@@ -1,31 +1,29 @@
 package org.wildcat.camada.common.validator.impl;
 
-import javafx.scene.control.TextField;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.NotImplementedException;
+import org.wildcat.camada.common.validator.TriPredicate;
 import org.wildcat.camada.common.validator.Validator;
 import org.wildcat.camada.common.validator.ValidatorPredicates;
-
-import java.util.function.Predicate;
 
 @Getter
 @Setter
 @AllArgsConstructor
-public class PasswordValidatorImpl<T extends TextField> implements Validator {
+public class TextColumnValidatorImpl implements Validator {
 
-    private T passwordField;
-    static Predicate<String> predicate = ValidatorPredicates.isValidPassword;
+    private Integer min;
+    private Integer max;
+    private static TriPredicate<String, Integer> triPredicate = ValidatorPredicates.isValidTextField;
 
     @Override
     public Boolean validate() {
-        return predicate.test(passwordField.getText());
+        throw new NotImplementedException("Not implemented");
     }
 
     @Override
     public Boolean validateString(String text) {
-        throw new NotImplementedException("Not implemented");
+        return triPredicate.test(text, min, max);
     }
-
 }

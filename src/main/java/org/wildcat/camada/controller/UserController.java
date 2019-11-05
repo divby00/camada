@@ -12,20 +12,33 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Controller;
+import org.wildcat.camada.common.enumerations.CustomTableColumn;
+import org.wildcat.camada.common.validator.impl.TextColumnValidatorImpl;
+import org.wildcat.camada.controller.pojo.AppTableColumn;
 import org.wildcat.camada.persistence.entity.CamadaUser;
 import org.wildcat.camada.persistence.entity.CustomQuery;
-import org.wildcat.camada.common.enumerations.CustomTableColumn;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.CustomQueryService;
 import org.wildcat.camada.service.TableCommonService;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
+import java.io.File;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 
+@Slf4j
 @Controller
 public class UserController extends BaseController<CamadaUser> {
 
@@ -86,10 +99,15 @@ public class UserController extends BaseController<CamadaUser> {
 
     @Override
     public void initTable() {
-        tableCommonService.initTextFieldTableCell(userName, "name", CustomTableColumn.NAME, table, progressIndicator);
-        tableCommonService.initTextFieldTableCell(firstName, "firstName", CustomTableColumn.FIRST_NAME, table, progressIndicator);
-        tableCommonService.initTextFieldTableCell(lastName, "lastName", CustomTableColumn.LAST_NAME, table, progressIndicator);
-        tableCommonService.initTextFieldTableCell(email, "email", CustomTableColumn.EMAIL, table, progressIndicator);
+        AppTableColumn<CamadaUser> userNameColumn = new AppTableColumn<>(userName, "name", new TextColumnValidatorImpl(1, 2000), CustomTableColumn.NAME);
+        tableCommonService.initTextFieldTableCell(userNameColumn, table, progressIndicator);
+        AppTableColumn<CamadaUser> firstNameColumn = new AppTableColumn<>(firstName, "firstName", new TextColumnValidatorImpl(1, 2000), CustomTableColumn.FIRST_NAME);
+        tableCommonService.initTextFieldTableCell(firstNameColumn, table, progressIndicator);
+        AppTableColumn<CamadaUser> lastNameColumn = new AppTableColumn<>(lastName, "lastName", new TextColumnValidatorImpl(1, 2000), CustomTableColumn.LAST_NAME);
+        tableCommonService.initTextFieldTableCell(lastNameColumn, table, progressIndicator);
+        AppTableColumn<CamadaUser> emailColumn = new AppTableColumn<>(email, "email", new TextColumnValidatorImpl(1, 2000), CustomTableColumn.EMAIL);
+        tableCommonService.initTextFieldTableCell(emailColumn, table, progressIndicator);
+
         tableCommonService.initCheckBoxTableCell(isAdmin, CustomTableColumn.IS_ADMIN, table, progressIndicator);
         tableCommonService.initCheckBoxTableCell(isVirtualSponsor, CustomTableColumn.IS_VIRTUAL_SPONSOR, table, progressIndicator);
         tableCommonService.initCheckBoxTableCell(isPresentialSponsor, CustomTableColumn.IS_PRESENTIAL_SPONSOR, table, progressIndicator);
@@ -133,8 +151,39 @@ public class UserController extends BaseController<CamadaUser> {
         camadaUserService.delete(item);
     }
 
+    @FXML
     public void onNewButtonAction(ActionEvent event) {
         this.stageManager.switchScene(FxmlView.NEW_USER);
+    }
+
+    @FXML
+    public void onImportButtonAction(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Importar fichero CSV");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV (*.csv)", "*.csv"));
+        fileChooser.setInitialFileName("*.csv");
+        File file = fileChooser.showOpenDialog(stageManager.getPrimaryStage());
+        if (file != null) {
+            //CsvUtils.export(table, file.getAbsolutePath());
+            boolean result = validateFile(file);
+        }
+    }
+
+    private boolean validateFile(File file) {
+        boolean result = false;
+        try {
+            Reader reader = Files.newBufferedReader(Paths.get(file.getName()));
+            CSVParser csvParser = CSVParser.parse(reader, CSVFormat.DEFAULT
+                    .withFirstRecordAsHeader()
+                    .withIgnoreHeaderCase()
+                    .withTrim());
+            for (CSVRecord csvRecord : csvParser) {
+            }
+            result = true;
+        } catch (Exception ex) {
+            log.warn(ExceptionUtils.getStackTrace(ex));
+        }
+        return result;
     }
 
 }
