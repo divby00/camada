@@ -56,7 +56,7 @@ public class TableCommonServiceImpl implements TableCommonService {
         appColumn.getColumn().setOnEditCommit(event -> {
             String newValue = event.getNewValue();
             String oldValue = appColumn.getCustomTableColumn().getOldValue(event);
-            boolean validates = appColumn.getValidator().validateString(newValue);
+            boolean validates = appColumn.getValidator().validate(newValue);
             if (newValue.equals(oldValue) || !validates) {
                 if (!validates) {
                     AlertUtils.showError("El campo es incorrecto.");

@@ -21,7 +21,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Controller;
 import org.wildcat.camada.common.enumerations.CustomTableColumn;
-import org.wildcat.camada.common.validator.impl.TextColumnValidatorImpl;
+import org.wildcat.camada.common.validator.impl.EmailValidatorImpl;
+import org.wildcat.camada.common.validator.impl.NewUserValidatorImpl;
+import org.wildcat.camada.common.validator.impl.TextValidatorImpl;
 import org.wildcat.camada.controller.pojo.AppTableColumn;
 import org.wildcat.camada.persistence.entity.CamadaUser;
 import org.wildcat.camada.persistence.entity.CustomQuery;
@@ -99,13 +101,13 @@ public class UserController extends BaseController<CamadaUser> {
 
     @Override
     public void initTable() {
-        AppTableColumn<CamadaUser> userNameColumn = new AppTableColumn<>(userName, "name", new TextColumnValidatorImpl(1, 2000), CustomTableColumn.NAME);
+        AppTableColumn<CamadaUser> userNameColumn = new AppTableColumn<>(userName, "name", new NewUserValidatorImpl(camadaUserService), CustomTableColumn.NAME);
         tableCommonService.initTextFieldTableCell(userNameColumn, table, progressIndicator);
-        AppTableColumn<CamadaUser> firstNameColumn = new AppTableColumn<>(firstName, "firstName", new TextColumnValidatorImpl(1, 2000), CustomTableColumn.FIRST_NAME);
+        AppTableColumn<CamadaUser> firstNameColumn = new AppTableColumn<>(firstName, "firstName", new TextValidatorImpl(3, 20), CustomTableColumn.FIRST_NAME);
         tableCommonService.initTextFieldTableCell(firstNameColumn, table, progressIndicator);
-        AppTableColumn<CamadaUser> lastNameColumn = new AppTableColumn<>(lastName, "lastName", new TextColumnValidatorImpl(1, 2000), CustomTableColumn.LAST_NAME);
+        AppTableColumn<CamadaUser> lastNameColumn = new AppTableColumn<>(lastName, "lastName", new TextValidatorImpl(3, 20), CustomTableColumn.LAST_NAME);
         tableCommonService.initTextFieldTableCell(lastNameColumn, table, progressIndicator);
-        AppTableColumn<CamadaUser> emailColumn = new AppTableColumn<>(email, "email", new TextColumnValidatorImpl(1, 2000), CustomTableColumn.EMAIL);
+        AppTableColumn<CamadaUser> emailColumn = new AppTableColumn<>(email, "email", new EmailValidatorImpl(), CustomTableColumn.EMAIL);
         tableCommonService.initTextFieldTableCell(emailColumn, table, progressIndicator);
 
         tableCommonService.initCheckBoxTableCell(isAdmin, CustomTableColumn.IS_ADMIN, table, progressIndicator);
@@ -113,6 +115,7 @@ public class UserController extends BaseController<CamadaUser> {
         tableCommonService.initCheckBoxTableCell(isPresentialSponsor, CustomTableColumn.IS_PRESENTIAL_SPONSOR, table, progressIndicator);
         tableCommonService.initCheckBoxTableCell(isPartner, CustomTableColumn.IS_PARTNER, table, progressIndicator);
         tableCommonService.initCheckBoxTableCell(isVolunteer, CustomTableColumn.IS_VOLUNTEER, table, progressIndicator);
+
         activationDate.setCellValueFactory(new PropertyValueFactory<>("activationDate"));
         lastConnection.setCellValueFactory(new PropertyValueFactory<>("lastConnection"));
         activationDate.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy"));

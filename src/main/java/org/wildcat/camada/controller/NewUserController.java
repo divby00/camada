@@ -22,7 +22,7 @@ import org.wildcat.camada.service.utils.AlertUtils;
 import org.wildcat.camada.common.validator.impl.EmailValidatorImpl;
 import org.wildcat.camada.common.validator.impl.PasswordCheckValidatorImpl;
 import org.wildcat.camada.common.validator.impl.PasswordValidatorImpl;
-import org.wildcat.camada.common.validator.impl.TextFieldValidatorImpl;
+import org.wildcat.camada.common.validator.impl.TextValidatorImpl;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
@@ -78,12 +78,12 @@ public class NewUserController implements Initializable {
     private StageManager stageManager;
 
     private ResourceBundle resources;
-    private TextFieldValidatorImpl<TextField> userNameValidator;
-    private TextFieldValidatorImpl<TextField> firstNameValidator;
-    private TextFieldValidatorImpl<TextField> lastNameValidator;
-    private PasswordValidatorImpl<TextField> passwordValidator;
+    private TextValidatorImpl userNameValidator;
+    private TextValidatorImpl firstNameValidator;
+    private TextValidatorImpl lastNameValidator;
+    private PasswordValidatorImpl passwordValidator;
     private PasswordCheckValidatorImpl<TextField> passwordCheckValidator;
-    private EmailValidatorImpl<TextField> emailValidator;
+    private EmailValidatorImpl emailValidator;
 
     @Resource
     private final CamadaUserService camadaUserService;
@@ -101,12 +101,12 @@ public class NewUserController implements Initializable {
         this.imageFirstName.managedProperty().bind(imageFirstName.visibleProperty());
         this.imageLastName.managedProperty().bind(imageLastName.visibleProperty());
         this.imageEmail.managedProperty().bind(imageEmail.visibleProperty());
-        this.userNameValidator = new TextFieldValidatorImpl<>(inputUserName, 4, 20);
-        this.firstNameValidator = new TextFieldValidatorImpl<>(inputFirstName, 4, 20);
-        this.lastNameValidator = new TextFieldValidatorImpl<>(inputLastName, 4, 20);
-        this.passwordValidator = new PasswordValidatorImpl<>(inputPassword);
-        this.passwordCheckValidator = new PasswordCheckValidatorImpl<>(inputPasswordCheck, inputPassword);
-        this.emailValidator = new EmailValidatorImpl<>(inputEmail);
+        this.userNameValidator = new TextValidatorImpl(3, 20);
+        this.firstNameValidator = new TextValidatorImpl(3, 20);
+        this.lastNameValidator = new TextValidatorImpl(3, 20);
+        this.passwordValidator = new PasswordValidatorImpl();
+        this.passwordCheckValidator = new PasswordCheckValidatorImpl<>(inputPassword);
+        this.emailValidator = new EmailValidatorImpl();
     }
 
     @FXML
@@ -176,22 +176,22 @@ public class NewUserController implements Initializable {
 
     @FXML
     public void validate(KeyEvent event) {
-        boolean isValidUserName = userNameValidator.validate();
+        boolean isValidUserName = userNameValidator.validate(inputUserName.getText());
         imageUserName.setVisible(!isValidUserName);
 
-        boolean isValidPassword = passwordValidator.validate();
+        boolean isValidPassword = passwordValidator.validate(inputPassword.getText());
         imagePassword.setVisible(!isValidPassword);
 
-        boolean isValidPasswordCheck = passwordCheckValidator.validate();
+        boolean isValidPasswordCheck = passwordCheckValidator.validate(inputPasswordCheck.getText());
         imagePasswordCheck.setVisible(!isValidPasswordCheck);
 
-        boolean isValidFirstName = firstNameValidator.validate();
+        boolean isValidFirstName = firstNameValidator.validate(inputFirstName.getText());
         imageFirstName.setVisible(!isValidFirstName);
 
-        boolean isValidLastName = lastNameValidator.validate();
+        boolean isValidLastName = lastNameValidator.validate(inputLastName.getText());
         imageLastName.setVisible(!isValidLastName);
 
-        boolean isValidEmail = emailValidator.validate();
+        boolean isValidEmail = emailValidator.validate(inputEmail.getText());
         imageEmail.setVisible(!isValidEmail);
 
         boolean fieldsAreNotEmpty = StringUtils.isNotBlank(inputUserName.getText()) && StringUtils.isNotBlank(inputFirstName.getText())
