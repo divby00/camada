@@ -19,8 +19,10 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Controller;
 import org.wildcat.camada.common.enumerations.CustomTableColumn;
+import org.wildcat.camada.common.validator.Validator;
 import org.wildcat.camada.common.validator.impl.EmailValidatorImpl;
 import org.wildcat.camada.common.validator.impl.NewUserValidatorImpl;
 import org.wildcat.camada.common.validator.impl.TextValidatorImpl;
@@ -30,6 +32,8 @@ import org.wildcat.camada.persistence.entity.CustomQuery;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.CustomQueryService;
 import org.wildcat.camada.service.TableCommonService;
+import org.wildcat.camada.service.utils.AlertUtils;
+import org.wildcat.camada.service.utils.CsvFileDefinitions;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
@@ -37,6 +41,7 @@ import java.io.File;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -167,26 +172,45 @@ public class UserController extends BaseController<CamadaUser> {
         fileChooser.setInitialFileName("*.csv");
         File file = fileChooser.showOpenDialog(stageManager.getPrimaryStage());
         if (file != null) {
-            //CsvUtils.export(table, file.getAbsolutePath());
-            boolean result = validateFile(file);
+            Pair<Boolean, List<String>> result = validateFile(file, CsvFileDefinitions.USERS);
+            if (!result.getKey()) {
+                String errorMessage = String.join("\n", result.getValue());
+                AlertUtils.showError(errorMessage);
+            } else {
+                // TODO: CSV Passes validation
+            }
         }
     }
 
-    private boolean validateFile(File file) {
+    private Pair<Boolean, List<String>> validateFile(File file, CsvFileDefinitions csvFileDefinitions) {
         boolean result = false;
+        List<String> errors = new ArrayList<>();
         try {
             Reader reader = Files.newBufferedReader(Paths.get(file.getName()));
             CSVParser csvParser = CSVParser.parse(reader, CSVFormat.DEFAULT
                     .withFirstRecordAsHeader()
                     .withIgnoreHeaderCase()
                     .withTrim());
+            List<String> fields = csvFileDefinitions.getFields();
+            List<Validator> validators = csvFileDefinitions.getValidators();
+            int recordNumber = 1;
             for (CSVRecord csvRecord : csvParser) {
+                for (int i = 0; i < fields.size(); ++i) {
+                    String field = csvRecord.get(i);
+                    Validator validator = validators.get(i);
+                    if (!validator.validate(field)) {
+                        errors.add("El campo " + field + " en la posición " + recordNumber + ", " + i + " es incorrecto.");
+                    }
+                }
+                recordNumber++;
             }
-            result = true;
+            csvParser.close();
+            reader.close();
+            result = errors.size() == 0;
         } catch (Exception ex) {
             log.warn(ExceptionUtils.getStackTrace(ex));
         }
-        return result;
+        return Pair.of(result, errors);
     }
 
 }
