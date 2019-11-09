@@ -30,5 +30,16 @@ public interface ValidatorPredicates {
         }
         return result;
     };
+    Predicate<String> isValidDateOrEmpty = (text) -> {
+        if (StringUtils.isBlank(text)) return true;
+        boolean result = false;
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
+            LocalDateTime.parse(text, formatter);
+            result = true;
+        } catch (DateTimeParseException ignored) {
+        }
+        return result;
+    };
 
 }

@@ -7,7 +7,7 @@ import java.util.function.Predicate;
 
 public class DateValidatorImpl implements Validator {
 
-    private final static Predicate<String> predicate = ValidatorPredicates.isValidDate;
+    private final static Predicate<String> predicate = ValidatorPredicates.isValidDateOrEmpty;
 
     @Override
     public Boolean validate(String text) {

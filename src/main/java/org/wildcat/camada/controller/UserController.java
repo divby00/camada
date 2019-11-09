@@ -14,15 +14,14 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Controller;
 import org.wildcat.camada.common.enumerations.CustomTableColumn;
-import org.wildcat.camada.common.validator.Validator;
 import org.wildcat.camada.common.validator.impl.EmailValidatorImpl;
 import org.wildcat.camada.common.validator.impl.NewUserValidatorImpl;
 import org.wildcat.camada.common.validator.impl.TextValidatorImpl;
@@ -34,15 +33,13 @@ import org.wildcat.camada.service.CustomQueryService;
 import org.wildcat.camada.service.TableCommonService;
 import org.wildcat.camada.service.utils.AlertUtils;
 import org.wildcat.camada.service.utils.CsvFileDefinitions;
+import org.wildcat.camada.service.utils.CsvUtils;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.io.Reader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 @Slf4j
@@ -98,7 +95,7 @@ public class UserController extends BaseController<CamadaUser> {
     private final CamadaUserService camadaUserService;
 
     public UserController(TableCommonService tableCommonService, CamadaUserService camadaUserService,
-                          CustomQueryService customQueryService) {
+            CustomQueryService customQueryService) {
         super(customQueryService);
         this.tableCommonService = tableCommonService;
         this.camadaUserService = camadaUserService;
@@ -159,58 +156,49 @@ public class UserController extends BaseController<CamadaUser> {
         camadaUserService.delete(item);
     }
 
+    @Override
+    void save(CamadaUser item) {
+        camadaUserService.save(item);
+    }
+
     @FXML
     public void onNewButtonAction(ActionEvent event) {
         this.stageManager.switchScene(FxmlView.NEW_USER);
     }
 
-    @FXML
-    public void onImportButtonAction(ActionEvent event) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Importar fichero CSV");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV (*.csv)", "*.csv"));
-        fileChooser.setInitialFileName("*.csv");
-        File file = fileChooser.showOpenDialog(stageManager.getPrimaryStage());
-        if (file != null) {
-            Pair<Boolean, List<String>> result = validateFile(file, CsvFileDefinitions.USERS);
-            if (!result.getKey()) {
-                String errorMessage = String.join("\n", result.getValue());
-                AlertUtils.showError(errorMessage);
-            } else {
-                // TODO: CSV Passes validation
-            }
-        }
-    }
-
-    private Pair<Boolean, List<String>> validateFile(File file, CsvFileDefinitions csvFileDefinitions) {
-        boolean result = false;
-        List<String> errors = new ArrayList<>();
+    @Override
+    public CamadaUser buildEntity(CSVRecord csvRecord) {
+        CamadaUser user = new CamadaUser();
         try {
-            Reader reader = Files.newBufferedReader(Paths.get(file.getName()));
-            CSVParser csvParser = CSVParser.parse(reader, CSVFormat.DEFAULT
-                    .withFirstRecordAsHeader()
-                    .withIgnoreHeaderCase()
-                    .withTrim());
-            List<String> fields = csvFileDefinitions.getFields();
-            List<Validator> validators = csvFileDefinitions.getValidators();
-            int recordNumber = 1;
-            for (CSVRecord csvRecord : csvParser) {
-                for (int i = 0; i < fields.size(); ++i) {
-                    String field = csvRecord.get(i);
-                    Validator validator = validators.get(i);
-                    if (!validator.validate(field)) {
-                        errors.add("El campo " + field + " en la posición " + recordNumber + ", " + i + " es incorrecto.");
-                    }
-                }
-                recordNumber++;
-            }
-            csvParser.close();
-            reader.close();
-            result = errors.size() == 0;
+            user.setName(csvRecord.get(0));
+            user.setFirstName(csvRecord.get(1));
+            user.setLastName(csvRecord.get(2));
+            user.setEmail(csvRecord.get(3));
+            user.setIsAdmin(Boolean.valueOf(csvRecord.get(4)));
+            user.setIsPartner(Boolean.valueOf(csvRecord.get(5)));
+            user.setIsPresentialSponsor(Boolean.valueOf(csvRecord.get(6)));
+            user.setIsVirtualSponsor(Boolean.valueOf(csvRecord.get(7)));
+            user.setIsVolunteer(Boolean.valueOf(csvRecord.get(8)));
+            user.setActivationDate(DateUtils.parseDate(csvRecord.get(9)));
+            user.setIsActive(true);
         } catch (Exception ex) {
             log.warn(ExceptionUtils.getStackTrace(ex));
         }
-        return Pair.of(result, errors);
+        return user;
+    }
+
+    @Override
+    public Pair<Boolean, List<String>> validateDatabaseEntities(File file, int key) {
+        List<String> errors = new LinkedList<>();
+        List<String> entities = new LinkedList<>();
+        for (CSVRecord csvRecord : CsvUtils.getCsvParser(file)) {
+            entities.add(csvRecord.get(key));
+        }
+        List<CamadaUser> dbEntities = camadaUserService.findAllByName(entities);
+        for (CamadaUser entity : dbEntities) {
+            errors.add("La entrada " + entity + " ya existe en la base de datos.");
+        }
+        return Pair.of(errors.size() == 0 && entities.size() > 0, errors);
     }
 
 }

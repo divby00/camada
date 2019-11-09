@@ -7,18 +7,31 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.persistence.entity.CustomQuery;
 import org.wildcat.camada.service.CustomQueryService;
 import org.wildcat.camada.service.utils.AlertUtils;
+import org.wildcat.camada.service.utils.CsvFileDefinitions;
 import org.wildcat.camada.service.utils.CsvUtils;
 import org.wildcat.camada.service.utils.PdfUtils;
 import org.wildcat.camada.view.FxmlView;
@@ -27,6 +40,7 @@ import javax.annotation.Resource;
 import java.io.File;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.ResourceBundle;
@@ -70,6 +84,12 @@ public abstract class BaseController<T> implements Initializable {
     abstract List<T> findAllByCustomQuery(CustomQuery value);
 
     abstract void delete(T item);
+
+    abstract void save(T item);
+
+    abstract T buildEntity(CSVRecord csvRecord);
+
+    abstract Pair<Boolean, List<String>> validateDatabaseEntities(File file, int key);
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -186,6 +206,42 @@ public abstract class BaseController<T> implements Initializable {
         }
     }
 
+    @FXML
+    public void onImportButtonAction(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Importar fichero CSV");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV (*.csv)", "*.csv"));
+        fileChooser.setInitialFileName("*.csv");
+        File file = fileChooser.showOpenDialog(stageManager.getPrimaryStage());
+        if (file != null) {
+            Pair<Boolean, List<String>> result = CsvUtils.validateFile(file, CsvFileDefinitions.USERS);
+            if (!result.getKey()) {
+                String errorMessage = String.join("\n", result.getValue());
+                AlertUtils.showError(errorMessage);
+            } else {
+                // Passes file validation, start database validation
+                if (!CsvUtils.checkDuplicatedEntriesInCsv(file)) {
+                    AlertUtils.showError("Se han encontrado entradas duplicadas en el CSV.");
+                } else {
+                    Pair<Boolean, List<String>> dbResult = validateDatabaseEntities(file, 0);
+                    if (!dbResult.getKey()) {
+                        String errorMessage = String.join("\n", dbResult.getValue());
+                        AlertUtils.showError(errorMessage);
+                    } else {
+                        List<T> dataToSave = new LinkedList<>();
+                        CSVParser csvParser = CsvUtils.getCsvParser(file);
+                        for (CSVRecord csvRecord : csvParser) {
+                            dataToSave.add(buildEntity(csvRecord));
+                        }
+                        for (T data : dataToSave) {
+                            save(data);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private void initCustomQueriesCombo(ComboBox<CustomQuery> customQueriesComboBox) {
         Callback<ListView<CustomQuery>, ListCell<CustomQuery>> comboCellFactory = getComboCellFactory();
         customQueriesComboBox.setCellFactory(comboCellFactory);
@@ -273,6 +329,5 @@ public abstract class BaseController<T> implements Initializable {
             return row;
         });
     }
-
 
 }
