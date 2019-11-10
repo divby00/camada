@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
@@ -32,5 +33,6 @@
             </AnchorPane>
          </children>
       </VBox>
+      <ProgressIndicator fx:id="progressIndicator" visible="false" AnchorPane.bottomAnchor="309.0" AnchorPane.leftAnchor="384.0" AnchorPane.rightAnchor="384.0" AnchorPane.topAnchor="308.0" />
    </children>
 </AnchorPane>

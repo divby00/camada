@@ -198,6 +198,7 @@ public class UserController extends BaseController<CamadaUser> {
         List<String> emails = table.getItems().stream()
                 .map(data -> data.getEmail())
                 .collect(Collectors.toList());
+        stageManager.getPrimaryStage().setUserData(emails);
         stageManager.switchScene(FxmlView.EMAIL);
     }
 
