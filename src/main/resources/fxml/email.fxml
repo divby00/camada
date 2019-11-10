@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.web.HTMLEditor?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" stylesheets="@../styles/camada.css" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.wildcat.camada.controller.EmailController">
+   <children>
+      <VBox alignment="CENTER_LEFT" spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+         <children>
+            <Label text="Para:" />
+            <TextArea fx:id="areaTo" prefHeight="38.0" prefWidth="726.0" />
+            <Label text="Contenido:">
+               <VBox.margin>
+                  <Insets />
+               </VBox.margin>
+            </Label>
+            <HTMLEditor fx:id="htmlEditor" htmlText="&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body contenteditable=&quot;true&quot;&gt;&lt;/body&gt;&lt;/html&gt;" prefHeight="500.0" prefWidth="800.0" VBox.vgrow="ALWAYS" />
+            <AnchorPane styleClass="container">
+               <children>
+                  <Label alignment="CENTER" prefHeight="30.0" prefWidth="59.0" text="Plantillas" textAlignment="CENTER" />
+                  <ComboBox fx:id="comboEmailTemplates" layoutX="71.0" minWidth="200.0" />
+                  <Button fx:id="saveTemplateButton" layoutX="283.0" mnemonicParsing="false" onAction="#onSaveTemplateButtonAction" styleClass="primary" text="Guardar plantilla" />
+                  <Button fx:id="sendEmailButton" layoutX="659.0" mnemonicParsing="false" onAction="#onSendEmailButtonAction" styleClass="primary" text="Enviar correo" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="0.0" />
+               </children>
+            </AnchorPane>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

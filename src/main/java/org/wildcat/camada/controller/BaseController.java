@@ -72,9 +72,11 @@ public abstract class BaseController<T> implements Initializable {
     protected StageManager stageManager;
 
     private ResourceBundle resources;
+    final private FxmlView newEntityView;
 
-    protected BaseController(CustomQueryService customQueryService) {
+    protected BaseController(CustomQueryService customQueryService, FxmlView newEntityView) {
         this.customQueryService = customQueryService;
+        this.newEntityView = newEntityView;
     }
 
     abstract void initTable();
@@ -87,7 +89,7 @@ public abstract class BaseController<T> implements Initializable {
 
     abstract void save(T item);
 
-    abstract T buildEntity(CSVRecord csvRecord);
+    abstract T buildEntityFromCsvRecord(CSVRecord csvRecord);
 
     abstract Pair<Boolean, List<String>> validateDatabaseEntities(File file, int key);
 
@@ -231,7 +233,7 @@ public abstract class BaseController<T> implements Initializable {
                         List<T> dataToSave = new LinkedList<>();
                         CSVParser csvParser = CsvUtils.getCsvParser(file);
                         for (CSVRecord csvRecord : csvParser) {
-                            dataToSave.add(buildEntity(csvRecord));
+                            dataToSave.add(buildEntityFromCsvRecord(csvRecord));
                         }
                         for (T data : dataToSave) {
                             save(data);
@@ -240,6 +242,10 @@ public abstract class BaseController<T> implements Initializable {
                 }
             }
         }
+    }
+
+    public void onNewButtonAction(ActionEvent event) {
+        this.stageManager.switchScene(newEntityView);
     }
 
     private void initCustomQueriesCombo(ComboBox<CustomQuery> customQueriesComboBox) {

@@ -51,6 +51,17 @@ public enum FxmlView {
             return "/fxml/new_user.fxml";
         }
     },
+    EMAIL(false, true) {
+        @Override
+        public String getTitle() {
+            return "Envío de correo electrónico";
+        }
+
+        @Override
+        public String getFxmlFile() {
+            return "/fxml/email.fxml";
+        }
+    },
     PARTNER(true) {
         @Override
         public String getTitle() {

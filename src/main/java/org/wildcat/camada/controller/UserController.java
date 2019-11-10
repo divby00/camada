@@ -12,9 +12,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.stage.FileChooser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -31,8 +29,6 @@ import org.wildcat.camada.persistence.entity.CustomQuery;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.CustomQueryService;
 import org.wildcat.camada.service.TableCommonService;
-import org.wildcat.camada.service.utils.AlertUtils;
-import org.wildcat.camada.service.utils.CsvFileDefinitions;
 import org.wildcat.camada.service.utils.CsvUtils;
 import org.wildcat.camada.view.FxmlView;
 
@@ -41,6 +37,7 @@ import java.io.File;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
@@ -96,7 +93,7 @@ public class UserController extends BaseController<CamadaUser> {
 
     public UserController(TableCommonService tableCommonService, CamadaUserService camadaUserService,
             CustomQueryService customQueryService) {
-        super(customQueryService);
+        super(customQueryService, FxmlView.NEW_USER);
         this.tableCommonService = tableCommonService;
         this.camadaUserService = camadaUserService;
     }
@@ -161,13 +158,8 @@ public class UserController extends BaseController<CamadaUser> {
         camadaUserService.save(item);
     }
 
-    @FXML
-    public void onNewButtonAction(ActionEvent event) {
-        this.stageManager.switchScene(FxmlView.NEW_USER);
-    }
-
     @Override
-    public CamadaUser buildEntity(CSVRecord csvRecord) {
+    public CamadaUser buildEntityFromCsvRecord(CSVRecord csvRecord) {
         CamadaUser user = new CamadaUser();
         try {
             user.setName(csvRecord.get(0));
@@ -199,6 +191,14 @@ public class UserController extends BaseController<CamadaUser> {
             errors.add("La entrada " + entity + " ya existe en la base de datos.");
         }
         return Pair.of(errors.size() == 0 && entities.size() > 0, errors);
+    }
+
+    @FXML
+    public void onSendEmailButtonAction(ActionEvent event) {
+        List<String> emails = table.getItems().stream()
+                .map(data -> data.getEmail())
+                .collect(Collectors.toList());
+        stageManager.switchScene(FxmlView.EMAIL);
     }
 
 }

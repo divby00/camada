@@ -103,6 +103,21 @@
                                         </ImageView>
                                     </graphic>
                                 </Button>
+                        <Button fx:id="sendEmailButton" alignment="CENTER" contentDisplay="CENTER" layoutX="258.0" layoutY="10.0" mnemonicParsing="false" onAction="#onSendEmailButtonAction" styleClass="primary" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                           <tooltip>
+                              <Tooltip text="Enviar un correo electrónico a todos los usarios del listado" />
+                           </tooltip>
+                           <graphic>
+                              <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../envelope.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
                             </children>
                         </HBox>
                         <ProgressIndicator fx:id="progressIndicator" layoutX="582.0" layoutY="25.0" prefHeight="50.0" prefWidth="50.0" AnchorPane.bottomAnchor="31.0" AnchorPane.leftAnchor="582.0" AnchorPane.rightAnchor="581.0" AnchorPane.topAnchor="32.0" />
