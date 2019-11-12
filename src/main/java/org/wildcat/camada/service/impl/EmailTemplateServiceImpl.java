@@ -18,12 +18,16 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
         this.emailTemplateRepository = emailTemplateRepository;
     }
 
-    public List<EmailTemplate> findAllByOrderByNameAsc() {
-        return (List<EmailTemplate>) this.emailTemplateRepository.findAllByOrderByNameAsc();
+    public List<EmailTemplate> findAllByOrderByName() {
+        return this.emailTemplateRepository.findAllByOrderByNameAsc();
     }
 
     public EmailTemplate save(EmailTemplate emailTemplate) {
         return this.emailTemplateRepository.save(emailTemplate);
+    }
+
+    public void delete(EmailTemplate emailTemplate) {
+        this.emailTemplateRepository.delete(emailTemplate);
     }
 
 }

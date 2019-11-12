@@ -22,7 +22,8 @@ public class EmailTemplate implements Serializable {
     private Long id;
     @Column(name = "name")
     private String name;
-    @Column(name = "content")
+    @Lob
+    @Column(name = "content", length = 16000)
     private String content;
     @Column(name = "user_name")
     private String userName;

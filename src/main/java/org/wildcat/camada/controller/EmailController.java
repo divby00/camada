@@ -6,12 +6,11 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.web.HTMLEditor;
+import javafx.util.Callback;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
@@ -67,11 +66,11 @@ public class EmailController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         List<String> emails = (List<String>) stageManager.getPrimaryStage().getUserData();
-        areaTo.setText(String.join(",", emails));
+        areaTo.setText(String.join(";", emails));
         Task<ObservableList<EmailTemplate>> getEmailTemplatesTask = new Task<ObservableList<EmailTemplate>>() {
             @Override
             protected ObservableList<EmailTemplate> call() {
-                List<EmailTemplate> emailTemplates = emailTemplateService.findAllByOrderByNameAsc();
+                List<EmailTemplate> emailTemplates = emailTemplateService.findAllByOrderByName();
                 return FXCollections.observableList(emailTemplates);
             }
         };
@@ -80,6 +79,14 @@ public class EmailController implements Initializable {
         getEmailTemplatesTask.setOnSucceeded(worker -> {
             ObservableList<EmailTemplate> items = getEmailTemplatesTask.getValue();
             comboEmailTemplates.setItems(items);
+            Callback<ListView<EmailTemplate>, ListCell<EmailTemplate>> comboCellFactory = getComboCellFactory();
+            comboEmailTemplates.setCellFactory(comboCellFactory);
+            comboEmailTemplates.setButtonCell(comboCellFactory.call(null));
+            comboEmailTemplates.valueProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal != null) {
+                    htmlEditor.setHtmlText(newVal.getContent());
+                }
+            });
         });
         getEmailTemplatesTask.setOnCancelled(worker -> {
             AlertUtils.showError("No se ha podido obtener las plantillas de correos electrónicos.");
@@ -91,6 +98,35 @@ public class EmailController implements Initializable {
 
     @FXML
     public void onSendEmailButtonAction(ActionEvent event) {
+    }
+
+    @FXML
+    public void onDeleteTemplateButtonAction(ActionEvent event) {
+        Task<Boolean> deleteEmailTaks = new Task<Boolean>() {
+            @Override
+            protected Boolean call() {
+                boolean result = false;
+                try {
+                    EmailTemplate emailTemplate = comboEmailTemplates.getSelectionModel().getSelectedItem();
+                    emailTemplateService.delete(emailTemplate);
+                    result = true;
+                } catch (Exception ex) {
+                    log.error(ExceptionUtils.getStackTrace(ex));
+                }
+                return result;
+            }
+        };
+        progressIndicator.visibleProperty().bind(deleteEmailTaks.runningProperty());
+        new Thread(deleteEmailTaks).start();
+        deleteEmailTaks.setOnSucceeded(worker -> {
+            AlertUtils.showInfo("La plantilla se ha borrado correctamente.");
+        });
+        deleteEmailTaks.setOnCancelled(worker -> {
+            AlertUtils.showError("Ha habido un error al borrar la plantilla.");
+        });
+        deleteEmailTaks.setOnFailed(worker -> {
+            AlertUtils.showError("Ha habido un error al borrar la plantilla.");
+        });
     }
 
     @FXML
@@ -106,13 +142,26 @@ public class EmailController implements Initializable {
                         .creationDate(new Date())
                         .userName(userName).build();
                 return emailTemplateService.save(emailTemplate);
-            };
+            }
+
         };
         progressIndicator.visibleProperty().bind(saveTemplateTask.runningProperty());
         new Thread(saveTemplateTask).start();
         saveTemplateTask.setOnSucceeded(worker -> {
             AlertUtils.showInfo("La plantilla se ha guardado correctamente.");
-            // TODO: Update combo
+            Task<ObservableList<EmailTemplate>> getEmailTemplatesTask = new Task<ObservableList<EmailTemplate>>() {
+                @Override
+                protected ObservableList<EmailTemplate> call() {
+                    List<EmailTemplate> emailTemplates = emailTemplateService.findAllByOrderByName();
+                    return FXCollections.observableList(emailTemplates);
+                }
+            };
+            progressIndicator.visibleProperty().bind(getEmailTemplatesTask.runningProperty());
+            new Thread(getEmailTemplatesTask).start();
+            getEmailTemplatesTask.setOnSucceeded(taskWorker -> {
+                ObservableList<EmailTemplate> items = getEmailTemplatesTask.getValue();
+                comboEmailTemplates.setItems(items);
+            });
         });
         saveTemplateTask.setOnFailed(worker -> {
             AlertUtils.showError("Se ha producido un error al guardar la plantilla.");
@@ -120,5 +169,24 @@ public class EmailController implements Initializable {
         saveTemplateTask.setOnCancelled(worker -> {
             AlertUtils.showError("Se ha producido un error al guardar la plantilla.");
         });
+    }
+
+    private Callback<ListView<EmailTemplate>, ListCell<EmailTemplate>> getComboCellFactory() {
+        return new Callback<ListView<EmailTemplate>, ListCell<EmailTemplate>>() {
+            @Override
+            public ListCell<EmailTemplate> call(ListView<EmailTemplate> l) {
+                return new ListCell<EmailTemplate>() {
+                    @Override
+                    protected void updateItem(EmailTemplate item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (item == null || empty) {
+                            setGraphic(null);
+                        } else {
+                            setText(item.getName());
+                        }
+                    }
+                };
+            }
+        };
     }
 }

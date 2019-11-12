@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface EmailTemplateService {
     EmailTemplate save(EmailTemplate emailTemplate);
-    List<EmailTemplate> findAllByOrderByNameAsc();
+    void delete(EmailTemplate emailTemplate);
+    List<EmailTemplate> findAllByOrderByName();
 }
