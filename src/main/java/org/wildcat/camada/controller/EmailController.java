@@ -67,31 +67,19 @@ public class EmailController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         List<String> emails = (List<String>) stageManager.getPrimaryStage().getUserData();
         areaTo.setText(String.join(";", emails));
-        Task<ObservableList<EmailTemplate>> getEmailTemplatesTask = new Task<ObservableList<EmailTemplate>>() {
-            @Override
-            protected ObservableList<EmailTemplate> call() {
-                List<EmailTemplate> emailTemplates = emailTemplateService.findAllByOrderByName();
-                return FXCollections.observableList(emailTemplates);
-            }
-        };
-        progressIndicator.visibleProperty().bind(getEmailTemplatesTask.runningProperty());
-        new Thread(getEmailTemplatesTask).start();
-        getEmailTemplatesTask.setOnSucceeded(worker -> {
-            ObservableList<EmailTemplate> items = getEmailTemplatesTask.getValue();
-            comboEmailTemplates.setItems(items);
-            Callback<ListView<EmailTemplate>, ListCell<EmailTemplate>> comboCellFactory = getComboCellFactory();
-            comboEmailTemplates.setCellFactory(comboCellFactory);
-            comboEmailTemplates.setButtonCell(comboCellFactory.call(null));
-            comboEmailTemplates.valueProperty().addListener((obs, oldVal, newVal) -> {
-                if (newVal != null) {
-                    htmlEditor.setHtmlText(newVal.getContent());
-                }
-            });
+        setComboSelectionModel();
+        // Fill combo
+        Task<ObservableList<EmailTemplate>> emailTemplatesTask = getEmailTemplatesTask();
+        progressIndicator.visibleProperty().bind(emailTemplatesTask.runningProperty());
+        new Thread(emailTemplatesTask).start();
+        emailTemplatesTask.setOnSucceeded(worker -> {
+            comboEmailTemplates.setItems(emailTemplatesTask.getValue());
+            comboEmailTemplates.getSelectionModel().select(null);
         });
-        getEmailTemplatesTask.setOnCancelled(worker -> {
+        emailTemplatesTask.setOnCancelled(worker -> {
             AlertUtils.showError("No se ha podido obtener las plantillas de correos electrónicos.");
         });
-        getEmailTemplatesTask.setOnFailed(worker -> {
+        emailTemplatesTask.setOnFailed(worker -> {
             AlertUtils.showError("No se ha podido obtener las plantillas de correos electrónicos.");
         });
     }
@@ -118,8 +106,21 @@ public class EmailController implements Initializable {
         };
         progressIndicator.visibleProperty().bind(deleteEmailTaks.runningProperty());
         new Thread(deleteEmailTaks).start();
-        deleteEmailTaks.setOnSucceeded(worker -> {
-            AlertUtils.showInfo("La plantilla se ha borrado correctamente.");
+        deleteEmailTaks.setOnSucceeded(worker -> { // Delete template
+            Task<ObservableList<EmailTemplate>> emailTemplatesTask = getEmailTemplatesTask();
+            progressIndicator.visibleProperty().bind(emailTemplatesTask.runningProperty());
+            new Thread(emailTemplatesTask).start();
+            emailTemplatesTask.setOnSucceeded(subWorker -> { // Update combo
+                comboEmailTemplates.setItems(emailTemplatesTask.getValue());
+                comboEmailTemplates.getSelectionModel().select(null);
+                AlertUtils.showInfo("La plantilla se ha borrado correctamente.");
+            });
+            emailTemplatesTask.setOnFailed(subWorker -> {
+                AlertUtils.showError("Ha habido un error al borrar la plantilla.");
+            });
+            emailTemplatesTask.setOnCancelled(subWorker -> {
+                AlertUtils.showError("Ha habido un error al borrar la plantilla.");
+            });
         });
         deleteEmailTaks.setOnCancelled(worker -> {
             AlertUtils.showError("Ha habido un error al borrar la plantilla.");
@@ -147,20 +148,20 @@ public class EmailController implements Initializable {
         };
         progressIndicator.visibleProperty().bind(saveTemplateTask.runningProperty());
         new Thread(saveTemplateTask).start();
-        saveTemplateTask.setOnSucceeded(worker -> {
-            AlertUtils.showInfo("La plantilla se ha guardado correctamente.");
-            Task<ObservableList<EmailTemplate>> getEmailTemplatesTask = new Task<ObservableList<EmailTemplate>>() {
-                @Override
-                protected ObservableList<EmailTemplate> call() {
-                    List<EmailTemplate> emailTemplates = emailTemplateService.findAllByOrderByName();
-                    return FXCollections.observableList(emailTemplates);
-                }
-            };
-            progressIndicator.visibleProperty().bind(getEmailTemplatesTask.runningProperty());
-            new Thread(getEmailTemplatesTask).start();
-            getEmailTemplatesTask.setOnSucceeded(taskWorker -> {
-                ObservableList<EmailTemplate> items = getEmailTemplatesTask.getValue();
-                comboEmailTemplates.setItems(items);
+        saveTemplateTask.setOnSucceeded(worker -> { // Save template
+            Task<ObservableList<EmailTemplate>> emailTemplatesTask = getEmailTemplatesTask();
+            progressIndicator.visibleProperty().bind(emailTemplatesTask.runningProperty());
+            new Thread(emailTemplatesTask).start();
+            emailTemplatesTask.setOnSucceeded(taskWorker -> { // Update combo
+                comboEmailTemplates.setItems(emailTemplatesTask.getValue());
+                comboEmailTemplates.getSelectionModel().select(null);
+                AlertUtils.showInfo("La plantilla se ha guardado correctamente.");
+            });
+            emailTemplatesTask.setOnCancelled(taskWorker -> {
+                AlertUtils.showError("Se ha producido un error al guardar la plantilla.");
+            });
+            emailTemplatesTask.setOnFailed(taskWorker -> {
+                AlertUtils.showError("Se ha producido un error al guardar la plantilla.");
             });
         });
         saveTemplateTask.setOnFailed(worker -> {
@@ -168,6 +169,17 @@ public class EmailController implements Initializable {
         });
         saveTemplateTask.setOnCancelled(worker -> {
             AlertUtils.showError("Se ha producido un error al guardar la plantilla.");
+        });
+    }
+
+    private void setComboSelectionModel() {
+        Callback<ListView<EmailTemplate>, ListCell<EmailTemplate>> comboCellFactory = getComboCellFactory();
+        comboEmailTemplates.setCellFactory(comboCellFactory);
+        comboEmailTemplates.setButtonCell(comboCellFactory.call(null));
+        comboEmailTemplates.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                htmlEditor.setHtmlText(newVal.getContent());
+            }
         });
     }
 
@@ -189,4 +201,15 @@ public class EmailController implements Initializable {
             }
         };
     }
+
+    private Task<ObservableList<EmailTemplate>> getEmailTemplatesTask() {
+        return new Task<ObservableList<EmailTemplate>>() {
+            @Override
+            protected ObservableList<EmailTemplate> call() {
+                List<EmailTemplate> emailTemplates = emailTemplateService.findAllByOrderByName();
+                return FXCollections.observableList(emailTemplates);
+            }
+        };
+    }
+
 }
