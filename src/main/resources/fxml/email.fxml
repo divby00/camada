@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
@@ -11,32 +16,44 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.HTMLEditor?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" stylesheets="@../styles/camada.css" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.wildcat.camada.controller.EmailController">
+<AnchorPane prefHeight="850.0" prefWidth="980.0" stylesheets="@../styles/camada.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.wildcat.camada.controller.EmailController">
    <children>
-      <VBox alignment="CENTER_LEFT" spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+      <VBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="10.0" spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
          <children>
+            <HBox spacing="10.0">
+               <children>
+                  <ComboBox fx:id="comboEmailTemplates" prefWidth="250.0" promptText="Selección de plantilla" />
+                  <TextField fx:id="nameTextField" prefWidth="250.0" promptText="Nombre para la plantilla" />
+                  <CheckBox fx:id="publicCheck" mnemonicParsing="false" prefHeight="31.0" prefWidth="113.0" text="Pública">
+                     <tooltip>
+                        <Tooltip text="Al seleccionar esta opción, la plantilla será accesible para todos los usuarios, aunque solamente la podrá borrar o modificar el autor original." />
+                     </tooltip>
+                  </CheckBox>
+                  <HBox alignment="TOP_RIGHT" prefHeight="100.0" prefWidth="200.0" spacing="10.0" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Button fx:id="saveTemplateButton" alignment="CENTER" contentDisplay="CENTER" disable="true" mnemonicParsing="false" onAction="#onSaveTemplateButtonAction" styleClass="primary" text="Guardar como plantilla" textAlignment="CENTER" />
+                        <Button fx:id="deleteTemplateButton" alignment="CENTER" contentDisplay="RIGHT" disable="true" mnemonicParsing="false" onAction="#onDeleteTemplateButtonAction" styleClass="primary" text="Borrar la plantilla" textAlignment="RIGHT" />
+                     </children>
+                  </HBox>
+               </children>
+            </HBox>
             <Label text="Para:" />
-            <TextArea fx:id="areaTo" prefHeight="70.0" prefWidth="800.0" wrapText="true" />
+            <TextArea fx:id="areaTo" wrapText="true" VBox.vgrow="NEVER" />
+            <Label layoutX="10.0" layoutY="121.0" text="Asunto:" />
+            <TextField fx:id="subjectTextField" promptText="Asunto del mensaje" />
             <Label text="Mensaje:">
                <VBox.margin>
                   <Insets />
                </VBox.margin>
             </Label>
-            <HTMLEditor fx:id="htmlEditor" htmlText="&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body contenteditable=&quot;true&quot;&gt;&lt;/body&gt;&lt;/html&gt;" prefHeight="500.0" prefWidth="800.0" VBox.vgrow="ALWAYS" />
+            <HTMLEditor fx:id="htmlEditor" htmlText="&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body contenteditable=&quot;true&quot;&gt;&lt;/body&gt;&lt;/html&gt;" VBox.vgrow="ALWAYS" />
             <AnchorPane styleClass="container">
                <children>
-                  <Button fx:id="sendEmailButton" alignment="CENTER_RIGHT" contentDisplay="RIGHT" mnemonicParsing="false" onAction="#onSendEmailButtonAction" styleClass="primary" text="Enviar correo" textAlignment="RIGHT" AnchorPane.rightAnchor="0.0" />
-                  <HBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                     <children>
-                        <ComboBox fx:id="comboEmailTemplates" maxWidth="200.0" minWidth="200.0" />
-                        <Button fx:id="saveTemplateButton" mnemonicParsing="false" onAction="#onSaveTemplateButtonAction" styleClass="primary" text="Guardar plantilla" />
-                        <Button fx:id="deleteTemplateButton" alignment="CENTER_RIGHT" contentDisplay="RIGHT" mnemonicParsing="false" onAction="#onDeleteTemplateButtonAction" styleClass="primary" text="Borrar plantilla" textAlignment="RIGHT" />
-                     </children>
-                  </HBox>
+                  <Button fx:id="sendEmailButton" alignment="CENTER" contentDisplay="CENTER" disable="true" mnemonicParsing="false" onAction="#onSendEmailButtonAction" prefHeight="32.0" prefWidth="132.0" styleClass="primary" text="Enviar correo" textAlignment="CENTER" AnchorPane.rightAnchor="0.0" />
                </children>
             </AnchorPane>
          </children>
       </VBox>
-      <ProgressIndicator fx:id="progressIndicator" visible="false" AnchorPane.bottomAnchor="309.0" AnchorPane.leftAnchor="384.0" AnchorPane.rightAnchor="384.0" AnchorPane.topAnchor="308.0" />
+      <ProgressIndicator fx:id="progressIndicator" visible="false" AnchorPane.bottomAnchor="399.0" AnchorPane.leftAnchor="464.0" AnchorPane.rightAnchor="464.0" AnchorPane.topAnchor="398.0" />
    </children>
 </AnchorPane>

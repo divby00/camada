@@ -31,4 +31,6 @@ public class EmailTemplate implements Serializable {
     private Date creationDate;
     @Column(name = "is_public")
     private Boolean isPublic;
+    @Column(name = "subject")
+    private String subject;
 }

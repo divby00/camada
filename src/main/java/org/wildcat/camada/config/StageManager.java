@@ -45,7 +45,12 @@ public class StageManager {
         Scene scene = prepareScene(rootnode);
         primaryStage.setTitle(view.getTitle());
         primaryStage.setScene(scene);
-        primaryStage.sizeToScene();
+        if (view.isMaximized()) {
+            primaryStage.setMaximized(true);
+        } else {
+            primaryStage.setMaximized(false);
+            primaryStage.sizeToScene();
+        }
         primaryStage.centerOnScreen();
         primaryStage.setResizable(view.isResizable());
         primaryStage.getIcons().add(view.getIcon());
@@ -53,7 +58,7 @@ public class StageManager {
         try {
             primaryStage.show();
         } catch (Exception exception) {
-            logAndExit ("Unable to show scene for title" + view.getTitle(),  exception);
+            logAndExit("Unable to show scene for title" + view.getTitle(), exception);
         }
     }
 
@@ -69,7 +74,7 @@ public class StageManager {
         modalStage.show();
     }
 
-    private Scene prepareScene(Parent rootNode){
+    private Scene prepareScene(Parent rootNode) {
         Scene scene = primaryStage.getScene();
 
         if (scene == null) {
@@ -95,7 +100,6 @@ public class StageManager {
         }
         return rootNode;
     }
-
 
     private void logAndExit(String errorMsg, Exception exception) {
         LOG.error(errorMsg, exception, exception.getCause());

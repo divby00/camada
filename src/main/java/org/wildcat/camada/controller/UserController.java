@@ -5,7 +5,6 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TableColumn;
@@ -193,13 +192,11 @@ public class UserController extends BaseController<CamadaUser> {
         return Pair.of(errors.size() == 0 && entities.size() > 0, errors);
     }
 
-    @FXML
-    public void onSendEmailButtonAction(ActionEvent event) {
-        List<String> emails = table.getItems().stream()
-                .map(data -> data.getEmail())
+    @Override
+    public List<String> getEmails() {
+        return table.getItems().stream()
+                .map(CamadaUser::getEmail)
                 .collect(Collectors.toList());
-        stageManager.getPrimaryStage().setUserData(emails);
-        stageManager.switchScene(FxmlView.EMAIL);
     }
 
 }

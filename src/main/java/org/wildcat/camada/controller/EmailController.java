@@ -6,21 +6,34 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.web.HTMLEditor;
+import javafx.scene.web.WebView;
 import javafx.util.Callback;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
 import org.wildcat.camada.config.StageManager;
+import org.wildcat.camada.controller.listener.WebViewEditorListener;
 import org.wildcat.camada.persistence.entity.EmailTemplate;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.EmailTemplateService;
+import org.wildcat.camada.service.MailService;
+import org.wildcat.camada.service.pojo.MailToDetails;
 import org.wildcat.camada.service.utils.AlertUtils;
 
 import javax.annotation.Resource;
+import javax.mail.internet.InternetAddress;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
@@ -34,10 +47,22 @@ public class EmailController implements Initializable {
     private Button saveTemplateButton;
 
     @FXML
+    private Button deleteTemplateButton;
+
+    @FXML
     private Button sendEmailButton;
 
     @FXML
+    private TextField nameTextField;
+
+    @FXML
+    private CheckBox publicCheck;
+
+    @FXML
     private HTMLEditor htmlEditor;
+
+    @FXML
+    private TextField subjectTextField;
 
     @FXML
     private ComboBox<EmailTemplate> comboEmailTemplates;
@@ -58,15 +83,19 @@ public class EmailController implements Initializable {
     @Resource
     private final EmailTemplateService emailTemplateService;
 
-    public EmailController(CamadaUserService camadaUserService, EmailTemplateService emailTemplateService) {
+    @Resource
+    private final MailService mailService;
+
+    public EmailController(CamadaUserService camadaUserService, EmailTemplateService emailTemplateService, MailService mailService) {
         this.camadaUserService = camadaUserService;
         this.emailTemplateService = emailTemplateService;
+        this.mailService = mailService;
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         List<String> emails = (List<String>) stageManager.getPrimaryStage().getUserData();
-        areaTo.setText(String.join(";", emails));
+        areaTo.setText(String.join(",", emails));
         setComboSelectionModel();
         // Fill combo
         Task<ObservableList<EmailTemplate>> emailTemplatesTask = getEmailTemplatesTask();
@@ -82,51 +111,53 @@ public class EmailController implements Initializable {
         emailTemplatesTask.setOnFailed(worker -> {
             AlertUtils.showError("No se ha podido obtener las plantillas de correos electrónicos.");
         });
+
+        saveTemplateButton.setDisable(true);
+        deleteTemplateButton.setDisable(true);
+
+        areaTo.textProperty().addListener((obs, oldVal, newVal) -> {
+            saveTemplateButton.setDisable(hasToDisableSaveButton(newVal, subjectTextField.getText(), htmlEditor.getHtmlText(), areaTo.getText()));
+            sendEmailButton.setDisable(hasToDisableSendButton(newVal, subjectTextField.getText(), htmlEditor.getHtmlText(), areaTo.getText()));
+        });
+        subjectTextField.textProperty().addListener((obs, oldVal, newVal) -> {
+            saveTemplateButton.setDisable(hasToDisableSaveButton(newVal, subjectTextField.getText(), htmlEditor.getHtmlText(), areaTo.getText()));
+            sendEmailButton.setDisable(hasToDisableSendButton(newVal, subjectTextField.getText(), htmlEditor.getHtmlText(), areaTo.getText()));
+        });
+        WebView webView = (WebView) htmlEditor.lookup("WebView");
+        new WebViewEditorListener(webView, (obs, oldVal, newVal) -> {
+            saveTemplateButton.setDisable(hasToDisableSaveButton(newVal, subjectTextField.getText(), htmlEditor.getHtmlText(), areaTo.getText()));
+            sendEmailButton.setDisable(hasToDisableSendButton(newVal, subjectTextField.getText(), htmlEditor.getHtmlText(), areaTo.getText()));
+        });
     }
 
     @FXML
     public void onSendEmailButtonAction(ActionEvent event) {
-    }
-
-    @FXML
-    public void onDeleteTemplateButtonAction(ActionEvent event) {
-        Task<Boolean> deleteEmailTaks = new Task<Boolean>() {
+        Task<Boolean> emailSendingTask = new Task<Boolean>() {
             @Override
             protected Boolean call() {
-                boolean result = false;
-                try {
-                    EmailTemplate emailTemplate = comboEmailTemplates.getSelectionModel().getSelectedItem();
-                    emailTemplateService.delete(emailTemplate);
-                    result = true;
-                } catch (Exception ex) {
-                    log.error(ExceptionUtils.getStackTrace(ex));
-                }
-                return result;
+                MailToDetails mailToDetails = MailToDetails.builder()
+                        .isHtml(true)
+                        .internetAddresses(getInternetAddresses(areaTo.getText()))
+                        .message(htmlEditor.getHtmlText())
+                        .subject(subjectTextField.getText())
+                        .build();
+                return mailService.send(mailToDetails);
             }
         };
-        progressIndicator.visibleProperty().bind(deleteEmailTaks.runningProperty());
-        new Thread(deleteEmailTaks).start();
-        deleteEmailTaks.setOnSucceeded(worker -> { // Delete template
-            Task<ObservableList<EmailTemplate>> emailTemplatesTask = getEmailTemplatesTask();
-            progressIndicator.visibleProperty().bind(emailTemplatesTask.runningProperty());
-            new Thread(emailTemplatesTask).start();
-            emailTemplatesTask.setOnSucceeded(subWorker -> { // Update combo
-                comboEmailTemplates.setItems(emailTemplatesTask.getValue());
-                comboEmailTemplates.getSelectionModel().select(null);
-                AlertUtils.showInfo("La plantilla se ha borrado correctamente.");
-            });
-            emailTemplatesTask.setOnFailed(subWorker -> {
-                AlertUtils.showError("Ha habido un error al borrar la plantilla.");
-            });
-            emailTemplatesTask.setOnCancelled(subWorker -> {
-                AlertUtils.showError("Ha habido un error al borrar la plantilla.");
-            });
+        progressIndicator.visibleProperty().bind(emailSendingTask.runningProperty());
+        new Thread(emailSendingTask).start();
+        emailSendingTask.setOnSucceeded(worker -> {
+            if (emailSendingTask.getValue()) {
+                AlertUtils.showInfo("Los correos electrónicos se han envíado correctamente.");
+            } else {
+                AlertUtils.showError("Ha habido un error al enviar el correo electrónico.");
+            }
         });
-        deleteEmailTaks.setOnCancelled(worker -> {
-            AlertUtils.showError("Ha habido un error al borrar la plantilla.");
+        emailSendingTask.setOnCancelled(worker -> {
+            AlertUtils.showError("Ha habido un error al enviar el correo electrónico.");
         });
-        deleteEmailTaks.setOnFailed(worker -> {
-            AlertUtils.showError("Ha habido un error al borrar la plantilla.");
+        emailSendingTask.setOnFailed(worker -> {
+            AlertUtils.showError("Ha habido un error al enviar el correo electrónico.");
         });
     }
 
@@ -135,16 +166,20 @@ public class EmailController implements Initializable {
         Task<EmailTemplate> saveTemplateTask = new Task<EmailTemplate>() {
             @Override
             protected EmailTemplate call() {
-                String name = "plantilla" + "_" + new Date();
                 String userName = camadaUserService.getUser().getName();
                 EmailTemplate emailTemplate = EmailTemplate.builder()
-                        .name(name)
+                        .name(nameTextField.getText())
                         .content(htmlEditor.getHtmlText())
+                        .isPublic(publicCheck.isSelected())
                         .creationDate(new Date())
+                        .subject(subjectTextField.getText())
                         .userName(userName).build();
+                EmailTemplate selectedItem = comboEmailTemplates.getSelectionModel().getSelectedItem();
+                if (selectedItem != null) {
+                    emailTemplate.setId(selectedItem.getId());
+                }
                 return emailTemplateService.save(emailTemplate);
             }
-
         };
         progressIndicator.visibleProperty().bind(saveTemplateTask.runningProperty());
         new Thread(saveTemplateTask).start();
@@ -172,13 +207,68 @@ public class EmailController implements Initializable {
         });
     }
 
+    @FXML
+    public void onDeleteTemplateButtonAction(ActionEvent event) {
+        Task<Boolean> deleteEmailTaks = new Task<Boolean>() {
+            @Override
+            protected Boolean call() {
+                boolean result = false;
+                try {
+                    EmailTemplate emailTemplate = comboEmailTemplates.getSelectionModel().getSelectedItem();
+                    if (emailTemplate != null) {
+                        emailTemplateService.delete(emailTemplate);
+                    }
+                    result = true;
+                } catch (Exception ex) {
+                    log.error(ExceptionUtils.getStackTrace(ex));
+                }
+                return result;
+            }
+        };
+        progressIndicator.visibleProperty().bind(deleteEmailTaks.runningProperty());
+        new Thread(deleteEmailTaks).start();
+        deleteEmailTaks.setOnSucceeded(worker -> { // Delete template
+            Task<ObservableList<EmailTemplate>> emailTemplatesTask = getEmailTemplatesTask();
+            progressIndicator.visibleProperty().bind(emailTemplatesTask.runningProperty());
+            new Thread(emailTemplatesTask).start();
+            emailTemplatesTask.setOnSucceeded(subWorker -> { // Update combo
+                comboEmailTemplates.setItems(emailTemplatesTask.getValue());
+                comboEmailTemplates.getSelectionModel().select(null);
+                publicCheck.setSelected(false);
+                nameTextField.setText(null);
+                subjectTextField.setText(null);
+                deleteTemplateButton.setDisable(true);
+                AlertUtils.showInfo("La plantilla se ha borrado correctamente.");
+            });
+            emailTemplatesTask.setOnFailed(subWorker -> {
+                AlertUtils.showError("Ha habido un error al borrar la plantilla.");
+            });
+            emailTemplatesTask.setOnCancelled(subWorker -> {
+                AlertUtils.showError("Ha habido un error al borrar la plantilla.");
+            });
+        });
+        deleteEmailTaks.setOnCancelled(worker -> {
+            AlertUtils.showError("Ha habido un error al borrar la plantilla.");
+        });
+        deleteEmailTaks.setOnFailed(worker -> {
+            AlertUtils.showError("Ha habido un error al borrar la plantilla.");
+        });
+    }
+
     private void setComboSelectionModel() {
         Callback<ListView<EmailTemplate>, ListCell<EmailTemplate>> comboCellFactory = getComboCellFactory();
         comboEmailTemplates.setCellFactory(comboCellFactory);
         comboEmailTemplates.setButtonCell(comboCellFactory.call(null));
         comboEmailTemplates.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
+                nameTextField.setText(newVal.getName());
+                subjectTextField.setText(newVal.getSubject());
+                publicCheck.setSelected(newVal.getIsPublic());
                 htmlEditor.setHtmlText(newVal.getContent());
+                boolean isNotUser = !StringUtils.equalsIgnoreCase(camadaUserService.getUser().getName(), newVal.getUserName());
+                deleteTemplateButton.setDisable(isNotUser);
+                publicCheck.setDisable(isNotUser);
+                nameTextField.setDisable(isNotUser);
             }
         });
     }
@@ -210,6 +300,30 @@ public class EmailController implements Initializable {
                 return FXCollections.observableList(emailTemplates);
             }
         };
+    }
+
+    private InternetAddress[] getInternetAddresses(String emails) {
+        InternetAddress[] internetAddresses = null;
+        try {
+            internetAddresses = InternetAddress.parse(emails);
+        } catch (Exception ex) {
+            log.error(ExceptionUtils.getStackTrace(ex));
+        }
+        return internetAddresses;
+    }
+
+    private boolean hasToDisableSaveButton(String... textFields) {
+        EmailTemplate selectedItem = comboEmailTemplates.getSelectionModel().getSelectedItem();
+        boolean anyBlank = StringUtils.isAnyBlank(textFields);
+        boolean isNotUser = true;
+        if (selectedItem != null) {
+            isNotUser = !StringUtils.equalsIgnoreCase(selectedItem.getUserName(), camadaUserService.getUser().getName());
+        }
+        return anyBlank || isNotUser;
+    }
+
+    private boolean hasToDisableSendButton(String... textFields) {
+        return StringUtils.isAnyBlank(textFields);
     }
 
 }

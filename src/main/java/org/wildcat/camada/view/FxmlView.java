@@ -18,7 +18,7 @@ public enum FxmlView {
             return "/fxml/login.fxml";
         }
     },
-    HOME(true) {
+    HOME(true, false, true) {
         @Override
         public String getTitle() {
             return "La Camada - " + getStringFromResourceBundle("home.title");
@@ -29,7 +29,7 @@ public enum FxmlView {
             return "/fxml/home.fxml";
         }
     },
-    USER(true) {
+    USER(true, false, true) {
         @Override
         public String getTitle() {
             return "La Camada - " + getStringFromResourceBundle("user.title");
@@ -62,7 +62,7 @@ public enum FxmlView {
             return "/fxml/email.fxml";
         }
     },
-    PARTNER(true) {
+    PARTNER(true, false, true) {
         @Override
         public String getTitle() {
             return "La Camada - " + getStringFromResourceBundle("home.title");
@@ -73,7 +73,7 @@ public enum FxmlView {
             return "/fxml/partner.fxml";
         }
     },
-    SPONSOR(true) {
+    SPONSOR(true, false, true) {
         @Override
         public String getTitle() {
             return "La Camada - " + getStringFromResourceBundle("home.title");
@@ -84,7 +84,7 @@ public enum FxmlView {
             return "/fxml/sponsor.fxml";
         }
     },
-    VOLUNTEER(true) {
+    VOLUNTEER(true, false, true) {
         @Override
         public String getTitle() {
             return "La Camada - " + getStringFromResourceBundle("home.title");
@@ -113,18 +113,28 @@ public enum FxmlView {
 
     private boolean resizable;
     private boolean modal;
+    private boolean maximized;
     private String label;
 
     FxmlView(boolean resizable) {
         this.resizable = resizable;
         this.label = name();
         this.modal = false;
+        this.maximized = false;
     }
 
     FxmlView(boolean resizable, boolean modal) {
         this.resizable = resizable;
         this.label = name();
         this.modal = modal;
+        this.maximized = false;
+    }
+
+    FxmlView(boolean resizable, boolean modal, boolean maximized) {
+        this.resizable = resizable;
+        this.label = name();
+        this.modal = modal;
+        this.maximized = maximized;
     }
 
     public boolean isModal() {
@@ -135,6 +145,10 @@ public enum FxmlView {
         return this.resizable;
     }
 
+    public boolean isMaximized() {
+        return this.maximized;
+    }
+
     public Image getIcon() {
         return new Image(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("camada_small.png")));
     }
@@ -142,7 +156,6 @@ public enum FxmlView {
     public String getLabel() {
         return this.label;
     }
-
 
     String getStringFromResourceBundle(String key) {
         return ResourceBundle.getBundle("camada").getString(key);

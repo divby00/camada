@@ -1,13 +1,20 @@
 package org.wildcat.camada.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.wildcat.camada.service.MailService;
 import org.wildcat.camada.service.pojo.MailToDetails;
 
 import javax.activation.DataHandler;
-import javax.mail.*;
+import javax.mail.BodyPart;
+import javax.mail.Message;
+import javax.mail.Multipart;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -15,6 +22,7 @@ import javax.mail.internet.MimeMultipart;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
+@Slf4j
 @Service
 public class MailServiceImpl implements MailService {
 
@@ -61,7 +69,14 @@ public class MailServiceImpl implements MailService {
             session.setDebug(true);
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(userName));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(mailToDetails.getTo()));
+            InternetAddress[] internetAddresses = mailToDetails.getInternetAddresses();
+            String to = mailToDetails.getTo();
+            if (StringUtils.isNotBlank(to)) {
+                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
+            } else if (internetAddresses != null) {
+                message.addRecipients(Message.RecipientType.BCC, internetAddresses);
+            }
+
             message.setSubject(mailToDetails.getSubject());
             BodyPart messageBodyPart = new MimeBodyPart();
             if (mailToDetails.getIsHtml()) {
@@ -83,7 +98,8 @@ public class MailServiceImpl implements MailService {
             transport.sendMessage(message, message.getAllRecipients());
             transport.close();
             result = true;
-        } catch (Throwable ignored) {
+        } catch (Throwable ex) {
+            log.error(ExceptionUtils.getStackTrace(ex));
         }
         return result;
     }

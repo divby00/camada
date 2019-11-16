@@ -93,6 +93,8 @@ public abstract class BaseController<T> implements Initializable {
 
     abstract Pair<Boolean, List<String>> validateDatabaseEntities(File file, int key);
 
+    abstract List<String> getEmails();
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
@@ -242,6 +244,12 @@ public abstract class BaseController<T> implements Initializable {
                 }
             }
         }
+    }
+
+    @FXML
+    public void onSendEmailButtonAction(ActionEvent event) {
+        stageManager.getPrimaryStage().setUserData(getEmails());
+        stageManager.switchScene(FxmlView.EMAIL);
     }
 
     public void onNewButtonAction(ActionEvent event) {
