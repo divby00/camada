@@ -72,7 +72,7 @@ public class LoginController implements Initializable {
 
         // TODO: Remove this!
         username.setText("admin");
-        password.setText("a7U#y6I$k7E$");
+        password.setText("o3T%f4T#u7G$");
     }
 
     @FXML

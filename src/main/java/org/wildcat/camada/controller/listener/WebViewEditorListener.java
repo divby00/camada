@@ -17,8 +17,6 @@ public class WebViewEditorListener {
     public WebViewEditorListener(final WebView editor, ChangeListener<String> listener) {
         this.listener = listener;
         webPage = Accessor.getPageFor(editor.getEngine());
-
-        editor.setOnMouseClicked(e -> onKeyTyped(webPage.getHtml(webPage.getMainFrame())));
         editor.addEventFilter(KeyEvent.KEY_TYPED, e -> onKeyTyped(webPage.getHtml(webPage.getMainFrame())));
     }
 
@@ -30,6 +28,6 @@ public class WebViewEditorListener {
             innerText = text;
             htmlRef = html;
         }
-
     }
+
 }

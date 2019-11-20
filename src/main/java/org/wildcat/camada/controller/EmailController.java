@@ -6,7 +6,14 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.web.HTMLEditor;
 import javafx.scene.web.WebView;
 import javafx.util.Callback;
@@ -16,8 +23,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.controller.listener.WebViewEditorListener;
 import org.wildcat.camada.persistence.entity.EmailTemplate;
@@ -26,13 +31,9 @@ import org.wildcat.camada.service.EmailTemplateService;
 import org.wildcat.camada.service.MailService;
 import org.wildcat.camada.service.pojo.MailToDetails;
 import org.wildcat.camada.service.utils.AlertUtils;
-import org.xml.sax.InputSource;
 
 import javax.annotation.Resource;
 import javax.mail.internet.InternetAddress;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.StringReader;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
@@ -115,20 +116,20 @@ public class EmailController implements Initializable {
         deleteTemplateButton.setDisable(true);
 
         nameTextField.textProperty().addListener((obs, oldVal, newVal) -> {
-            saveTemplateButton.setDisable(hasToDisableSaveButton(newVal, subjectTextField.getText(), nameTextField.getText()));
+            saveTemplateButton.setDisable(hasToDisableSaveButton());
         });
         areaTo.textProperty().addListener((obs, oldVal, newVal) -> {
-            saveTemplateButton.setDisable(hasToDisableSaveButton(newVal, subjectTextField.getText(), nameTextField.getText()));
-            sendEmailButton.setDisable(hasToDisableSendButton(newVal, subjectTextField.getText(), areaTo.getText()));
+            saveTemplateButton.setDisable(hasToDisableSaveButton());
+            sendEmailButton.setDisable(hasToDisableSendButton());
         });
         subjectTextField.textProperty().addListener((obs, oldVal, newVal) -> {
-            saveTemplateButton.setDisable(hasToDisableSaveButton(newVal, subjectTextField.getText(), nameTextField.getText()));
-            sendEmailButton.setDisable(hasToDisableSendButton(newVal, subjectTextField.getText(), areaTo.getText()));
+            saveTemplateButton.setDisable(hasToDisableSaveButton());
+            sendEmailButton.setDisable(hasToDisableSendButton());
         });
         WebView webView = (WebView) htmlEditor.lookup("WebView");
         new WebViewEditorListener(webView, (obs, oldVal, newVal) -> {
-            saveTemplateButton.setDisable(hasToDisableSaveButton(newVal, subjectTextField.getText(), nameTextField.getText()));
-            sendEmailButton.setDisable(hasToDisableSendButton(newVal, subjectTextField.getText(), areaTo.getText()));
+            saveTemplateButton.setDisable(hasToDisableSaveButton());
+            sendEmailButton.setDisable(hasToDisableSendButton());
         });
     }
 
@@ -192,6 +193,7 @@ public class EmailController implements Initializable {
             emailTemplatesTask.setOnSucceeded(taskWorker -> { // Update combo
                 comboEmailTemplates.setItems(emailTemplatesTask.getValue());
                 comboEmailTemplates.getSelectionModel().select(null);
+                deleteTemplateButton.setDisable(true);
                 AlertUtils.showInfo("La plantilla se ha guardado correctamente.");
             });
             emailTemplatesTask.setOnCancelled(taskWorker -> {
@@ -236,10 +238,10 @@ public class EmailController implements Initializable {
             emailTemplatesTask.setOnSucceeded(subWorker -> { // Update combo
                 comboEmailTemplates.setItems(emailTemplatesTask.getValue());
                 comboEmailTemplates.getSelectionModel().select(null);
+                deleteTemplateButton.setDisable(hasToDisableDeleteButton());
+                subjectTextField.setText(null);
                 publicCheck.setSelected(false);
                 nameTextField.setText(null);
-                subjectTextField.setText(null);
-                deleteTemplateButton.setDisable(true);
                 AlertUtils.showInfo("La plantilla se ha borrado correctamente.");
             });
             emailTemplatesTask.setOnFailed(subWorker -> {
@@ -267,10 +269,11 @@ public class EmailController implements Initializable {
                 subjectTextField.setText(newVal.getSubject());
                 publicCheck.setSelected(newVal.getIsPublic());
                 htmlEditor.setHtmlText(newVal.getContent());
-                boolean isNotUser = !StringUtils.equalsIgnoreCase(camadaUserService.getUser().getName(), newVal.getUserName());
-                deleteTemplateButton.setDisable(isNotUser);
-                publicCheck.setDisable(isNotUser);
-                nameTextField.setDisable(isNotUser);
+                saveTemplateButton.setDisable(hasToDisableSaveButton());
+                sendEmailButton.setDisable(hasToDisableSendButton());
+                deleteTemplateButton.setDisable(hasToDisableDeleteButton());
+                publicCheck.setDisable(hasToDisableDeleteButton());
+                nameTextField.setDisable(hasToDisableDeleteButton());
             }
         });
     }
@@ -314,33 +317,39 @@ public class EmailController implements Initializable {
         return internetAddresses;
     }
 
-    private boolean isHtmlEditorEmpty() {
-        boolean result = false;
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder documentBuilder = factory.newDocumentBuilder();
-            Document document = documentBuilder.parse(new InputSource(new StringReader(htmlEditor.getHtmlText())));
-            NodeList body = document.getElementsByTagName("body");
-            result = StringUtils.isEmpty(body.item(0).getTextContent());
-        } catch (Exception ex) {
-            log.warn(ExceptionUtils.getStackTrace(ex));
-        }
-        return result;
-    }
-
-    private boolean hasToDisableSaveButton(String... textFields) {
+    private boolean hasToDisableSaveButton() {
         EmailTemplate selectedItem = comboEmailTemplates.getSelectionModel().getSelectedItem();
-        boolean anyBlank = StringUtils.isAnyBlank(textFields) || isHtmlEditorEmpty();
+        boolean anyBlank = StringUtils.isAnyBlank(htmlEditor.getHtmlText(), subjectTextField.getText(), nameTextField.getText());
+        boolean isNotUser;
         if (selectedItem != null) {
-            boolean isNotUser = !StringUtils.equalsIgnoreCase(selectedItem.getUserName(), camadaUserService.getUser().getName());
-            return anyBlank || isNotUser;
+            isNotUser = !StringUtils.equalsIgnoreCase(selectedItem.getUserName(), camadaUserService.getUser().getName());
+            return anyBlank || isEmptyHtml(htmlEditor.getHtmlText()) || isNotUser;
         } else {
-            return anyBlank;
+            return anyBlank || isEmptyHtml(htmlEditor.getHtmlText());
         }
     }
 
-    private boolean hasToDisableSendButton(String... textFields) {
-        return StringUtils.isAnyBlank(textFields) || isHtmlEditorEmpty();
+    private boolean hasToDisableSendButton() {
+        return StringUtils.isAnyBlank(htmlEditor.getHtmlText(), subjectTextField.getText(), areaTo.getText())
+                || isEmptyHtml(htmlEditor.getHtmlText());
+    }
+
+    private boolean hasToDisableDeleteButton() {
+        EmailTemplate selectedItem = comboEmailTemplates.getSelectionModel().getSelectedItem();
+        if (selectedItem != null) {
+            return !StringUtils.equalsIgnoreCase(camadaUserService.getUser().getName(), selectedItem.getUserName());
+        } else {
+            return true;
+        }
+    }
+
+    private boolean isEmptyHtml(String htmlText) {
+        final String[] emptyHtml = new String[] {
+                "<html dir=\"ltr\"><head></head><body contenteditable=\"true\"></body></html>",
+                "<html dir=\"ltr\"><head></head><body contenteditable=\"true\"><p></p></body></html>",
+                "<html dir=\"ltr\"><head></head><body contenteditable=\"true\"><p><br></p></body></html>",
+        };
+        return StringUtils.equalsAny(htmlText, emptyHtml);
     }
 
 }

@@ -13,10 +13,14 @@ public class Partner implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
+    @Column(name = "camada_id")
+    private Long camadaId;
     @Column(name = "amount")
     private Double amount;
     @Column(name = "payment_frequency")
     private PaymentFrequency paymentFrequency;
     @OneToOne
     private PersonalData personalData;
+    @OneToOne
+    private BankingData bankingData;
 }
