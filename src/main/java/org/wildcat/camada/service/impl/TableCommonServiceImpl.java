@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.wildcat.camada.common.enumerations.CustomTableColumn;
 import org.wildcat.camada.controller.pojo.AppTableColumn;
-import org.wildcat.camada.persistence.entity.CamadaUser;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.TableCommonService;
 import org.wildcat.camada.service.utils.AlertUtils;
@@ -23,7 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Service
-public class TableCommonServiceImpl implements TableCommonService {
+public class TableCommonServiceImpl<T> implements TableCommonService<T> {
 
     private final CamadaUserService camadaUserService;
 
@@ -32,10 +31,16 @@ public class TableCommonServiceImpl implements TableCommonService {
         this.camadaUserService = camadaUserService;
     }
 
-    public TableCell<CamadaUser, Date> getDateTableCell(String pattern) {
-        TableCell<CamadaUser, Date> cell = new TableCell<CamadaUser, Date>() {
-            private SimpleDateFormat format = new SimpleDateFormat(pattern);
+    @Override
+    public void initCheckBoxTableCell(TableColumn<T, Boolean> column, CustomTableColumn param, TableView<T> table, ProgressIndicator progressIndicator) {
+        column.setCellValueFactory(c -> new SimpleBooleanProperty(param.getBooleanProperty(c)));
+        column.setCellFactory(p -> getCheckBoxTableCell(param, table, progressIndicator));
+    }
 
+    @Override
+    public TableCell<T, Date> getDateTableCell(String pattern) {
+        TableCell<T, Date> cell = new TableCell<T, Date>() {
+            private SimpleDateFormat format = new SimpleDateFormat(pattern);
             @Override
             protected void updateItem(Date item, boolean empty) {
                 super.updateItem(item, empty);
@@ -50,13 +55,13 @@ public class TableCommonServiceImpl implements TableCommonService {
     }
 
     @Override
-    public <T> void initTextFieldTableCell(AppTableColumn<T> appColumn, TableView table, ProgressIndicator progressIndicator) {
-        appColumn.getColumn().setCellValueFactory(new PropertyValueFactory<>(appColumn.getColumnName()));
-        appColumn.getColumn().setCellFactory(TextFieldTableCell.forTableColumn());
-        appColumn.getColumn().setOnEditCommit(event -> {
+    public void initTextFieldTableCell(AppTableColumn<T> tableColumn, TableView table, ProgressIndicator progressIndicator) {
+        tableColumn.getColumn().setCellValueFactory(new PropertyValueFactory<>(tableColumn.getColumnName()));
+        tableColumn.getColumn().setCellFactory(TextFieldTableCell.forTableColumn());
+        tableColumn.getColumn().setOnEditCommit(event -> {
             String newValue = event.getNewValue();
-            String oldValue = appColumn.getCustomTableColumn().getOldValue(event);
-            boolean validates = appColumn.getValidator().validate(newValue);
+            String oldValue = tableColumn.getCustomTableColumn().getOldValue(event);
+            boolean validates = tableColumn.getValidator().validate(newValue);
             if (newValue.equals(oldValue) || !validates) {
                 if (!validates) {
                     AlertUtils.showError("El campo es incorrecto.");
@@ -71,7 +76,7 @@ public class TableCommonServiceImpl implements TableCommonService {
                     protected Boolean call() {
                         boolean result = false;
                         try {
-                            appColumn.getCustomTableColumn().setNewValue(event, newValue, camadaUserService);
+                            tableColumn.getCustomTableColumn().setNewValue(event, newValue, camadaUserService);
                             result = true;
                         } catch (Exception ignored) {
                         }
@@ -95,21 +100,15 @@ public class TableCommonServiceImpl implements TableCommonService {
                     AlertUtils.showError("Ha ocurrido un error al actualizar el campo.");
                 });
             } else {
-                appColumn.getCustomTableColumn().setOldValue(event, oldValue);
+                tableColumn.getCustomTableColumn().setOldValue(event, oldValue);
                 table.refresh();
             }
         });
     }
 
-    @Override
-    public void initCheckBoxTableCell(TableColumn<CamadaUser, Boolean> column, CustomTableColumn param, TableView<CamadaUser> table, ProgressIndicator progressIndicator) {
-        column.setCellValueFactory(c -> new SimpleBooleanProperty(param.getBooleanProperty(c)));
-        column.setCellFactory(p -> getCheckBoxTableCell(param, table, progressIndicator));
-    }
-
-    private TableCell<CamadaUser, Boolean> getCheckBoxTableCell(CustomTableColumn param, TableView table, ProgressIndicator progressIndicator) {
+    private <T> TableCell<T, Boolean> getCheckBoxTableCell(CustomTableColumn param, TableView table, ProgressIndicator progressIndicator) {
         CheckBox checkBox = new CheckBox();
-        TableCell<CamadaUser, Boolean> tableCell = new TableCell<CamadaUser, Boolean>() {
+        TableCell<T, Boolean> tableCell = new TableCell<T, Boolean>() {
             @Override
             protected void updateItem(Boolean item, boolean empty) {
                 super.updateItem(item, empty);
@@ -126,9 +125,10 @@ public class TableCommonServiceImpl implements TableCommonService {
             protected Boolean call() {
                 boolean result = false;
                 try {
-                    CamadaUser item = (CamadaUser) tableCell.getTableRow().getItem();
+                    T item = (T) tableCell.getTableRow().getItem();
                     param.setBooleanProperty(item, checkBox);
-                    camadaUserService.save(item);
+                    // TODO: Add proper service
+                    //camadaUserService.save(item);
                     table.refresh();
                     result = true;
                 } catch (Exception ignored) {

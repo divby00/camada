@@ -31,10 +31,8 @@ public class BankingData implements Serializable {
     private Long id;
     @Column(name = "name")
     private String name;
-    @Column(name = "surname1")
-    private String surname1;
-    @Column(name = "surname2")
-    private String surname2;
+    @Column(name = "surnames")
+    private String surnames;
     @Column(name = "iban")
     private String iban;
 }
