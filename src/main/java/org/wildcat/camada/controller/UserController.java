@@ -85,12 +85,12 @@ public class UserController extends BaseController<CamadaUser> {
     private ProgressIndicator progressIndicator;
 
     @Resource
-    private final TableCommonService tableCommonService;
+    private final TableCommonService<CamadaUser> tableCommonService;
 
     @Resource
     private final CamadaUserService camadaUserService;
 
-    public UserController(TableCommonService tableCommonService, CamadaUserService camadaUserService,
+    public UserController(TableCommonService<CamadaUser> tableCommonService, CamadaUserService camadaUserService,
             CustomQueryService customQueryService) {
         super(customQueryService, FxmlView.NEW_USER);
         this.tableCommonService = tableCommonService;

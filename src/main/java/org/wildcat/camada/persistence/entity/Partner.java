@@ -1,5 +1,6 @@
 package org.wildcat.camada.persistence.entity;
 
+import lombok.*;
 import org.wildcat.camada.persistence.PaymentFrequency;
 
 import javax.persistence.*;
@@ -7,6 +8,12 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "partner")
+@Getter
+@Setter
+@ToString
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Partner implements Serializable {
     private static final long serialVersionUID = 5L;
     @Id

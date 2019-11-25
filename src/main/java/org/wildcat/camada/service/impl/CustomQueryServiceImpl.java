@@ -25,7 +25,7 @@ public class CustomQueryServiceImpl implements CustomQueryService {
 
     @Override
     public List<CustomQuery> findAllBySection(FxmlView view) {
-        final String viewLabel = view.getLabel();
+        final String viewLabel = StringUtils.replace(view.getLabel(), "NEW_", "");
         List<String> sectionQueries = Arrays.stream(CamadaQuery.values())
                 .filter(query -> StringUtils.equalsIgnoreCase(query.getSection(), (viewLabel)))
                 .map(Enum::name)

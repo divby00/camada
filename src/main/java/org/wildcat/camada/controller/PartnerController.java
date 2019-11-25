@@ -1,13 +1,18 @@
 package org.wildcat.camada.controller;
 
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -18,8 +23,7 @@ import org.wildcat.camada.common.validator.impl.NewUserValidatorImpl;
 import org.wildcat.camada.common.validator.impl.TextValidatorImpl;
 import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.controller.pojo.AppTableColumn;
-import org.wildcat.camada.persistence.entity.CustomQuery;
-import org.wildcat.camada.persistence.entity.Partner;
+import org.wildcat.camada.persistence.entity.*;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.CustomQueryService;
 import org.wildcat.camada.service.PartnerService;
@@ -42,7 +46,7 @@ public class PartnerController extends BaseController<Partner> {
     private final CamadaUserService camadaUserService;
 
     @Resource
-    private final TableCommonService tableCommonService;
+    private final TableCommonService<Partner> tableCommonService;
 
     @Resource
     private final PartnerService partnerService;
@@ -52,6 +56,9 @@ public class PartnerController extends BaseController<Partner> {
 
     @FXML
     private ProgressIndicator progressIndicator;
+
+    @FXML
+    private TextField searchTextField;
 
     @FXML
     private TableColumn<Partner, String> name;
@@ -96,7 +103,7 @@ public class PartnerController extends BaseController<Partner> {
     private TableColumn<Partner, String> bankSurnames;
 
     public PartnerController(CamadaUserService camadaUserService, PartnerService partnerService,
-                             CustomQueryService customQueryService, TableCommonService tableCommonService) {
+                             CustomQueryService customQueryService, TableCommonService<Partner> tableCommonService) {
         super(customQueryService, FxmlView.NEW_PARTNER);
         this.camadaUserService = camadaUserService;
         this.partnerService = partnerService;
@@ -138,17 +145,43 @@ public class PartnerController extends BaseController<Partner> {
 
         birthDate.setCellValueFactory(new PropertyValueFactory<>("birthDate"));
         birthDate.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy"));
-
     }
 
     @Override
     void setTableItems(Task<ObservableList<Partner>> task) {
-
+        FilteredList<Partner> filteredData = new FilteredList<>(tableData, p -> true);
+        searchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredData.setPredicate(partner -> {
+                PersonalData personalData = partner.getPersonalData();
+                BankingData bankingData = partner.getBankingData();
+                return newValue == null || newValue.isEmpty()
+                        || StringUtils.containsIgnoreCase(personalData.getName(), newValue)
+                        || StringUtils.containsIgnoreCase(personalData.getSurnames(), newValue)
+                        || StringUtils.containsIgnoreCase(personalData.getDni(), newValue)
+                        || StringUtils.containsIgnoreCase(personalData.getAddress(), newValue)
+                        || StringUtils.containsIgnoreCase(personalData.getLocation(), newValue)
+                        || StringUtils.containsIgnoreCase(personalData.getProvince(), newValue)
+                        || StringUtils.containsIgnoreCase(personalData.getPhone1(), newValue)
+                        || StringUtils.containsIgnoreCase(personalData.getPhone2(), newValue)
+                        || StringUtils.containsIgnoreCase(personalData.getEmail(), newValue)
+                        || StringUtils.containsIgnoreCase(bankingData.getIban(), newValue)
+                        || StringUtils.containsIgnoreCase(bankingData.getName(), newValue)
+                        || StringUtils.containsIgnoreCase(bankingData.getSurnames(), newValue);
+            });
+            SortedList<Partner> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(table.comparatorProperty());
+            table.setItems(FXCollections.observableList(sortedData));
+            table.refresh();
+        });
+        SortedList<Partner> sortedData = new SortedList<>(filteredData);
+        sortedData.comparatorProperty().bind(table.comparatorProperty());
+        table.setItems(FXCollections.observableList(filteredData));
+        table.refresh();
     }
 
     @Override
     List<Partner> findAllByCustomQuery(CustomQuery value) {
-        return null;
+        return partnerService.findAllByCustomQuery(value);
     }
 
     @Override

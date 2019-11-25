@@ -106,7 +106,7 @@ public abstract class BaseController<T> implements Initializable {
         Task<ObservableList<CustomQuery>> taskCustomQueries = new Task<ObservableList<CustomQuery>>() {
             @Override
             protected ObservableList<CustomQuery> call() {
-                List<CustomQuery> queries = customQueryService.findAllBySection(FxmlView.USER);
+                List<CustomQuery> queries = customQueryService.findAllBySection(newEntityView);
                 return FXCollections.observableList(queries);
             }
         };
