@@ -35,7 +35,7 @@ public class PartnerServiceImpl implements PartnerService {
             case NEW_PARTNERS:
                 partners = null;
                 break;
-            case FORMER_PARTNERS:
+            case ALL_FORMER_PARTNERS:
                 partners = null;
                 break;
             case LAST_MONTH_FORMER_PARTNERS:
