@@ -45,9 +45,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.ResourceBundle;
 
-public abstract class BaseController<T> implements Initializable {
+public abstract class BaseController<T, U> implements Initializable {
 
-    ObservableList<T> tableData;
+    ObservableList<U> tableData;
 
     @FXML
     private ProgressIndicator progressIndicator;
@@ -62,7 +62,7 @@ public abstract class BaseController<T> implements Initializable {
     private TextField searchTextField;
 
     @FXML
-    private TableView<T> table;
+    private TableView<U> table;
 
     @Resource
     private final CustomQueryService customQueryService;
@@ -81,11 +81,11 @@ public abstract class BaseController<T> implements Initializable {
 
     abstract void initTable();
 
-    abstract void setTableItems(Task<ObservableList<T>> task);
+    abstract void setTableItems(Task<ObservableList<U>> task);
 
-    abstract List<T> findAllByCustomQuery(CustomQuery value);
+    abstract List<U> findAllByCustomQuery(CustomQuery value);
 
-    abstract void delete(T item);
+    abstract void delete(U item);
 
     abstract void save(T item);
 
@@ -118,7 +118,7 @@ public abstract class BaseController<T> implements Initializable {
             customQueriesComboBox.setItems(queries);
             initCustomQueriesCombo(customQueriesComboBox);
 
-            Task<ObservableList<T>> taskTableItems = getObservableListTask(customQueriesComboBox.getValue());
+            Task<ObservableList<U>> taskTableItems = getObservableListTask(customQueriesComboBox.getValue());
             progressIndicator.visibleProperty().bind(taskTableItems.runningProperty());
             new Thread(taskTableItems).start();
             taskTableItems.setOnSucceeded(workerState -> {
@@ -133,7 +133,7 @@ public abstract class BaseController<T> implements Initializable {
             });
 
             customQueriesComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
-                Task<ObservableList<T>> taskListListener = getObservableListTask(newVal);
+                Task<ObservableList<U>> taskListListener = getObservableListTask(newVal);
                 progressIndicator.visibleProperty().bind(taskListListener.runningProperty());
                 new Thread(taskListListener).start();
                 taskListListener.setOnSucceeded(workerState -> {
@@ -282,11 +282,11 @@ public abstract class BaseController<T> implements Initializable {
         };
     }
 
-    private Task<ObservableList<T>> getObservableListTask(CustomQuery value) {
-        return new Task<ObservableList<T>>() {
+    private Task<ObservableList<U>> getObservableListTask(CustomQuery value) {
+        return new Task<ObservableList<U>>() {
             @Override
-            protected ObservableList<T> call() {
-                List<T> allByCustomQuery = findAllByCustomQuery(value);
+            protected ObservableList<U> call() {
+                List<U> allByCustomQuery = findAllByCustomQuery(value);
                 return FXCollections.observableList(allByCustomQuery);
             }
         };
@@ -294,9 +294,9 @@ public abstract class BaseController<T> implements Initializable {
 
     private void addContextMenu() {
         table.setRowFactory(tableView -> {
-            final TableRow<T> row = new TableRow<T>() {
+            final TableRow<U> row = new TableRow<U>() {
                 @Override
-                protected void updateItem(T item, boolean empty) {
+                protected void updateItem(U item, boolean empty) {
                     super.updateItem(item, empty);
                 }
             };
@@ -306,7 +306,7 @@ public abstract class BaseController<T> implements Initializable {
             removeItem.setOnAction(event -> {
                 ButtonType buttonType = AlertUtils.showConfirmation("¿Quieres borrar el registro?");
                 if (buttonType == ButtonType.YES) {
-                    T item = row.getItem();
+                    U item = row.getItem();
                     Task<Boolean> deleteRegisterTask = new Task<Boolean>() {
                         @Override
                         protected Boolean call() {

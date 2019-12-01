@@ -37,7 +37,7 @@ public class PersonalData implements Serializable {
     @Column(name = "address")
     private String address;
     @Column(name = "post_code")
-    private Long postCode;
+    private String postCode;
     @Column(name = "location")
     private String location;
     @Column(name = "province")

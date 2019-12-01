@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
-public class UserController extends BaseController<CamadaUser> {
+public class UserController extends BaseController<CamadaUser, CamadaUser> {
 
     @FXML
     private TableView<CamadaUser> table;

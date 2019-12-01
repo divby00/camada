@@ -3,7 +3,7 @@ package org.wildcat.camada.service.impl;
 import org.springframework.stereotype.Service;
 import org.wildcat.camada.common.enumerations.CamadaQuery;
 import org.wildcat.camada.persistence.entity.CustomQuery;
-import org.wildcat.camada.persistence.entity.Partner;
+import org.wildcat.camada.persistence.dto.PartnerView;
 import org.wildcat.camada.persistence.repository.PartnerRepository;
 import org.wildcat.camada.service.PartnerService;
 
@@ -25,12 +25,12 @@ public class PartnerServiceImpl implements PartnerService {
 
 
     @Override
-    public List<Partner> findAllByCustomQuery(CustomQuery customQuery) {
-        List<Partner> partners = new ArrayList<>();
+    public List<PartnerView> findAllByCustomQuery(CustomQuery customQuery) {
+        List<PartnerView> partners = new ArrayList<>();
         CamadaQuery query = valueOf(customQuery.getQuery());
         switch (query) {
             case ALL_PARTNERS:
-                partners = (List<Partner>) partnerRepository.findAll();
+                partners = partnerRepository.findAllPartners();
                 break;
             case NEW_PARTNERS:
                 partners = null;

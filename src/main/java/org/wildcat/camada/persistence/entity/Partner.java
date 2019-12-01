@@ -24,6 +24,7 @@ public class Partner implements Serializable {
     private Long camadaId;
     @Column(name = "amount")
     private Double amount;
+    @Enumerated(EnumType.STRING)
     @Column(name = "payment_frequency")
     private PaymentFrequency paymentFrequency;
     @OneToOne
