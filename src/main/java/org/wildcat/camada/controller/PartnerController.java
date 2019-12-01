@@ -35,6 +35,7 @@ import javax.annotation.Resource;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class PartnerController extends BaseController<Partner, PartnerView> {
@@ -137,7 +138,7 @@ public class PartnerController extends BaseController<Partner, PartnerView> {
         tableCommonService.initTextFieldTableCell(emailColumn, table, progressIndicator);
 
         // TODO: Add IBAN validator
-        AppTableColumn<PartnerView> ibanColumn = new AppTableColumn<>(iban, "IBAN", new TextValidatorImpl(3, 20), CustomTableColumn.PARTNER_IBAN);
+        AppTableColumn<PartnerView> ibanColumn = new AppTableColumn<>(iban, "iban", new TextValidatorImpl(3, 20), CustomTableColumn.PARTNER_IBAN);
         tableCommonService.initTextFieldTableCell(ibanColumn, table, progressIndicator);
         AppTableColumn<PartnerView> bankNameColumn = new AppTableColumn<>(bankName, "bankName", new TextValidatorImpl(3, 20), CustomTableColumn.PARTNER_BANK_NAME);
         tableCommonService.initTextFieldTableCell(bankNameColumn, table, progressIndicator);
@@ -205,7 +206,9 @@ public class PartnerController extends BaseController<Partner, PartnerView> {
 
     @Override
     List<String> getEmails() {
-        return null;
+        return table.getItems().stream()
+                .map(PartnerView::getEmail)
+                .collect(Collectors.toList());
     }
 
 }
