@@ -44,4 +44,9 @@ public class PartnerServiceImpl implements PartnerService {
         }
         return partners;
     }
+
+    @Override
+    public void delete(Long id) {
+        partnerRepository.deleteById(id);
+    }
 }

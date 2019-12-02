@@ -8,6 +8,6 @@ import java.util.List;
 public interface PartnerService {
 
     List<PartnerView> findAllByCustomQuery(CustomQuery customQuery);
-    //List<PartnerView> findPartnerDTOs();
+    void delete(Long id);
 
 }

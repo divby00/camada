@@ -11,8 +11,11 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -23,6 +26,7 @@ import org.wildcat.camada.common.validator.impl.NewUserValidatorImpl;
 import org.wildcat.camada.common.validator.impl.TextValidatorImpl;
 import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.controller.pojo.AppTableColumn;
+import org.wildcat.camada.persistence.PaymentFrequency;
 import org.wildcat.camada.persistence.dto.PartnerView;
 import org.wildcat.camada.persistence.entity.*;
 import org.wildcat.camada.service.CamadaUserService;
@@ -37,6 +41,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Controller
 public class PartnerController extends BaseController<Partner, PartnerView> {
 
@@ -186,7 +191,7 @@ public class PartnerController extends BaseController<Partner, PartnerView> {
 
     @Override
     void delete(PartnerView item) {
-
+        partnerService.delete(item.getId());
     }
 
     @Override
@@ -196,7 +201,33 @@ public class PartnerController extends BaseController<Partner, PartnerView> {
 
     @Override
     Partner buildEntityFromCsvRecord(CSVRecord csvRecord) {
-        return null;
+        Partner partner = new Partner();
+        try {
+            PersonalData personalData = new PersonalData();
+            personalData.setName(csvRecord.get(0));
+            personalData.setSurnames(csvRecord.get(1));
+            personalData.setBirthDate(DateUtils.parseDate(csvRecord.get(2)));
+            personalData.setDni(csvRecord.get(3));
+            personalData.setAddress(csvRecord.get(4));
+            personalData.setPostCode(csvRecord.get(5));
+            personalData.setLocation(csvRecord.get(6));
+            personalData.setProvince(csvRecord.get(7));
+            personalData.setPhone1(csvRecord.get(8));
+            personalData.setPhone2(csvRecord.get(9));
+            personalData.setEmail(csvRecord.get(10));
+            BankingData bankingData = new BankingData();
+            bankingData.setIban(csvRecord.get(11));
+            bankingData.setName(csvRecord.get(12));
+            bankingData.setSurnames(csvRecord.get(13));
+            partner.setPersonalData(personalData);
+            partner.setBankingData(bankingData);
+            partner.setAmount(Double.valueOf(csvRecord.get(14)));
+            partner.setPaymentFrequency(PaymentFrequency.valueOf(csvRecord.get(15)));
+            partner.setCamadaId(csvRecord.get(16));
+        } catch (Exception ex) {
+            log.warn(ExceptionUtils.getStackTrace(ex));
+        }
+        return partner;
     }
 
     @Override

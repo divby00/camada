@@ -21,14 +21,14 @@ public class Partner implements Serializable {
     @Column(name = "id")
     private Long id;
     @Column(name = "camada_id")
-    private Long camadaId;
+    private String camadaId;
     @Column(name = "amount")
     private Double amount;
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_frequency")
     private PaymentFrequency paymentFrequency;
-    @OneToOne
+    @OneToOne(orphanRemoval = true)
     private PersonalData personalData;
-    @OneToOne
+    @OneToOne(orphanRemoval = true)
     private BankingData bankingData;
 }
