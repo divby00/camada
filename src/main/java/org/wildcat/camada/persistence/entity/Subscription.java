@@ -9,6 +9,8 @@ import org.wildcat.camada.persistence.Role;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -36,9 +38,10 @@ public class Subscription implements Serializable {
     private Date subscribedFrom;
     @Column(name = "subscribed_to")
     private Date subscribedTo;
+    @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private Role role;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "fk_partner")
     private Partner partner;
 }

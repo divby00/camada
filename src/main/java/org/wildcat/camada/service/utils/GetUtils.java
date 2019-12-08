@@ -5,8 +5,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.function.Supplier;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 @Slf4j
 public class GetUtils {
 

@@ -3,229 +3,229 @@ package org.wildcat.camada.common.enumerations;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableColumn;
 import org.wildcat.camada.persistence.entity.CamadaUser;
-import org.wildcat.camada.persistence.dto.PartnerView;
+import org.wildcat.camada.persistence.dto.PartnerDTO;
 import org.wildcat.camada.service.SavingService;
 
 public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColumn {
     PARTNER_NAME {
         @Override
         public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {
-            return ((PartnerView) event.getRowValue()).getName();
+            return ((PartnerDTO) event.getRowValue()).getName();
         }
 
         @Override
         public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerView) event.getRowValue()).setName(newValue);
+            ((PartnerDTO) event.getRowValue()).setName(newValue);
             service.saveEntity(event.getRowValue());
         }
 
         @Override
         public <T> void setOldValue(TableColumn.CellEditEvent<T, String> event, String oldValue) {
-            ((PartnerView) event.getRowValue()).setName(oldValue);
+            ((PartnerDTO) event.getRowValue()).setName(oldValue);
         }
     },
     PARTNER_SURNAMES {
         @Override
         public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {
-            return ((PartnerView) event.getRowValue()).getSurnames();
+            return ((PartnerDTO) event.getRowValue()).getSurnames();
         }
 
         @Override
         public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerView) event.getRowValue()).setSurnames(newValue);
+            ((PartnerDTO) event.getRowValue()).setSurnames(newValue);
             service.saveEntity(event.getRowValue());
         }
 
         @Override
         public <T> void setOldValue(TableColumn.CellEditEvent<T, String> event, String oldValue) {
-            ((PartnerView) event.getRowValue()).setSurnames(oldValue);
+            ((PartnerDTO) event.getRowValue()).setSurnames(oldValue);
         }
     },
     PARTNER_DNI {
         @Override
         public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {
-            return ((PartnerView) event.getRowValue()).getDni();
+            return ((PartnerDTO) event.getRowValue()).getDni();
         }
 
         @Override
         public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerView) event.getRowValue()).setDni(newValue);
+            ((PartnerDTO) event.getRowValue()).setDni(newValue);
             service.saveEntity(event.getRowValue());
         }
 
         @Override
         public <T> void setOldValue(TableColumn.CellEditEvent<T, String> event, String oldValue) {
-            ((PartnerView) event.getRowValue()).setDni(oldValue);
+            ((PartnerDTO) event.getRowValue()).setDni(oldValue);
         }
     },
     PARTNER_ADDRESS {
         @Override
         public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {
-            return ((PartnerView) event.getRowValue()).getAddress();
+            return ((PartnerDTO) event.getRowValue()).getAddress();
         }
 
         @Override
         public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerView) event.getRowValue()).setAddress(newValue);
+            ((PartnerDTO) event.getRowValue()).setAddress(newValue);
             service.saveEntity(event.getRowValue());
         }
 
         @Override
         public <T> void setOldValue(TableColumn.CellEditEvent<T, String> event, String oldValue) {
-            ((PartnerView) event.getRowValue()).setAddress(oldValue);
+            ((PartnerDTO) event.getRowValue()).setAddress(oldValue);
         }
     },
     PARTNER_POST_CODE {
         @Override
         public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {
-            return ((PartnerView) event.getRowValue()).getPostCode();
+            return ((PartnerDTO) event.getRowValue()).getPostCode();
         }
 
         @Override
         public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerView) event.getRowValue()).setPostCode(newValue);
+            ((PartnerDTO) event.getRowValue()).setPostCode(newValue);
             service.saveEntity(event.getRowValue());
         }
 
         @Override
         public <T> void setOldValue(TableColumn.CellEditEvent<T, String> event, String oldValue) {
-            ((PartnerView) event.getRowValue()).setPostCode(oldValue);
+            ((PartnerDTO) event.getRowValue()).setPostCode(oldValue);
         }
     },
     PARTNER_LOCATION {
         @Override
         public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {
-            return ((PartnerView) event.getRowValue()).getLocation();
+            return ((PartnerDTO) event.getRowValue()).getLocation();
         }
 
         @Override
         public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerView) event.getRowValue()).setLocation(newValue);
+            ((PartnerDTO) event.getRowValue()).setLocation(newValue);
             service.saveEntity(event.getRowValue());
         }
 
         @Override
         public <T> void setOldValue(TableColumn.CellEditEvent<T, String> event, String oldValue) {
-            ((PartnerView) event.getRowValue()).setLocation(oldValue);
+            ((PartnerDTO) event.getRowValue()).setLocation(oldValue);
         }
     },
     PARTNER_PROVINCE {
         @Override
         public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {
-            return ((PartnerView) event.getRowValue()).getProvince();
+            return ((PartnerDTO) event.getRowValue()).getProvince();
         }
 
         @Override
         public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerView) event.getRowValue()).setProvince(newValue);
+            ((PartnerDTO) event.getRowValue()).setProvince(newValue);
             service.saveEntity(event.getRowValue());
         }
 
         @Override
         public <T> void setOldValue(TableColumn.CellEditEvent<T, String> event, String oldValue) {
-            ((PartnerView) event.getRowValue()).setProvince(oldValue);
+            ((PartnerDTO) event.getRowValue()).setProvince(oldValue);
         }
     },
     PARTNER_PHONE1 {
         @Override
         public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {
-            return ((PartnerView) event.getRowValue()).getPhone1();
+            return ((PartnerDTO) event.getRowValue()).getPhone1();
         }
 
         @Override
         public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerView) event.getRowValue()).setPhone1(newValue);
+            ((PartnerDTO) event.getRowValue()).setPhone1(newValue);
             service.saveEntity(event.getRowValue());
         }
 
         @Override
         public <T> void setOldValue(TableColumn.CellEditEvent<T, String> event, String oldValue) {
-            ((PartnerView) event.getRowValue()).setPhone1(oldValue);
+            ((PartnerDTO) event.getRowValue()).setPhone1(oldValue);
         }
     },
     PARTNER_PHONE2 {
         @Override
         public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {
-            return ((PartnerView) event.getRowValue()).getPhone2();
+            return ((PartnerDTO) event.getRowValue()).getPhone2();
         }
 
         @Override
         public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerView) event.getRowValue()).setPhone2(newValue);
+            ((PartnerDTO) event.getRowValue()).setPhone2(newValue);
             service.saveEntity(event.getRowValue());
         }
 
         @Override
         public <T> void setOldValue(TableColumn.CellEditEvent<T, String> event, String oldValue) {
-            ((PartnerView) event.getRowValue()).setPhone2(oldValue);
+            ((PartnerDTO) event.getRowValue()).setPhone2(oldValue);
         }
     },
     PARTNER_EMAIL {
         @Override
         public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {
-            return ((PartnerView) event.getRowValue()).getEmail();
+            return ((PartnerDTO) event.getRowValue()).getEmail();
         }
 
         @Override
         public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerView) event.getRowValue()).setEmail(newValue);
+            ((PartnerDTO) event.getRowValue()).setEmail(newValue);
             service.saveEntity(event.getRowValue());
         }
 
         @Override
         public <T> void setOldValue(TableColumn.CellEditEvent<T, String> event, String oldValue) {
-            ((PartnerView) event.getRowValue()).setEmail(oldValue);
+            ((PartnerDTO) event.getRowValue()).setEmail(oldValue);
         }
     },
     PARTNER_IBAN {
         @Override
         public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {
-            return ((PartnerView) event.getRowValue()).getIban();
+            return ((PartnerDTO) event.getRowValue()).getIban();
         }
 
         @Override
         public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerView) event.getRowValue()).setIban(newValue);
+            ((PartnerDTO) event.getRowValue()).setIban(newValue);
             service.saveEntity(event.getRowValue());
         }
 
         @Override
         public <T> void setOldValue(TableColumn.CellEditEvent<T, String> event, String oldValue) {
-            ((PartnerView) event.getRowValue()).setIban(oldValue);
+            ((PartnerDTO) event.getRowValue()).setIban(oldValue);
         }
     },
     PARTNER_BANK_NAME {
         @Override
         public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {
-            return ((PartnerView) event.getRowValue()).getBankName();
+            return ((PartnerDTO) event.getRowValue()).getBankName();
         }
 
         @Override
         public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerView) event.getRowValue()).setBankName(newValue);
+            ((PartnerDTO) event.getRowValue()).setBankName(newValue);
             service.saveEntity(event.getRowValue());
         }
 
         @Override
         public <T> void setOldValue(TableColumn.CellEditEvent<T, String> event, String oldValue) {
-            ((PartnerView) event.getRowValue()).setBankName(oldValue);
+            ((PartnerDTO) event.getRowValue()).setBankName(oldValue);
         }
     },
     PARTNER_BANK_SURNAMES {
         @Override
         public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {
-            return ((PartnerView) event.getRowValue()).getBankSurnames();
+            return ((PartnerDTO) event.getRowValue()).getBankSurnames();
         }
 
         @Override
         public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerView) event.getRowValue()).setBankSurnames(newValue);
+            ((PartnerDTO) event.getRowValue()).setBankSurnames(newValue);
             service.saveEntity(event.getRowValue());
         }
 
         @Override
         public <T> void setOldValue(TableColumn.CellEditEvent<T, String> event, String oldValue) {
-            ((PartnerView) event.getRowValue()).setBankSurnames(oldValue);
+            ((PartnerDTO) event.getRowValue()).setBankSurnames(oldValue);
         }
     },
 

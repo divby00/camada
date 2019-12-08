@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface CustomQueryRepository extends CrudRepository<CustomQuery, Long> {
-    List<CustomQuery> findAllByQueryIn(List<String> queryNames);
+    List<CustomQuery> findAllByQueryInOrderByZorder(List<String> queryNames);
 }

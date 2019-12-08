@@ -15,10 +15,12 @@ public interface CamadaUserRepository extends CrudRepository<CamadaUser, Long> {
 
     Optional<CamadaUser> findByName(String name);
 
-    List<CamadaUser> findAllByIsActiveTrue();
+    List<CamadaUser> findAllByOrderByName();
 
-    List<CamadaUser> findAllByIsActiveFalse();
+    List<CamadaUser> findAllByIsActiveTrueOrderByName();
 
-    @Query("SELECT cu FROM CamadaUser cu WHERE cu.name IN (:names)")
+    List<CamadaUser> findAllByIsActiveFalseOrderByName();
+
+    @Query("SELECT cu FROM CamadaUser cu WHERE cu.name IN (:names) ORDER BY cu.name")
     List<CamadaUser> findAllByName(List<String> names);
 }

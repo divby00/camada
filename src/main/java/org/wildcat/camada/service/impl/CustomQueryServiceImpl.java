@@ -2,8 +2,8 @@ package org.wildcat.camada.service.impl;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import org.wildcat.camada.persistence.entity.CustomQuery;
 import org.wildcat.camada.common.enumerations.CamadaQuery;
+import org.wildcat.camada.persistence.entity.CustomQuery;
 import org.wildcat.camada.persistence.repository.CustomQueryRepository;
 import org.wildcat.camada.service.CustomQueryService;
 import org.wildcat.camada.view.FxmlView;
@@ -30,6 +30,6 @@ public class CustomQueryServiceImpl implements CustomQueryService {
                 .filter(query -> StringUtils.equalsIgnoreCase(query.getSection(), (viewLabel)))
                 .map(Enum::name)
                 .collect(Collectors.toList());
-        return customQueryRepository.findAllByQueryIn(sectionQueries);
+        return customQueryRepository.findAllByQueryInOrderByZorder(sectionQueries);
     }
 }

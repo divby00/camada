@@ -20,4 +20,6 @@ public class CustomQuery {
     private String description;
     @Column(name = "query")
     private String query;
+    @Column(name = "zorder")
+    private Integer zorder;
 }
