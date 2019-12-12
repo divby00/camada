@@ -2,8 +2,9 @@ package org.wildcat.camada.common.enumerations;
 
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableColumn;
-import org.wildcat.camada.persistence.entity.CamadaUser;
+import org.wildcat.camada.persistence.PaymentFrequency;
 import org.wildcat.camada.persistence.dto.PartnerDTO;
+import org.wildcat.camada.persistence.entity.CamadaUser;
 import org.wildcat.camada.service.SavingService;
 
 public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColumn {
@@ -228,7 +229,40 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
             ((PartnerDTO) event.getRowValue()).setBankSurnames(oldValue);
         }
     },
+    PARTNER_AMOUNT {
+        @Override
+        public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {
+            return ((PartnerDTO) event.getRowValue()).getAmount();
+        }
 
+        @Override
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
+            ((PartnerDTO) event.getRowValue()).setAmount(newValue);
+            service.saveEntity(event.getRowValue());
+        }
+
+        @Override
+        public <T> void setOldValue(TableColumn.CellEditEvent<T, String> event, String oldValue) {
+            ((PartnerDTO) event.getRowValue()).setAmount(oldValue);
+        }
+    },
+    PARTNER_PAYMENT_FREQUENCY {
+        @Override
+        public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {
+            return ((PartnerDTO) event.getRowValue()).getPaymentFrequency().name();
+        }
+
+        @Override
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
+            ((PartnerDTO) event.getRowValue()).setPaymentFrequency(PaymentFrequency.valueOf(newValue));
+            service.saveEntity(event.getRowValue());
+        }
+
+        @Override
+        public <T> void setOldValue(TableColumn.CellEditEvent<T, String> event, String oldValue) {
+            ((PartnerDTO) event.getRowValue()).setPaymentFrequency(PaymentFrequency.valueOf(oldValue));
+        }
+    },
     NAME {
         @Override
         public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {

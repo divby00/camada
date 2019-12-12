@@ -205,6 +205,10 @@
                   <TableColumn fx:id="iban" prefWidth="94.0" text="IBAN" />
                   <TableColumn fx:id="bankName" prefWidth="116.0" text="Nombre titular" />
                   <TableColumn fx:id="bankSurnames" prefWidth="129.0" text="Apellidos titular" />
+                  <TableColumn fx:id="subscribedFrom" prefWidth="129.0" text="Fecha de alta" />
+                  <TableColumn fx:id="subscribedTo" prefWidth="129.0" text="Fecha de baja" />
+                  <TableColumn fx:id="amount" prefWidth="129.0" text="Cuota" />
+                  <TableColumn fx:id="paymentFrequency" prefWidth="129.0" text="Periodicidad" />
                   </columns>
                <columnResizePolicy>
                   <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

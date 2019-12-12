@@ -12,5 +12,6 @@ import java.util.Date;
 public interface TableCommonService<T> {
     TableCell<T, Date> getDateTableCell(String pattern);
     void initTextFieldTableCell(AppTableColumn<T> tableColumn, TableView table, ProgressIndicator progressIndicator);
+    void initPaymentFrequencyFieldTableCell(AppTableColumn<T> tableColumn, TableView table, ProgressIndicator progressIndicator);
     void initCheckBoxTableCell(TableColumn<T, Boolean> column, CustomTableColumn param, TableView<T> table, ProgressIndicator progressIndicator);
 }

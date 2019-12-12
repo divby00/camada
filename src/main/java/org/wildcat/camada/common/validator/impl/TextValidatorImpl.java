@@ -24,6 +24,7 @@ public class TextValidatorImpl implements Validator {
 
     @Override
     public Boolean validate(String text) {
+
         return triPredicate.test(text, min, max);
     }
 

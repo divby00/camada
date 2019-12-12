@@ -1,25 +1,33 @@
 package org.wildcat.camada.service.impl;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Task;
 import javafx.event.Event;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.wildcat.camada.common.enumerations.CustomTableColumn;
 import org.wildcat.camada.controller.pojo.AppTableColumn;
+import org.wildcat.camada.persistence.PaymentFrequency;
+import org.wildcat.camada.persistence.dto.PartnerDTO;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.TableCommonService;
 import org.wildcat.camada.service.utils.AlertUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class TableCommonServiceImpl<T> implements TableCommonService<T> {
@@ -60,6 +68,67 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
         tableColumn.getColumn().setCellFactory(TextFieldTableCell.forTableColumn());
         tableColumn.getColumn().setOnEditCommit(event -> {
             String newValue = event.getNewValue();
+            String oldValue = tableColumn.getCustomTableColumn().getOldValue(event);
+            boolean validates = tableColumn.getValidator().validate(newValue);
+            if (newValue.equals(oldValue) || !validates) {
+                if (!validates) {
+                    AlertUtils.showError("El campo es incorrecto.");
+                }
+                table.refresh();
+                return;
+            }
+            ButtonType buttonType = AlertUtils.showUpdate(oldValue, newValue);
+            if (buttonType == ButtonType.YES) {
+                Task<Boolean> updateTextFieldTask = new Task<Boolean>() {
+                    @Override
+                    protected Boolean call() {
+                        boolean result = false;
+                        try {
+                            tableColumn.getCustomTableColumn().setNewValue(event, newValue, camadaUserService);
+                            result = true;
+                        } catch (Exception ignored) {
+                        }
+                        return result;
+                    }
+                };
+                progressIndicator.visibleProperty().bind(updateTextFieldTask.runningProperty());
+                new Thread(updateTextFieldTask).start();
+                updateTextFieldTask.setOnSucceeded(worker -> {
+                    boolean result = updateTextFieldTask.getValue();
+                    if (result) {
+                        AlertUtils.showInfo("El campo se ha actualizado correctamente.");
+                    } else {
+                        AlertUtils.showError("Ha ocurrido un error al actualizar el campo.");
+                    }
+                });
+                updateTextFieldTask.setOnCancelled(worker -> {
+                    AlertUtils.showError("Ha ocurrido un error al actualizar el campo.");
+                });
+                updateTextFieldTask.setOnFailed(worker -> {
+                    AlertUtils.showError("Ha ocurrido un error al actualizar el campo.");
+                });
+            } else {
+                tableColumn.getCustomTableColumn().setOldValue(event, oldValue);
+                table.refresh();
+            }
+        });
+    }
+
+    @Override
+    public void initPaymentFrequencyFieldTableCell(AppTableColumn<T> tableColumn, TableView table, ProgressIndicator progressIndicator) {
+        tableColumn.getColumn().setCellValueFactory(param -> {
+            PartnerDTO partnerDTO = (PartnerDTO) param.getValue();
+            return Bindings.createStringBinding(() -> partnerDTO.getPaymentFrequency().getLabel());
+        });
+        List<String> frequencyLabels = Stream.of(PaymentFrequency.values()).map(PaymentFrequency::getLabel).collect(Collectors.toList());
+        String[] frequencies = new String[frequencyLabels.size()];
+        tableColumn.getColumn().setCellFactory(ComboBoxTableCell.forTableColumn(frequencies));
+        tableColumn.getColumn().setOnEditCommit(event -> {
+            String newValue = event.getNewValue();
+            PaymentFrequency paymentFrequency = Stream.of(PaymentFrequency.values())
+                    .filter(frequency -> StringUtils.equalsIgnoreCase(frequency.getLabel(), newValue))
+                    .findFirst()
+                    .orElse(null);
             String oldValue = tableColumn.getCustomTableColumn().getOldValue(event);
             boolean validates = tableColumn.getValidator().validate(newValue);
             if (newValue.equals(oldValue) || !validates) {

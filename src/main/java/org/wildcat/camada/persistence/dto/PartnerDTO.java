@@ -1,12 +1,14 @@
 package org.wildcat.camada.persistence.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.wildcat.camada.persistence.PaymentFrequency;
-import org.wildcat.camada.persistence.entity.Subscription;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 @Getter
 @Setter
@@ -16,10 +18,12 @@ import java.util.List;
 public class PartnerDTO implements Serializable {
     private static final long serialVersionUID = 23425L;
     private Long id;
-    private Double amount;
+    private String amount;
     private PaymentFrequency paymentFrequency;
     private String camadaId;
     private Boolean active;
+    private Date subscribedFrom;
+    private Date subscribedTo;
     private Long personalDataId;
     private String dni;
     private String name;
@@ -36,32 +40,4 @@ public class PartnerDTO implements Serializable {
     private String iban;
     private String bankName;
     private String bankSurnames;
-    private List<Subscription> subscriptions;
-
-    public PartnerDTO(Long id, Double amount, PaymentFrequency paymentFrequency, String camadaId, Boolean active, Long personalDataId, String dni, String name,
-            String surnames, Date birthDate, String address, String location, String province, String postCode, String phone1, String phone2, String email,
-            Long bankingDataId, String iban, String bankName, String bankSurnames) {
-        this.id = id;
-        this.amount = amount;
-        this.paymentFrequency = paymentFrequency;
-        this.camadaId = camadaId;
-        this.active = active;
-        this.personalDataId = personalDataId;
-        this.dni = dni;
-        this.name = name;
-        this.surnames = surnames;
-        this.birthDate = birthDate;
-        this.address = address;
-        this.location = location;
-        this.province = province;
-        this.postCode = postCode;
-        this.phone1 = phone1;
-        this.phone2 = phone2;
-        this.email = email;
-        this.bankingDataId = bankingDataId;
-        this.iban = iban;
-        this.bankName = bankName;
-        this.bankSurnames = bankSurnames;
-    }
-
 }

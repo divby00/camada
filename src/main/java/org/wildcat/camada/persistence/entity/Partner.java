@@ -12,16 +12,13 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.io.Serializable;
-import java.util.List;
+import java.util.Date;
 
 @Entity
 @Table(name = "partner")
@@ -38,7 +35,7 @@ public class Partner implements Serializable {
     @Column(name = "id")
     private Long id;
     @Column(name = "amount")
-    private Double amount;
+    private String amount;
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_frequency")
     private PaymentFrequency paymentFrequency;
@@ -46,12 +43,13 @@ public class Partner implements Serializable {
     private String camadaId;
     @Column(name = "active")
     private Boolean active;
+    @Column(name = "subscribed_from")
+    private Date subscribedFrom;
+    @Column(name = "subscribed_to")
+    private Date subscribedTo;
     @OneToOne(orphanRemoval = true)
     private PersonalData personalData;
     @OneToOne(orphanRemoval = true)
     private BankingData bankingData;
-    @OneToMany(fetch = FetchType.EAGER)
-    @JoinColumn(name = "fk_partner")
-    private List<Subscription> subscriptions;
 }
 

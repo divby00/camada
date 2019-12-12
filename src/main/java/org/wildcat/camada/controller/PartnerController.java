@@ -21,14 +21,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
 import org.wildcat.camada.common.enumerations.CustomTableColumn;
+import org.wildcat.camada.common.validator.impl.AmountValidatorImpl;
 import org.wildcat.camada.common.validator.impl.EmailValidatorImpl;
 import org.wildcat.camada.common.validator.impl.NewUserValidatorImpl;
+import org.wildcat.camada.common.validator.impl.PaymentFrequencyValidatorImpl;
 import org.wildcat.camada.common.validator.impl.TextValidatorImpl;
 import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.controller.pojo.AppTableColumn;
 import org.wildcat.camada.persistence.PaymentFrequency;
 import org.wildcat.camada.persistence.dto.PartnerDTO;
-import org.wildcat.camada.persistence.entity.*;
+import org.wildcat.camada.persistence.entity.BankingData;
+import org.wildcat.camada.persistence.entity.CustomQuery;
+import org.wildcat.camada.persistence.entity.Partner;
+import org.wildcat.camada.persistence.entity.PersonalData;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.CustomQueryService;
 import org.wildcat.camada.service.PartnerService;
@@ -77,6 +82,12 @@ public class PartnerController extends BaseController<Partner, PartnerDTO> {
     private TableColumn<PartnerDTO, Date> birthDate;
 
     @FXML
+    private TableColumn<PartnerDTO, Date> subscribedFrom;
+
+    @FXML
+    private TableColumn<PartnerDTO, Date> subscribedTo;
+
+    @FXML
     private TableColumn<PartnerDTO, String> dni;
 
     @FXML
@@ -109,8 +120,14 @@ public class PartnerController extends BaseController<Partner, PartnerDTO> {
     @FXML
     private TableColumn<PartnerDTO, String> bankSurnames;
 
+    @FXML
+    private TableColumn<PartnerDTO, String> amount;
+
+    @FXML
+    private TableColumn<PartnerDTO, String> paymentFrequency;
+
     public PartnerController(CamadaUserService camadaUserService, PartnerService partnerService,
-                             CustomQueryService customQueryService, TableCommonService<PartnerDTO> tableCommonService) {
+            CustomQueryService customQueryService, TableCommonService<PartnerDTO> tableCommonService) {
         super(customQueryService, FxmlView.NEW_PARTNER);
         this.camadaUserService = camadaUserService;
         this.partnerService = partnerService;
@@ -150,8 +167,17 @@ public class PartnerController extends BaseController<Partner, PartnerDTO> {
         AppTableColumn<PartnerDTO> surnamesBankColumn = new AppTableColumn<>(bankSurnames, "bankSurnames", new TextValidatorImpl(3, 20), CustomTableColumn.PARTNER_BANK_SURNAMES);
         tableCommonService.initTextFieldTableCell(surnamesBankColumn, table, progressIndicator);
 
+        AppTableColumn<PartnerDTO> amountColumn = new AppTableColumn<>(amount, "amount", new AmountValidatorImpl(3.0, 6.0, 9.0, 12.0), CustomTableColumn.PARTNER_AMOUNT);
+        tableCommonService.initTextFieldTableCell(amountColumn, table, progressIndicator);
+        AppTableColumn<PartnerDTO> paymentFrequencyColumn = new AppTableColumn<>(paymentFrequency, "paymentFrequency", new PaymentFrequencyValidatorImpl(), CustomTableColumn.PARTNER_PAYMENT_FREQUENCY);
+        tableCommonService.initPaymentFrequencyFieldTableCell(paymentFrequencyColumn, table, progressIndicator);
+
         birthDate.setCellValueFactory(new PropertyValueFactory<>("birthDate"));
         birthDate.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy"));
+        subscribedFrom.setCellValueFactory(new PropertyValueFactory<>("subscribedFrom"));
+        subscribedFrom.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy"));
+        subscribedTo.setCellValueFactory(new PropertyValueFactory<>("subscribedTo"));
+        subscribedTo.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy"));
     }
 
     @Override
@@ -221,7 +247,7 @@ public class PartnerController extends BaseController<Partner, PartnerDTO> {
             bankingData.setSurnames(csvRecord.get(13));
             partner.setPersonalData(personalData);
             partner.setBankingData(bankingData);
-            partner.setAmount(Double.valueOf(csvRecord.get(14)));
+            partner.setAmount(csvRecord.get(14));
             partner.setPaymentFrequency(PaymentFrequency.valueOf(csvRecord.get(15)));
             partner.setCamadaId(csvRecord.get(16));
         } catch (Exception ex) {

@@ -334,23 +334,16 @@ commit;
 delete
 from partner;
 insert into partner
-(amount, payment_frequency, active, personal_data_id, camada_id, banking_data_id)
-values (12, 'YEARLY', true,
+(amount, payment_frequency, active, subscribed_from, subscribed_to, personal_data_id, camada_id, banking_data_id)
+values (12, 'YEARLY', true, STR_TO_DATE('1999,12,31', '%Y,%m,%d'), null,
         (select id from personal_data where dni like '11%'), '00001',
         (select id from banking_data where iban like 'ES123334343434343'));
 insert into partner
-(amount, payment_frequency, active, personal_data_id, camada_id, banking_data_id)
-values (9, 'YEARLY', true,
+(amount, payment_frequency, active, subscribed_from, subscribed_to, personal_data_id, camada_id, banking_data_id)
+values (9, 'YEARLY', true, STR_TO_DATE('1999,12,31', '%Y,%m,%d'), STR_TO_DATE('2005,12,31', '%Y,%m,%d'),
         (select id from personal_data where dni like '22%'), '00001',
         (select id from banking_data where iban like 'ES103334343434243'));
 
-delete
-from subscription;
-insert into subscription(subscribed_from, subscribed_to, role, fk_partner)
-values(STR_TO_DATE('1999,12,31', '%Y,%m,%d'), null, 'PARTNER', (select p.id from partner p inner join personal_data pd on p.personal_data_id = pd.id where pd.dni like '11%'));
-insert into subscription(subscribed_from, subscribed_to, role, fk_partner)
-values(STR_TO_DATE('1999,12,31', '%Y,%m,%d'), STR_TO_DATE('2005,12,31', '%Y,%m,%d'), 'PARTNER', (select p.id from partner p inner join personal_data pd on p.personal_data_id = pd.id where pd.dni like '22%'));
-commit;
 
 /*
 drop view partner_view;
