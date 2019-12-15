@@ -3,9 +3,9 @@ package org.wildcat.camada.service.impl;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.wildcat.camada.common.enumerations.CamadaQuery;
 import org.wildcat.camada.persistence.entity.CamadaUser;
 import org.wildcat.camada.persistence.entity.CustomQuery;
-import org.wildcat.camada.common.enumerations.CamadaQuery;
 import org.wildcat.camada.persistence.repository.CamadaUserRepository;
 import org.wildcat.camada.service.CamadaUserService;
 
@@ -100,8 +100,13 @@ public class CamadaUserServiceImpl implements CamadaUserService {
     }
 
     @Override
-    public <T> void saveEntity(T camadaUser) {
-        save((CamadaUser) camadaUser);
+    public void saveEntity(CamadaUser camadaUser) {
+        save(camadaUser);
+    }
+
+    @Override
+    public CamadaUser find(Long id) {
+        return camadaUserRepository.findById(id).orElse(null);
     }
 
     @Override

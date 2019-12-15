@@ -6,7 +6,7 @@ import org.wildcat.camada.persistence.entity.CustomQuery;
 import java.util.List;
 import java.util.Optional;
 
-public interface CamadaUserService extends SavingService {
+public interface CamadaUserService extends PersistenceService<CamadaUser> {
     boolean authenticate(String user, String password);
 
     CamadaUser getUser();

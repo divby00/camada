@@ -5,7 +5,8 @@ import javafx.scene.control.TableColumn;
 import org.wildcat.camada.persistence.PaymentFrequency;
 import org.wildcat.camada.persistence.dto.PartnerDTO;
 import org.wildcat.camada.persistence.entity.CamadaUser;
-import org.wildcat.camada.service.SavingService;
+import org.wildcat.camada.persistence.entity.Partner;
+import org.wildcat.camada.service.PersistenceService;
 
 public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColumn {
     PARTNER_NAME {
@@ -15,9 +16,13 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         }
 
         @Override
-        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerDTO) event.getRowValue()).setName(newValue);
-            service.saveEntity(event.getRowValue());
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, PersistenceService service) {
+            Long id = ((PartnerDTO) event.getRowValue()).getId();
+            Partner partner = (Partner) service.find(id);
+            if (partner != null) {
+                partner.getPersonalData().setName(newValue);
+                service.saveEntity(partner);
+            }
         }
 
         @Override
@@ -32,9 +37,13 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         }
 
         @Override
-        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerDTO) event.getRowValue()).setSurnames(newValue);
-            service.saveEntity(event.getRowValue());
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, PersistenceService service) {
+            Long id = ((PartnerDTO) event.getRowValue()).getId();
+            Partner partner = (Partner) service.find(id);
+            if (partner != null) {
+                partner.getPersonalData().setSurnames(newValue);
+                service.saveEntity(partner);
+            }
         }
 
         @Override
@@ -49,9 +58,13 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         }
 
         @Override
-        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerDTO) event.getRowValue()).setDni(newValue);
-            service.saveEntity(event.getRowValue());
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, PersistenceService service) {
+            Long id = ((PartnerDTO) event.getRowValue()).getId();
+            Partner partner = (Partner) service.find(id);
+            if (partner != null) {
+                partner.getPersonalData().setDni(newValue);
+                service.saveEntity(partner);
+            }
         }
 
         @Override
@@ -66,9 +79,13 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         }
 
         @Override
-        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerDTO) event.getRowValue()).setAddress(newValue);
-            service.saveEntity(event.getRowValue());
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, PersistenceService service) {
+            Long id = ((PartnerDTO) event.getRowValue()).getId();
+            Partner partner = (Partner) service.find(id);
+            if (partner != null) {
+                partner.getPersonalData().setAddress(newValue);
+                service.saveEntity(partner);
+            }
         }
 
         @Override
@@ -83,9 +100,13 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         }
 
         @Override
-        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerDTO) event.getRowValue()).setPostCode(newValue);
-            service.saveEntity(event.getRowValue());
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, PersistenceService service) {
+            Long id = ((PartnerDTO) event.getRowValue()).getId();
+            Partner partner = (Partner) service.find(id);
+            if (partner != null) {
+                partner.getPersonalData().setPostCode(newValue);
+                service.saveEntity(partner);
+            }
         }
 
         @Override
@@ -100,9 +121,13 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         }
 
         @Override
-        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerDTO) event.getRowValue()).setLocation(newValue);
-            service.saveEntity(event.getRowValue());
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, PersistenceService service) {
+            Long id = ((PartnerDTO) event.getRowValue()).getId();
+            Partner partner = (Partner) service.find(id);
+            if (partner != null) {
+                partner.getPersonalData().setLocation(newValue);
+                service.saveEntity(partner);
+            }
         }
 
         @Override
@@ -117,9 +142,13 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         }
 
         @Override
-        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerDTO) event.getRowValue()).setProvince(newValue);
-            service.saveEntity(event.getRowValue());
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, PersistenceService service) {
+            Long id = ((PartnerDTO) event.getRowValue()).getId();
+            Partner partner = (Partner) service.find(id);
+            if (partner != null) {
+                partner.getPersonalData().setProvince(newValue);
+                service.saveEntity(partner);
+            }
         }
 
         @Override
@@ -134,9 +163,13 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         }
 
         @Override
-        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerDTO) event.getRowValue()).setPhone1(newValue);
-            service.saveEntity(event.getRowValue());
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, PersistenceService service) {
+            Long id = ((PartnerDTO) event.getRowValue()).getId();
+            Partner partner = (Partner) service.find(id);
+            if (partner != null) {
+                partner.getPersonalData().setPhone1(newValue);
+                service.saveEntity(partner);
+            }
         }
 
         @Override
@@ -151,9 +184,13 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         }
 
         @Override
-        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerDTO) event.getRowValue()).setPhone2(newValue);
-            service.saveEntity(event.getRowValue());
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, PersistenceService service) {
+            Long id = ((PartnerDTO) event.getRowValue()).getId();
+            Partner partner = (Partner) service.find(id);
+            if (partner != null) {
+                partner.getPersonalData().setPhone2(newValue);
+                service.saveEntity(partner);
+            }
         }
 
         @Override
@@ -168,9 +205,13 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         }
 
         @Override
-        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerDTO) event.getRowValue()).setEmail(newValue);
-            service.saveEntity(event.getRowValue());
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, PersistenceService service) {
+            Long id = ((PartnerDTO) event.getRowValue()).getId();
+            Partner partner = (Partner) service.find(id);
+            if (partner != null) {
+                partner.getPersonalData().setEmail(newValue);
+                service.saveEntity(partner);
+            }
         }
 
         @Override
@@ -185,9 +226,13 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         }
 
         @Override
-        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerDTO) event.getRowValue()).setIban(newValue);
-            service.saveEntity(event.getRowValue());
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, PersistenceService service) {
+            Long id = ((PartnerDTO) event.getRowValue()).getId();
+            Partner partner = (Partner) service.find(id);
+            if (partner != null) {
+                partner.getBankingData().setIban(newValue);
+                service.saveEntity(partner);
+            }
         }
 
         @Override
@@ -202,9 +247,13 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         }
 
         @Override
-        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerDTO) event.getRowValue()).setBankName(newValue);
-            service.saveEntity(event.getRowValue());
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, PersistenceService service) {
+            Long id = ((PartnerDTO) event.getRowValue()).getId();
+            Partner partner = (Partner) service.find(id);
+            if (partner != null) {
+                partner.getBankingData().setName(newValue);
+                service.saveEntity(partner);
+            }
         }
 
         @Override
@@ -219,9 +268,13 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         }
 
         @Override
-        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerDTO) event.getRowValue()).setBankSurnames(newValue);
-            service.saveEntity(event.getRowValue());
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, PersistenceService service) {
+            Long id = ((PartnerDTO) event.getRowValue()).getId();
+            Partner partner = (Partner) service.find(id);
+            if (partner != null) {
+                partner.getBankingData().setSurnames(newValue);
+                service.saveEntity(partner);
+            }
         }
 
         @Override
@@ -236,9 +289,13 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         }
 
         @Override
-        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerDTO) event.getRowValue()).setAmount(newValue);
-            service.saveEntity(event.getRowValue());
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, PersistenceService service) {
+            Long id = ((PartnerDTO) event.getRowValue()).getId();
+            Partner partner = (Partner) service.find(id);
+            if (partner != null) {
+                partner.setAmount(newValue);
+                service.saveEntity(partner);
+            }
         }
 
         @Override
@@ -253,9 +310,13 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         }
 
         @Override
-        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-            ((PartnerDTO) event.getRowValue()).setPaymentFrequency(PaymentFrequency.valueOf(newValue));
-            service.saveEntity(event.getRowValue());
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, PersistenceService service) {
+            Long id = ((PartnerDTO) event.getRowValue()).getId();
+            Partner partner = (Partner) service.find(id);
+            if (partner != null) {
+                partner.setPaymentFrequency(PaymentFrequency.valueOf(newValue));
+                service.saveEntity(partner);
+            }
         }
 
         @Override
@@ -270,7 +331,7 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         }
 
         @Override
-        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, PersistenceService service) {
             ((CamadaUser) event.getRowValue()).setName(newValue);
             service.saveEntity(event.getRowValue());
         }
@@ -287,7 +348,7 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         }
 
         @Override
-        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, PersistenceService service) {
             ((CamadaUser) event.getRowValue()).setFirstName(newValue);
             service.saveEntity(event.getRowValue());
         }
@@ -304,7 +365,7 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         }
 
         @Override
-        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, PersistenceService service) {
             ((CamadaUser) event.getRowValue()).setLastName(newValue);
             service.saveEntity(event.getRowValue());
         }
@@ -321,7 +382,7 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         }
 
         @Override
-        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
+        public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, PersistenceService service) {
             ((CamadaUser) event.getRowValue()).setEmail(newValue);
             service.saveEntity(event.getRowValue());
         }
@@ -395,13 +456,11 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
     }
 
     @Override
-    public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, SavingService service) {
-
+    public <T> void setNewValue(TableColumn.CellEditEvent<T, String> event, String newValue, PersistenceService service) {
     }
 
     @Override
     public <T> void setOldValue(TableColumn.CellEditEvent<T, String> event, String oldValue) {
-
     }
 
     @Override

@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.wildcat.camada.common.enumerations.CamadaQuery;
 import org.wildcat.camada.persistence.dto.PartnerDTO;
 import org.wildcat.camada.persistence.entity.CustomQuery;
+import org.wildcat.camada.persistence.entity.Partner;
 import org.wildcat.camada.persistence.repository.PartnerRepository;
 import org.wildcat.camada.service.PartnerService;
 
@@ -48,4 +49,20 @@ public class PartnerServiceImpl implements PartnerService {
     public void delete(Long id) {
         partnerRepository.deleteById(id);
     }
+
+    @Override
+    public void saveEntity(Partner partner) {
+        save(partner);
+    }
+
+    @Override
+    public Partner find(Long id) {
+        return partnerRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public Partner save(Partner partner) {
+        return partnerRepository.save(partner);
+    }
+
 }

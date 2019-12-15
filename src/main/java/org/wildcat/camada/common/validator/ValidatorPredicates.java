@@ -3,9 +3,11 @@ package org.wildcat.camada.common.validator;
 import org.apache.commons.lang3.StringUtils;
 import org.wildcat.camada.persistence.PaymentFrequency;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -18,7 +20,7 @@ public interface ValidatorPredicates {
     String DATE_PATTERN = "dd/MM/yyyy HH:mm";
 
     TriPredicate<String, Integer> isValidTextField = (text, min, max) -> StringUtils.length(text) > min && StringUtils.length(text) < max && StringUtils
-            .isAlphanumeric(text);
+            .isAlphanumericSpace(text);
     Predicate<String> isValidPassword = (text) -> passwordPattern.matcher(text).matches();
     Predicate<String> isValidEmail = (text) -> emailPattern.matcher(text).matches();
     BiPredicate<String, String> passwordsAreTheSame = StringUtils::equals;
@@ -47,4 +49,21 @@ public interface ValidatorPredicates {
         }
         return result;
     };
+
+    Predicate<String> isValidDni = (text) -> text != null
+            && text.length() == 9
+            && text.substring(0, 8).matches("[-+]?\\d*\\.?\\d+")
+            && text.toUpperCase().charAt(8) == "TRWAGMYFPDXBNJZSQVHLCKE".charAt(Integer.valueOf(text.substring(0, 8)) % 23);
+
+    Predicate<String> isValidIban = iban -> iban != null
+            && iban.length() == 24
+            && iban.substring(2, 24).matches("[-+]?\\d*\\.?\\d+")
+            && new BigInteger(
+            new StringBuilder(iban)
+                    .append(iban, 0, 4).delete(0, 4).toString().chars()
+                    .map(Character::getNumericValue)
+                    .collect(ArrayList::new, ArrayList::add, ArrayList::addAll).stream()
+                    .map(Object::toString)
+                    .reduce("", String::concat)
+    ).remainder(BigInteger.valueOf(97)).equals(BigInteger.ONE);
 }

@@ -100,19 +100,19 @@ public class UserController extends BaseController<CamadaUser, CamadaUser> {
     @Override
     public void initTable() {
         AppTableColumn<CamadaUser> userNameColumn = new AppTableColumn<>(userName, "name", new NewUserValidatorImpl(camadaUserService), CustomTableColumn.NAME);
-        tableCommonService.initTextFieldTableCell(userNameColumn, table, progressIndicator);
+        tableCommonService.initTextFieldTableCell(userNameColumn, table, progressIndicator, camadaUserService);
         AppTableColumn<CamadaUser> firstNameColumn = new AppTableColumn<>(firstName, "firstName", new TextValidatorImpl(3, 20), CustomTableColumn.FIRST_NAME);
-        tableCommonService.initTextFieldTableCell(firstNameColumn, table, progressIndicator);
+        tableCommonService.initTextFieldTableCell(firstNameColumn, table, progressIndicator, camadaUserService);
         AppTableColumn<CamadaUser> lastNameColumn = new AppTableColumn<>(lastName, "lastName", new TextValidatorImpl(3, 20), CustomTableColumn.LAST_NAME);
-        tableCommonService.initTextFieldTableCell(lastNameColumn, table, progressIndicator);
+        tableCommonService.initTextFieldTableCell(lastNameColumn, table, progressIndicator, camadaUserService);
         AppTableColumn<CamadaUser> emailColumn = new AppTableColumn<>(email, "email", new EmailValidatorImpl(), CustomTableColumn.EMAIL);
-        tableCommonService.initTextFieldTableCell(emailColumn, table, progressIndicator);
+        tableCommonService.initTextFieldTableCell(emailColumn, table, progressIndicator, camadaUserService);
 
-        tableCommonService.initCheckBoxTableCell(isAdmin, CustomTableColumn.IS_ADMIN, table, progressIndicator);
-        tableCommonService.initCheckBoxTableCell(isVirtualSponsor, CustomTableColumn.IS_VIRTUAL_SPONSOR, table, progressIndicator);
-        tableCommonService.initCheckBoxTableCell(isPresentialSponsor, CustomTableColumn.IS_PRESENTIAL_SPONSOR, table, progressIndicator);
-        tableCommonService.initCheckBoxTableCell(isPartner, CustomTableColumn.IS_PARTNER, table, progressIndicator);
-        tableCommonService.initCheckBoxTableCell(isVolunteer, CustomTableColumn.IS_VOLUNTEER, table, progressIndicator);
+        tableCommonService.initCheckBoxTableCell(isAdmin, CustomTableColumn.IS_ADMIN, table, progressIndicator, camadaUserService);
+        tableCommonService.initCheckBoxTableCell(isVirtualSponsor, CustomTableColumn.IS_VIRTUAL_SPONSOR, table, progressIndicator, camadaUserService);
+        tableCommonService.initCheckBoxTableCell(isPresentialSponsor, CustomTableColumn.IS_PRESENTIAL_SPONSOR, table, progressIndicator, camadaUserService);
+        tableCommonService.initCheckBoxTableCell(isPartner, CustomTableColumn.IS_PARTNER, table, progressIndicator, camadaUserService);
+        tableCommonService.initCheckBoxTableCell(isVolunteer, CustomTableColumn.IS_VOLUNTEER, table, progressIndicator, camadaUserService);
 
         activationDate.setCellValueFactory(new PropertyValueFactory<>("activationDate"));
         lastConnection.setCellValueFactory(new PropertyValueFactory<>("lastConnection"));

@@ -5,50 +5,51 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Task;
 import javafx.event.Event;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Service;
 import org.wildcat.camada.common.enumerations.CustomTableColumn;
 import org.wildcat.camada.controller.pojo.AppTableColumn;
 import org.wildcat.camada.persistence.PaymentFrequency;
 import org.wildcat.camada.persistence.dto.PartnerDTO;
-import org.wildcat.camada.service.CamadaUserService;
+import org.wildcat.camada.service.PersistenceService;
 import org.wildcat.camada.service.TableCommonService;
 import org.wildcat.camada.service.utils.AlertUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 public class TableCommonServiceImpl<T> implements TableCommonService<T> {
 
-    private final CamadaUserService camadaUserService;
-
-    @Autowired
-    public TableCommonServiceImpl(CamadaUserService camadaUserService) {
-        this.camadaUserService = camadaUserService;
-    }
-
     @Override
-    public void initCheckBoxTableCell(TableColumn<T, Boolean> column, CustomTableColumn param, TableView<T> table, ProgressIndicator progressIndicator) {
+    public void initCheckBoxTableCell(TableColumn<T, Boolean> column, CustomTableColumn param, TableView<T> table, ProgressIndicator progressIndicator,
+            PersistenceService persistenceService) {
         column.setCellValueFactory(c -> new SimpleBooleanProperty(param.getBooleanProperty(c)));
-        column.setCellFactory(p -> getCheckBoxTableCell(param, table, progressIndicator));
+        column.setCellFactory(p -> getCheckBoxTableCell(param, table, progressIndicator, persistenceService));
     }
 
     @Override
     public TableCell<T, Date> getDateTableCell(String pattern) {
         TableCell<T, Date> cell = new TableCell<T, Date>() {
             private SimpleDateFormat format = new SimpleDateFormat(pattern);
+
             @Override
             protected void updateItem(Date item, boolean empty) {
                 super.updateItem(item, empty);
@@ -63,7 +64,7 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
     }
 
     @Override
-    public void initTextFieldTableCell(AppTableColumn<T> tableColumn, TableView table, ProgressIndicator progressIndicator) {
+    public void initTextFieldTableCell(AppTableColumn<T> tableColumn, TableView table, ProgressIndicator progressIndicator, PersistenceService persistenceService) {
         tableColumn.getColumn().setCellValueFactory(new PropertyValueFactory<>(tableColumn.getColumnName()));
         tableColumn.getColumn().setCellFactory(TextFieldTableCell.forTableColumn());
         tableColumn.getColumn().setOnEditCommit(event -> {
@@ -84,9 +85,10 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
                     protected Boolean call() {
                         boolean result = false;
                         try {
-                            tableColumn.getCustomTableColumn().setNewValue(event, newValue, camadaUserService);
+                            tableColumn.getCustomTableColumn().setNewValue(event, newValue, persistenceService);
                             result = true;
-                        } catch (Exception ignored) {
+                        } catch (Exception ex) {
+                            log.error(ExceptionUtils.getStackTrace(ex));
                         }
                         return result;
                     }
@@ -115,67 +117,76 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
     }
 
     @Override
-    public void initPaymentFrequencyFieldTableCell(AppTableColumn<T> tableColumn, TableView table, ProgressIndicator progressIndicator) {
+    public void initPaymentFrequencyFieldTableCell(AppTableColumn<T> tableColumn, TableView table, ProgressIndicator progressIndicator,
+            PersistenceService persistenceService) {
         tableColumn.getColumn().setCellValueFactory(param -> {
             PartnerDTO partnerDTO = (PartnerDTO) param.getValue();
             return Bindings.createStringBinding(() -> partnerDTO.getPaymentFrequency().getLabel());
         });
-        List<String> frequencyLabels = Stream.of(PaymentFrequency.values()).map(PaymentFrequency::getLabel).collect(Collectors.toList());
-        String[] frequencies = new String[frequencyLabels.size()];
+        String[] frequencies = Stream.of(PaymentFrequency.values()).map(PaymentFrequency::getLabel).toArray(String[]::new);
         tableColumn.getColumn().setCellFactory(ComboBoxTableCell.forTableColumn(frequencies));
         tableColumn.getColumn().setOnEditCommit(event -> {
             String newValue = event.getNewValue();
-            PaymentFrequency paymentFrequency = Stream.of(PaymentFrequency.values())
-                    .filter(frequency -> StringUtils.equalsIgnoreCase(frequency.getLabel(), newValue))
-                    .findFirst()
-                    .orElse(null);
-            String oldValue = tableColumn.getCustomTableColumn().getOldValue(event);
-            boolean validates = tableColumn.getValidator().validate(newValue);
-            if (newValue.equals(oldValue) || !validates) {
-                if (!validates) {
-                    AlertUtils.showError("El campo es incorrecto.");
-                }
+            String oldValue = getPaymentFrequencyLabel(tableColumn.getCustomTableColumn().getOldValue(event));
+            if (newValue.equals(oldValue)) {
                 table.refresh();
                 return;
             }
             ButtonType buttonType = AlertUtils.showUpdate(oldValue, newValue);
             if (buttonType == ButtonType.YES) {
-                Task<Boolean> updateTextFieldTask = new Task<Boolean>() {
+                Task<Boolean> updatePaymentTask = new Task<Boolean>() {
                     @Override
                     protected Boolean call() {
                         boolean result = false;
                         try {
-                            tableColumn.getCustomTableColumn().setNewValue(event, newValue, camadaUserService);
+                            tableColumn.getCustomTableColumn().setNewValue(event, getPaymentFrequencyName(newValue), persistenceService);
                             result = true;
                         } catch (Exception ignored) {
                         }
                         return result;
                     }
                 };
-                progressIndicator.visibleProperty().bind(updateTextFieldTask.runningProperty());
-                new Thread(updateTextFieldTask).start();
-                updateTextFieldTask.setOnSucceeded(worker -> {
-                    boolean result = updateTextFieldTask.getValue();
+                progressIndicator.visibleProperty().bind(updatePaymentTask.runningProperty());
+                new Thread(updatePaymentTask).start();
+                updatePaymentTask.setOnSucceeded(worker -> {
+                    boolean result = updatePaymentTask.getValue();
                     if (result) {
                         AlertUtils.showInfo("El campo se ha actualizado correctamente.");
                     } else {
                         AlertUtils.showError("Ha ocurrido un error al actualizar el campo.");
                     }
                 });
-                updateTextFieldTask.setOnCancelled(worker -> {
+                updatePaymentTask.setOnCancelled(worker -> {
                     AlertUtils.showError("Ha ocurrido un error al actualizar el campo.");
                 });
-                updateTextFieldTask.setOnFailed(worker -> {
+                updatePaymentTask.setOnFailed(worker -> {
                     AlertUtils.showError("Ha ocurrido un error al actualizar el campo.");
                 });
             } else {
-                tableColumn.getCustomTableColumn().setOldValue(event, oldValue);
+                tableColumn.getCustomTableColumn().setOldValue(event, tableColumn.getCustomTableColumn().getOldValue(event));
                 table.refresh();
             }
         });
     }
 
-    private <T> TableCell<T, Boolean> getCheckBoxTableCell(CustomTableColumn param, TableView table, ProgressIndicator progressIndicator) {
+    private String getPaymentFrequencyLabel(String enumName) {
+        return Stream.of(PaymentFrequency.values())
+                .filter(frequency -> StringUtils.equalsIgnoreCase(frequency.name(), enumName))
+                .map(PaymentFrequency::getLabel)
+                .findFirst()
+                .orElse(StringUtils.EMPTY);
+    }
+
+    private String getPaymentFrequencyName(String label) {
+        return Stream.of(PaymentFrequency.values())
+                .filter(frequency -> StringUtils.equalsIgnoreCase(frequency.getLabel(), label))
+                .map(PaymentFrequency::name)
+                .findFirst()
+                .orElse(StringUtils.EMPTY);
+    }
+
+    private <T> TableCell<T, Boolean> getCheckBoxTableCell(CustomTableColumn param, TableView table, ProgressIndicator progressIndicator,
+            PersistenceService persistenceService) {
         CheckBox checkBox = new CheckBox();
         TableCell<T, Boolean> tableCell = new TableCell<T, Boolean>() {
             @Override
@@ -196,8 +207,7 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
                 try {
                     T item = (T) tableCell.getTableRow().getItem();
                     param.setBooleanProperty(item, checkBox);
-                    // TODO: Add proper service
-                    //camadaUserService.save(item);
+                    persistenceService.saveEntity(item);
                     table.refresh();
                     result = true;
                 } catch (Exception ignored) {

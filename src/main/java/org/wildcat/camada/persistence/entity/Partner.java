@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 import org.wildcat.camada.persistence.PaymentFrequency;
 
 import javax.persistence.Column;
@@ -48,8 +50,10 @@ public class Partner implements Serializable {
     @Column(name = "subscribed_to")
     private Date subscribedTo;
     @OneToOne(orphanRemoval = true)
+    @Cascade(CascadeType.ALL)
     private PersonalData personalData;
     @OneToOne(orphanRemoval = true)
+    @Cascade(CascadeType.ALL)
     private BankingData bankingData;
 }
 

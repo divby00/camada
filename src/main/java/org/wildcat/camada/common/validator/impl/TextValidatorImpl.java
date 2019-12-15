@@ -1,6 +1,5 @@
 package org.wildcat.camada.common.validator.impl;
 
-import javafx.scene.control.TextField;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,7 +23,6 @@ public class TextValidatorImpl implements Validator {
 
     @Override
     public Boolean validate(String text) {
-
         return triPredicate.test(text, min, max);
     }
 
