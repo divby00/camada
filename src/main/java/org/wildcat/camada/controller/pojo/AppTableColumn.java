@@ -10,8 +10,8 @@ import org.wildcat.camada.common.validator.Validator;
 @Getter
 @Setter
 @AllArgsConstructor
-public class AppTableColumn<U> {
-    private TableColumn<U, String> column;
+public class AppTableColumn<U, V> {
+    private TableColumn<U, V> column;
     private String columnName;
     private Validator validator;
     private CustomTableColumn customTableColumn;

@@ -21,9 +21,11 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -45,6 +47,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.ResourceBundle;
 
+@Slf4j
 public abstract class BaseController<T, U> implements Initializable {
 
     ObservableList<U> tableData;
@@ -316,7 +319,8 @@ public abstract class BaseController<T, U> implements Initializable {
                                 tableData.remove(item);
                                 table.refresh();
                                 result = true;
-                            } catch (Exception ignored) {
+                            } catch (Exception ex) {
+                                log.error(ExceptionUtils.getStackTrace(ex));
                             }
                             return result;
                         }

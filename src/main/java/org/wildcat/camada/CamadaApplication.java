@@ -21,7 +21,7 @@ public class CamadaApplication extends Application {
     @Override
     public void init() {
         SpringApplicationBuilder builder = new SpringApplicationBuilder(CamadaApplication.class);
-        String[] args = getParameters().getRaw().stream().toArray(String[]::new);
+        String[] args = getParameters().getRaw().toArray(new String[0]);
         springContext = builder.run(args);
     }
 

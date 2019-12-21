@@ -2,13 +2,21 @@ package org.wildcat.camada.common.enumerations;
 
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableColumn;
+import jfxtras.scene.control.CalendarTextField;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.wildcat.camada.persistence.PaymentFrequency;
 import org.wildcat.camada.persistence.dto.PartnerDTO;
 import org.wildcat.camada.persistence.entity.CamadaUser;
 import org.wildcat.camada.persistence.entity.Partner;
 import org.wildcat.camada.service.PersistenceService;
 
-public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColumn {
+import java.util.Date;
+
+@Slf4j
+public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColumn, DateTableColumn {
     PARTNER_NAME {
         @Override
         public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {
@@ -49,6 +57,39 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         @Override
         public <T> void setOldValue(TableColumn.CellEditEvent<T, String> event, String oldValue) {
             ((PartnerDTO) event.getRowValue()).setSurnames(oldValue);
+        }
+    },
+    PARTNER_BIRTHDATE {
+        @Override
+        public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {
+            return DateFormatUtils.format(((PartnerDTO) event.getRowValue()).getBirthDate(), "dd/MM/yyyy");
+        }
+
+        @Override
+        public <T> void setOldValue(TableColumn.CellEditEvent<T, String> event, String oldValue) {
+            try {
+                Date date = DateUtils.parseDate(oldValue, "dd/MM/yyyy");
+                ((PartnerDTO) event.getRowValue()).setBirthDate(date);
+
+            } catch (Exception ex) {
+                log.error(ExceptionUtils.getStackTrace(ex));
+            }
+        }
+
+        @Override
+        public <T> void setDate(T item, CalendarTextField datePicker, PersistenceService service) {
+            Date date = datePicker.getCalendar().getTime();
+            ((PartnerDTO) item).setBirthDate(date);
+            Long id = ((PartnerDTO) item).getId();
+            Partner partner = (Partner) service.find(id);
+            if (partner != null) {
+                try {
+                    partner.getPersonalData().setBirthDate(date);
+                    service.saveEntity(partner);
+                } catch (Exception ex) {
+                    log.error(ExceptionUtils.getStackTrace(ex));
+                }
+            }
         }
     },
     PARTNER_DNI {
@@ -394,58 +435,58 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
     },
     IS_ADMIN {
         @Override
-        public <T> void setBooleanProperty(T item, CheckBox checkBox) {
+        public <T> void setBoolean(T item, CheckBox checkBox) {
             ((CamadaUser) item).setIsAdmin(checkBox.isSelected());
         }
 
         @Override
-        public <T> Boolean getBooleanProperty(TableColumn.CellDataFeatures<T, Boolean> cellDataFeatures) {
+        public <T> Boolean getBoolean(TableColumn.CellDataFeatures<T, Boolean> cellDataFeatures) {
             return ((CamadaUser) cellDataFeatures.getValue()).getIsAdmin();
         }
     },
     IS_VIRTUAL_SPONSOR {
         @Override
-        public <T> void setBooleanProperty(T item, CheckBox checkBox) {
+        public <T> void setBoolean(T item, CheckBox checkBox) {
             ((CamadaUser) item).setIsVirtualSponsor(checkBox.isSelected());
         }
 
         @Override
-        public <T> Boolean getBooleanProperty(TableColumn.CellDataFeatures<T, Boolean> cellDataFeatures) {
+        public <T> Boolean getBoolean(TableColumn.CellDataFeatures<T, Boolean> cellDataFeatures) {
             return ((CamadaUser) cellDataFeatures.getValue()).getIsVirtualSponsor();
         }
 
     },
     IS_PRESENTIAL_SPONSOR {
         @Override
-        public <T> void setBooleanProperty(T item, CheckBox checkBox) {
+        public <T> void setBoolean(T item, CheckBox checkBox) {
             ((CamadaUser) item).setIsPresentialSponsor(checkBox.isSelected());
         }
 
         @Override
-        public <T> Boolean getBooleanProperty(TableColumn.CellDataFeatures<T, Boolean> cellDataFeatures) {
+        public <T> Boolean getBoolean(TableColumn.CellDataFeatures<T, Boolean> cellDataFeatures) {
             return ((CamadaUser) cellDataFeatures.getValue()).getIsPresentialSponsor();
         }
 
     },
     IS_PARTNER {
         @Override
-        public <T> void setBooleanProperty(T item, CheckBox checkBox) {
+        public <T> void setBoolean(T item, CheckBox checkBox) {
             ((CamadaUser) item).setIsPartner(checkBox.isSelected());
         }
 
         @Override
-        public <T> Boolean getBooleanProperty(TableColumn.CellDataFeatures<T, Boolean> cellDataFeatures) {
+        public <T> Boolean getBoolean(TableColumn.CellDataFeatures<T, Boolean> cellDataFeatures) {
             return ((CamadaUser) cellDataFeatures.getValue()).getIsPartner();
         }
     },
     IS_VOLUNTEER {
         @Override
-        public <T> void setBooleanProperty(T item, CheckBox checkBox) {
+        public <T> void setBoolean(T item, CheckBox checkBox) {
             ((CamadaUser) item).setIsVolunteer(checkBox.isSelected());
         }
 
         @Override
-        public <T> Boolean getBooleanProperty(TableColumn.CellDataFeatures<T, Boolean> cellDataFeatures) {
+        public <T> Boolean getBoolean(TableColumn.CellDataFeatures<T, Boolean> cellDataFeatures) {
             return ((CamadaUser) cellDataFeatures.getValue()).getIsVolunteer();
         }
     };
@@ -464,13 +505,14 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
     }
 
     @Override
-    public <T> void setBooleanProperty(T item, CheckBox checkBox) {
-
+    public <T> void setBoolean(T item, CheckBox checkBox) {
     }
 
     @Override
-    public <T> Boolean getBooleanProperty(TableColumn.CellDataFeatures<T, Boolean> cellDataFeatures) {
+    public <T> Boolean getBoolean(TableColumn.CellDataFeatures<T, Boolean> cellDataFeatures) {
         return null;
     }
 
+    public <T> void setDate(T item, CalendarTextField datePicker, PersistenceService persistenceService) {
+    }
 }

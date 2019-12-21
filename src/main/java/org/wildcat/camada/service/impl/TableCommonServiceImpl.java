@@ -18,9 +18,11 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import jfxtras.scene.control.CalendarTextField;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.stereotype.Service;
 import org.wildcat.camada.common.enumerations.CustomTableColumn;
 import org.wildcat.camada.controller.pojo.AppTableColumn;
@@ -30,7 +32,7 @@ import org.wildcat.camada.service.PersistenceService;
 import org.wildcat.camada.service.TableCommonService;
 import org.wildcat.camada.service.utils.AlertUtils;
 
-import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.stream.Stream;
 
@@ -41,30 +43,28 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
     @Override
     public void initCheckBoxTableCell(TableColumn<T, Boolean> column, CustomTableColumn param, TableView<T> table, ProgressIndicator progressIndicator,
             PersistenceService persistenceService) {
-        column.setCellValueFactory(c -> new SimpleBooleanProperty(param.getBooleanProperty(c)));
+        column.setCellValueFactory(c -> new SimpleBooleanProperty(param.getBoolean(c)));
         column.setCellFactory(p -> getCheckBoxTableCell(param, table, progressIndicator, persistenceService));
     }
 
     @Override
     public TableCell<T, Date> getDateTableCell(String pattern) {
-        TableCell<T, Date> cell = new TableCell<T, Date>() {
-            private SimpleDateFormat format = new SimpleDateFormat(pattern);
-
+        return new TableCell<T, Date>() {
             @Override
             protected void updateItem(Date item, boolean empty) {
                 super.updateItem(item, empty);
                 if (item == null || empty) {
                     setText(null);
                 } else {
-                    setText(format.format(item));
+                    setText(DateFormatUtils.format(item, pattern));
                 }
             }
         };
-        return cell;
     }
 
     @Override
-    public void initTextFieldTableCell(AppTableColumn<T> tableColumn, TableView table, ProgressIndicator progressIndicator, PersistenceService persistenceService) {
+    public void initTextFieldTableCell(AppTableColumn<T, String> tableColumn, TableView table, ProgressIndicator progressIndicator,
+            PersistenceService persistenceService) {
         tableColumn.getColumn().setCellValueFactory(new PropertyValueFactory<>(tableColumn.getColumnName()));
         tableColumn.getColumn().setCellFactory(TextFieldTableCell.forTableColumn());
         tableColumn.getColumn().setOnEditCommit(event -> {
@@ -117,7 +117,7 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
     }
 
     @Override
-    public void initPaymentFrequencyFieldTableCell(AppTableColumn<T> tableColumn, TableView table, ProgressIndicator progressIndicator,
+    public void initPaymentFrequencyFieldTableCell(AppTableColumn<T, String> tableColumn, TableView table, ProgressIndicator progressIndicator,
             PersistenceService persistenceService) {
         tableColumn.getColumn().setCellValueFactory(param -> {
             PartnerDTO partnerDTO = (PartnerDTO) param.getValue();
@@ -141,7 +141,8 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
                         try {
                             tableColumn.getCustomTableColumn().setNewValue(event, getPaymentFrequencyName(newValue), persistenceService);
                             result = true;
-                        } catch (Exception ignored) {
+                        } catch (Exception ex) {
+                            log.error(ExceptionUtils.getStackTrace(ex));
                         }
                         return result;
                     }
@@ -185,7 +186,7 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
                 .orElse(StringUtils.EMPTY);
     }
 
-    private <T> TableCell<T, Boolean> getCheckBoxTableCell(CustomTableColumn param, TableView table, ProgressIndicator progressIndicator,
+    private TableCell<T, Boolean> getCheckBoxTableCell(CustomTableColumn param, TableView table, ProgressIndicator progressIndicator,
             PersistenceService persistenceService) {
         CheckBox checkBox = new CheckBox();
         TableCell<T, Boolean> tableCell = new TableCell<T, Boolean>() {
@@ -206,32 +207,43 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
                 boolean result = false;
                 try {
                     T item = (T) tableCell.getTableRow().getItem();
-                    param.setBooleanProperty(item, checkBox);
+                    param.setBoolean(item, checkBox);
                     persistenceService.saveEntity(item);
                     table.refresh();
                     result = true;
-                } catch (Exception ignored) {
+                } catch (Exception ex) {
+                    log.error(ExceptionUtils.getStackTrace(ex));
                 }
                 return result;
             }
         };
         progressIndicator.visibleProperty().bind(updateCheckTask.runningProperty());
         checkBox.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
-            if (validate(checkBox, event)) {
+            if (validateCheckBox(checkBox, event)) {
                 updateCheckBox(updateCheckTask, progressIndicator);
             }
         });
         checkBox.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (event.getCode() == KeyCode.SPACE) {
-                if (validate(checkBox, event)) {
+                if (validateCheckBox(checkBox, event)) {
                     updateCheckBox(updateCheckTask, progressIndicator);
                 }
             }
         });
-
         tableCell.setAlignment(Pos.CENTER);
         tableCell.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
         return tableCell;
+    }
+
+    private boolean validateCheckBox(CheckBox checkBox, Event event) {
+        boolean result = false;
+        event.consume();
+        ButtonType buttonType = AlertUtils.showUpdate(Boolean.toString(checkBox.isSelected()), Boolean.toString(!checkBox.isSelected()));
+        if (buttonType == ButtonType.YES) {
+            checkBox.setSelected(!checkBox.isSelected());
+            result = true;
+        }
+        return result;
     }
 
     private void updateCheckBox(Task<Boolean> updateCheckTask, ProgressIndicator progressIndicator) {
@@ -252,15 +264,88 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
         });
     }
 
-    private boolean validate(CheckBox checkBox, Event event) {
+    @Override
+    public void initCalendarTextFieldTableCell(AppTableColumn<T, Date> tableColumn, TableView table, ProgressIndicator progressIndicator,
+            PersistenceService persistenceService) {
+        tableColumn.getColumn().setCellValueFactory(p -> {
+            PartnerDTO partnerDTO = (PartnerDTO) p.getValue();
+            return Bindings.createObjectBinding(partnerDTO::getBirthDate);
+        });
+        tableColumn.getColumn().setCellFactory(p -> getCalendarTextFieldTableCell(tableColumn.getCustomTableColumn(), table, progressIndicator, persistenceService));
+    }
+
+    private TableCell<T, Date> getCalendarTextFieldTableCell(CustomTableColumn param, TableView table, ProgressIndicator progressIndicator,
+            PersistenceService persistenceService) {
+        CalendarTextField calendarTextField = new CalendarTextField();
+        TableCell<T, Date> tableCell = new TableCell<T, Date>() {
+            @Override
+            protected void updateItem(Date item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null);
+                    return;
+                }
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(item);
+                calendarTextField.setCalendar(calendar);
+                setGraphic(calendarTextField);
+            }
+        };
+        Task<Date> updateDateTask = new Task<Date>() {
+            @Override
+            protected Date call() {
+                Date result = null;
+                try {
+                    T item = (T) tableCell.getTableRow().getItem();
+                    param.setDate(item, calendarTextField, persistenceService);
+                    table.refresh();
+                    result = calendarTextField.getCalendar().getTime();
+                } catch (Exception ex) {
+                    log.error(ExceptionUtils.getStackTrace(ex));
+                }
+                return result;
+            }
+        };
+        progressIndicator.visibleProperty().bind(updateDateTask.runningProperty());
+        calendarTextField.setValueValidationCallback(calendar -> {
+            if (validateDate(calendarTextField, calendar.getTime())) {
+                updateCalendarTextField(updateDateTask, progressIndicator);
+            }
+            return false;
+        });
+        tableCell.setAlignment(Pos.CENTER);
+        tableCell.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+        return tableCell;
+    }
+
+    private boolean validateDate(CalendarTextField calendarTextField, Date date) {
         boolean result = false;
-        event.consume();
-        ButtonType buttonType = AlertUtils.showUpdate(Boolean.toString(checkBox.isSelected()), Boolean.toString(!checkBox.isSelected()));
+        ButtonType buttonType = AlertUtils.showUpdate(DateFormatUtils.format(date, "dd/MM/yyyy"));
         if (buttonType == ButtonType.YES) {
-            checkBox.setSelected(!checkBox.isSelected());
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            calendarTextField.setCalendar(calendar);
             result = true;
         }
         return result;
+    }
+
+    private void updateCalendarTextField(Task<Date> updateDateTask, ProgressIndicator progressIndicator) {
+        progressIndicator.visibleProperty().bind(updateDateTask.runningProperty());
+        new Thread(updateDateTask).start();
+        updateDateTask.setOnSucceeded(worker -> {
+            if (updateDateTask.getValue() == null) {
+                AlertUtils.showError("Ha ocurrido un error al actualizar el campo.");
+            } else {
+                AlertUtils.showInfo("El campo se ha actualizado correctamente.");
+            }
+        });
+        updateDateTask.setOnFailed(worker -> {
+            AlertUtils.showError("Ha ocurrido un error al actualizar el campo.");
+        });
+        updateDateTask.setOnCancelled(worker -> {
+            AlertUtils.showError("Ha ocurrido un error al actualizar el campo.");
+        });
     }
 
 }

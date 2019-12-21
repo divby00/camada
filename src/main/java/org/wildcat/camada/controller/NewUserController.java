@@ -15,14 +15,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
-import org.wildcat.camada.config.StageManager;
-import org.wildcat.camada.persistence.entity.CamadaUser;
-import org.wildcat.camada.service.CamadaUserService;
-import org.wildcat.camada.service.utils.AlertUtils;
 import org.wildcat.camada.common.validator.impl.EmailValidatorImpl;
 import org.wildcat.camada.common.validator.impl.PasswordCheckValidatorImpl;
 import org.wildcat.camada.common.validator.impl.PasswordValidatorImpl;
 import org.wildcat.camada.common.validator.impl.TextValidatorImpl;
+import org.wildcat.camada.config.StageManager;
+import org.wildcat.camada.persistence.entity.CamadaUser;
+import org.wildcat.camada.service.CamadaUserService;
+import org.wildcat.camada.service.utils.AlertUtils;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;

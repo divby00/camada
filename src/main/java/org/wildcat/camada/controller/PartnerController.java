@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
 import org.wildcat.camada.common.enumerations.CustomTableColumn;
 import org.wildcat.camada.common.validator.impl.AmountValidatorImpl;
+import org.wildcat.camada.common.validator.impl.DateValidatorImpl;
 import org.wildcat.camada.common.validator.impl.DniValidatorImpl;
 import org.wildcat.camada.common.validator.impl.EmailValidatorImpl;
 import org.wildcat.camada.common.validator.impl.IbanValidatorImpl;
@@ -138,46 +139,47 @@ public class PartnerController extends BaseController<Partner, PartnerDTO> {
 
     @Override
     void initTable() {
-        AppTableColumn<PartnerDTO> userNameColumn = new AppTableColumn<>(name, "name", new NewUserValidatorImpl(camadaUserService), CustomTableColumn.PARTNER_NAME);
+        AppTableColumn<PartnerDTO, String> userNameColumn = new AppTableColumn<>(name, "name", new NewUserValidatorImpl(camadaUserService),
+                CustomTableColumn.PARTNER_NAME);
         tableCommonService.initTextFieldTableCell(userNameColumn, table, progressIndicator, partnerService);
-        AppTableColumn<PartnerDTO> firstNameColumn = new AppTableColumn<>(surnames, "surnames", new TextValidatorImpl(3, 50), CustomTableColumn.PARTNER_SURNAMES);
+        AppTableColumn<PartnerDTO, String> firstNameColumn = new AppTableColumn<>(surnames, "surnames", new TextValidatorImpl(3, 50),
+                CustomTableColumn.PARTNER_SURNAMES);
         tableCommonService.initTextFieldTableCell(firstNameColumn, table, progressIndicator, partnerService);
-        AppTableColumn<PartnerDTO> dniColumn = new AppTableColumn<>(dni, "dni", new DniValidatorImpl(), CustomTableColumn.PARTNER_DNI);
+        AppTableColumn<PartnerDTO, String> dniColumn = new AppTableColumn<>(dni, "dni", new DniValidatorImpl(), CustomTableColumn.PARTNER_DNI);
         tableCommonService.initTextFieldTableCell(dniColumn, table, progressIndicator, partnerService);
-        AppTableColumn<PartnerDTO> addressColumn = new AppTableColumn<>(address, "address", new TextValidatorImpl(3, 50), CustomTableColumn.PARTNER_ADDRESS);
+        AppTableColumn<PartnerDTO, String> addressColumn = new AppTableColumn<>(address, "address", new TextValidatorImpl(3, 50), CustomTableColumn.PARTNER_ADDRESS);
         tableCommonService.initTextFieldTableCell(addressColumn, table, progressIndicator, partnerService);
-        AppTableColumn<PartnerDTO> postCodeColumn = new AppTableColumn<>(postCode, "postCode", new TextValidatorImpl(5, 6), CustomTableColumn.PARTNER_POST_CODE);
+        AppTableColumn<PartnerDTO, String> postCodeColumn = new AppTableColumn<>(postCode, "postCode", new TextValidatorImpl(5, 6), CustomTableColumn.PARTNER_POST_CODE);
         tableCommonService.initTextFieldTableCell(postCodeColumn, table, progressIndicator, partnerService);
-        AppTableColumn<PartnerDTO> locationColumn = new AppTableColumn<>(location, "location", new TextValidatorImpl(3, 20), CustomTableColumn.PARTNER_LOCATION);
+        AppTableColumn<PartnerDTO, String> locationColumn = new AppTableColumn<>(location, "location", new TextValidatorImpl(3, 20), CustomTableColumn.PARTNER_LOCATION);
         tableCommonService.initTextFieldTableCell(locationColumn, table, progressIndicator, partnerService);
-        AppTableColumn<PartnerDTO> provinceColumn = new AppTableColumn<>(province, "province", new TextValidatorImpl(3, 20), CustomTableColumn.PARTNER_PROVINCE);
+        AppTableColumn<PartnerDTO, String> provinceColumn = new AppTableColumn<>(province, "province", new TextValidatorImpl(3, 20), CustomTableColumn.PARTNER_PROVINCE);
         tableCommonService.initTextFieldTableCell(provinceColumn, table, progressIndicator, partnerService);
-
-        // TODO: Add phone validation
-        AppTableColumn<PartnerDTO> phone1Column = new AppTableColumn<>(phone1, "phone1", new TextValidatorImpl(3, 20), CustomTableColumn.PARTNER_PHONE1);
+        AppTableColumn<PartnerDTO, String> phone1Column = new AppTableColumn<>(phone1, "phone1", new TextValidatorImpl(3, 20), CustomTableColumn.PARTNER_PHONE1);
         tableCommonService.initTextFieldTableCell(phone1Column, table, progressIndicator, partnerService);
-        AppTableColumn<PartnerDTO> phone2Column = new AppTableColumn<>(phone2, "phone2", new TextValidatorImpl(3, 20), CustomTableColumn.PARTNER_PHONE2);
+        AppTableColumn<PartnerDTO, String> phone2Column = new AppTableColumn<>(phone2, "phone2", new TextValidatorImpl(3, 20), CustomTableColumn.PARTNER_PHONE2);
         tableCommonService.initTextFieldTableCell(phone2Column, table, progressIndicator, partnerService);
-        AppTableColumn<PartnerDTO> emailColumn = new AppTableColumn<>(email, "email", new EmailValidatorImpl(), CustomTableColumn.PARTNER_EMAIL);
+        AppTableColumn<PartnerDTO, String> emailColumn = new AppTableColumn<>(email, "email", new EmailValidatorImpl(), CustomTableColumn.PARTNER_EMAIL);
         tableCommonService.initTextFieldTableCell(emailColumn, table, progressIndicator, partnerService);
-
-        // TODO: Add IBAN validator
-        AppTableColumn<PartnerDTO> ibanColumn = new AppTableColumn<>(iban, "iban", new IbanValidatorImpl(), CustomTableColumn.PARTNER_IBAN);
+        AppTableColumn<PartnerDTO, String> ibanColumn = new AppTableColumn<>(iban, "iban", new IbanValidatorImpl(), CustomTableColumn.PARTNER_IBAN);
         tableCommonService.initTextFieldTableCell(ibanColumn, table, progressIndicator, partnerService);
-        AppTableColumn<PartnerDTO> bankNameColumn = new AppTableColumn<>(bankName, "bankName", new TextValidatorImpl(3, 20), CustomTableColumn.PARTNER_BANK_NAME);
+        AppTableColumn<PartnerDTO, String> bankNameColumn = new AppTableColumn<>(bankName, "bankName", new TextValidatorImpl(3, 20),
+                CustomTableColumn.PARTNER_BANK_NAME);
         tableCommonService.initTextFieldTableCell(bankNameColumn, table, progressIndicator, partnerService);
-        AppTableColumn<PartnerDTO> surnamesBankColumn = new AppTableColumn<>(bankSurnames, "bankSurnames", new TextValidatorImpl(3, 20),
+        AppTableColumn<PartnerDTO, String> surnamesBankColumn = new AppTableColumn<>(bankSurnames, "bankSurnames", new TextValidatorImpl(3, 20),
                 CustomTableColumn.PARTNER_BANK_SURNAMES);
         tableCommonService.initTextFieldTableCell(surnamesBankColumn, table, progressIndicator, partnerService);
 
-        AppTableColumn<PartnerDTO> amountColumn = new AppTableColumn<>(amount, "amount", new AmountValidatorImpl(3.0, 6.0, 9.0, 12.0), CustomTableColumn.PARTNER_AMOUNT);
+        AppTableColumn<PartnerDTO, String> amountColumn = new AppTableColumn<>(amount, "amount", new AmountValidatorImpl(3.0, 6.0, 9.0, 12.0),
+                CustomTableColumn.PARTNER_AMOUNT);
         tableCommonService.initTextFieldTableCell(amountColumn, table, progressIndicator, partnerService);
-        AppTableColumn<PartnerDTO> paymentFrequencyColumn = new AppTableColumn<>(paymentFrequency, "paymentFrequency", new PaymentFrequencyValidatorImpl(),
+        AppTableColumn<PartnerDTO, String> paymentFrequencyColumn = new AppTableColumn<>(paymentFrequency, "paymentFrequency", new PaymentFrequencyValidatorImpl(),
                 CustomTableColumn.PARTNER_PAYMENT_FREQUENCY);
         tableCommonService.initPaymentFrequencyFieldTableCell(paymentFrequencyColumn, table, progressIndicator, partnerService);
 
-        birthDate.setCellValueFactory(new PropertyValueFactory<>("birthDate"));
-        birthDate.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy"));
+        AppTableColumn<PartnerDTO, Date> birthDateColumn = new AppTableColumn<>(birthDate, "birthDate", new DateValidatorImpl(), CustomTableColumn.PARTNER_BIRTHDATE);
+        tableCommonService.initCalendarTextFieldTableCell(birthDateColumn, table, progressIndicator, partnerService);
+
         subscribedFrom.setCellValueFactory(new PropertyValueFactory<>("subscribedFrom"));
         subscribedFrom.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy"));
         subscribedTo.setCellValueFactory(new PropertyValueFactory<>("subscribedTo"));

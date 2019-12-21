@@ -6,6 +6,11 @@ import org.apache.commons.lang3.StringUtils;
 
 public class AlertUtils {
 
+    public static ButtonType showUpdate(String newValue) {
+        String text = "¿Quieres cambiar la fecha a '" + newValue + "'?";
+        return showConfirmation(text);
+    }
+
     public static ButtonType showUpdate(String oldValue, String newValue) {
         if (StringUtils.equalsAnyIgnoreCase(oldValue, "true", "false")) {
             oldValue = StringUtils.equalsIgnoreCase(oldValue, "true") ? "Si" : "No";

@@ -99,13 +99,13 @@ public class UserController extends BaseController<CamadaUser, CamadaUser> {
 
     @Override
     public void initTable() {
-        AppTableColumn<CamadaUser> userNameColumn = new AppTableColumn<>(userName, "name", new NewUserValidatorImpl(camadaUserService), CustomTableColumn.NAME);
+        AppTableColumn<CamadaUser, String> userNameColumn = new AppTableColumn<>(userName, "name", new NewUserValidatorImpl(camadaUserService), CustomTableColumn.NAME);
         tableCommonService.initTextFieldTableCell(userNameColumn, table, progressIndicator, camadaUserService);
-        AppTableColumn<CamadaUser> firstNameColumn = new AppTableColumn<>(firstName, "firstName", new TextValidatorImpl(3, 20), CustomTableColumn.FIRST_NAME);
+        AppTableColumn<CamadaUser, String> firstNameColumn = new AppTableColumn<>(firstName, "firstName", new TextValidatorImpl(3, 20), CustomTableColumn.FIRST_NAME);
         tableCommonService.initTextFieldTableCell(firstNameColumn, table, progressIndicator, camadaUserService);
-        AppTableColumn<CamadaUser> lastNameColumn = new AppTableColumn<>(lastName, "lastName", new TextValidatorImpl(3, 20), CustomTableColumn.LAST_NAME);
+        AppTableColumn<CamadaUser, String> lastNameColumn = new AppTableColumn<>(lastName, "lastName", new TextValidatorImpl(3, 20), CustomTableColumn.LAST_NAME);
         tableCommonService.initTextFieldTableCell(lastNameColumn, table, progressIndicator, camadaUserService);
-        AppTableColumn<CamadaUser> emailColumn = new AppTableColumn<>(email, "email", new EmailValidatorImpl(), CustomTableColumn.EMAIL);
+        AppTableColumn<CamadaUser, String> emailColumn = new AppTableColumn<>(email, "email", new EmailValidatorImpl(), CustomTableColumn.EMAIL);
         tableCommonService.initTextFieldTableCell(emailColumn, table, progressIndicator, camadaUserService);
 
         tableCommonService.initCheckBoxTableCell(isAdmin, CustomTableColumn.IS_ADMIN, table, progressIndicator, camadaUserService);

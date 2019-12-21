@@ -12,10 +12,14 @@ import java.util.Date;
 public interface TableCommonService<T> {
     TableCell<T, Date> getDateTableCell(String pattern);
 
-    void initTextFieldTableCell(AppTableColumn<T> tableColumn, TableView table, ProgressIndicator progressIndicator, PersistenceService persistenceService);
+    void initTextFieldTableCell(AppTableColumn<T, String> tableColumn, TableView table, ProgressIndicator progressIndicator, PersistenceService persistenceService);
 
-    void initPaymentFrequencyFieldTableCell(AppTableColumn<T> tableColumn, TableView table, ProgressIndicator progressIndicator, PersistenceService persistenceService);
+    void initPaymentFrequencyFieldTableCell(AppTableColumn<T, String> tableColumn, TableView table, ProgressIndicator progressIndicator,
+            PersistenceService persistenceService);
 
     void initCheckBoxTableCell(TableColumn<T, Boolean> column, CustomTableColumn param, TableView<T> table, ProgressIndicator progressIndicator,
+            PersistenceService persistenceService);
+
+    void initCalendarTextFieldTableCell(AppTableColumn<T, Date> tableColumn, TableView table, ProgressIndicator progressIndicator,
             PersistenceService persistenceService);
 }
