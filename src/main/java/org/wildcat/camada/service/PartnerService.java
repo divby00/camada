@@ -14,4 +14,8 @@ public interface PartnerService extends PersistenceService<Partner> {
 
     Partner save(Partner partner);
 
+    List<PartnerDTO> generateNextPayments();
+
+    List<PartnerDTO> findByDni(String dni);
+
 }

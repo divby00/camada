@@ -5,16 +5,15 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import org.slf4j.Logger;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.wildcat.camada.view.FxmlView;
 
 import java.util.Objects;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
+@Slf4j
 public class StageManager {
 
-    private static final Logger LOG = getLogger(StageManager.class);
     private final Stage primaryStage;
     private Stage modalStage;
     private final SpringFXMLLoader springFXMLLoader;
@@ -96,13 +95,13 @@ public class StageManager {
             rootNode = springFXMLLoader.load(fxmlFilePath);
             Objects.requireNonNull(rootNode, "A Root FXML node must not be null");
         } catch (Exception exception) {
-            logAndExit("Unable to load FXML view" + fxmlFilePath, exception);
+            logAndExit("Unable to load FXML view: " + fxmlFilePath, exception);
         }
         return rootNode;
     }
 
     private void logAndExit(String errorMsg, Exception exception) {
-        LOG.error(errorMsg, exception, exception.getCause());
+        log.error(errorMsg + ": " + ExceptionUtils.getStackTrace(exception));
         Platform.exit();
     }
 

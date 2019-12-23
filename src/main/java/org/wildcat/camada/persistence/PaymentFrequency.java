@@ -3,6 +3,7 @@ package org.wildcat.camada.persistence;
 public enum PaymentFrequency {
     MONTHLY("Mensual"),
     QUATERLY("Trimestral"),
+    BIANNUAL("Semestral"),
     YEARLY("Anual");
 
     private String label;

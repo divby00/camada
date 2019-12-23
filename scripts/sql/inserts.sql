@@ -297,11 +297,13 @@ insert into custom_query (description, query, zorder)
 insert into custom_query (description, query, zorder)
     value ('Todos los socios', 'ALL_PARTNERS', 0);
 insert into custom_query (description, query, zorder)
-    value ('Nuevas altas', 'NEW_PARTNERS', 1);
+    value ('Próximos pagos', 'NEXT_PAYMENTS_PARTNERS', 1);
 insert into custom_query (description, query, zorder)
-    value ('Todas las bajas', 'ALL_FORMER_PARTNERS', 2);
+    value ('Nuevas altas', 'NEW_PARTNERS', 2);
 insert into custom_query (description, query, zorder)
-    value ('Bajas del último mes', 'LAST_MONTH_FORMER_PARTNERS', 3);
+    value ('Todas las bajas', 'ALL_FORMER_PARTNERS', 3);
+insert into custom_query (description, query, zorder)
+    value ('Bajas del último mes', 'LAST_MONTH_FORMER_PARTNERS', 4);
 commit;
 
 

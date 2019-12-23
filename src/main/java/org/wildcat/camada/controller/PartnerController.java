@@ -5,12 +5,15 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
@@ -41,10 +44,13 @@ import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.CustomQueryService;
 import org.wildcat.camada.service.PartnerService;
 import org.wildcat.camada.service.TableCommonService;
+import org.wildcat.camada.service.utils.CsvUtils;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -128,6 +134,9 @@ public class PartnerController extends BaseController<Partner, PartnerDTO> {
 
     @FXML
     private TableColumn<PartnerDTO, String> paymentFrequency;
+
+    @FXML
+    private Button nextPaymentsButton;
 
     public PartnerController(CamadaUserService camadaUserService, PartnerService partnerService,
             CustomQueryService customQueryService, TableCommonService<PartnerDTO> tableCommonService) {
@@ -274,4 +283,25 @@ public class PartnerController extends BaseController<Partner, PartnerDTO> {
                 .collect(Collectors.toList());
     }
 
+    @FXML
+    void onNextPaymentsButtonAction(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Guardar fichero CSV");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV (*.csv)", "*.csv"));
+        String formattedDate = DateTimeFormatter.ofPattern("yyyy-MM").format(LocalDate.now());
+        fileChooser.setInitialFileName(formattedDate + "_pagos_socios_camada.csv");
+        File file = fileChooser.showSaveDialog(stageManager.getPrimaryStage());
+        if (file != null) {
+            List<PartnerDTO> nextPaymentsPartners = partnerService.generateNextPayments();
+            String[] headers = new String[] {
+                    "Nombre", "Apellidos", "Nombre del titular", "Apellidos del titular", "IBAN", "Cantidad"
+            };
+            List<String[]> nextPaymentPartners = nextPaymentsPartners.stream().map(partner -> new String[] {
+                    partner.getName(), partner.getSurnames(), partner.getBankName(), partner.getBankSurnames(), partner.getIban(), partner.getAmount()
+            }).collect(Collectors.toList());
+            CsvUtils.export(headers, nextPaymentPartners, file.getAbsolutePath());
+        }
+    }
+
 }
+

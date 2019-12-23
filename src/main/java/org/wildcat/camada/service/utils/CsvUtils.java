@@ -47,6 +47,28 @@ public class CsvUtils {
         }
     }
 
+    public static void export(String [] headers, List<String[]> list, String fileName) {
+        boolean result = false;
+        try {
+            FileWriter fileWriter = new FileWriter(fileName);
+            CSVPrinter csvPrinter = new CSVPrinter(fileWriter, CSVFormat.DEFAULT.withHeader(headers));
+            for (String[] items : list) {
+                csvPrinter.printRecord((Object[]) items);
+            }
+            fileWriter.flush();
+            fileWriter.close();
+            csvPrinter.close();
+            result = true;
+        } catch (Exception ex) {
+            log.warn(ExceptionUtils.getStackTrace(ex));
+        }
+        if (result) {
+            AlertUtils.showInfo(MessageFormat.format("El fichero {0} se ha guardado correctamente.", fileName));
+        } else {
+            AlertUtils.showError(MessageFormat.format("Ha habido un problema al guardar el fichero {0}.", fileName));
+        }
+    }
+
     public static CSVParser getCsvParser(File file) {
         CSVParser csvParser = null;
         try {

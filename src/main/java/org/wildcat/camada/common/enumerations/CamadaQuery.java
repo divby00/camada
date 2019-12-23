@@ -6,6 +6,7 @@ public enum CamadaQuery {
     INACTIVE_USERS("user"),
     ALL_PARTNERS("partner"),
     NEW_PARTNERS("partner"),
+    NEXT_PAYMENTS_PARTNERS("partner"),
     ALL_FORMER_PARTNERS("partner"),
     LAST_MONTH_FORMER_PARTNERS("partner");
 

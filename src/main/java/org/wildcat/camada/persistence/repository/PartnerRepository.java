@@ -21,4 +21,29 @@ public interface PartnerRepository extends CrudRepository<Partner, Long> {
             "    inner join p.personalData pd " +
             "order by pd.name")
     List<PartnerDTO> findAllPartnersDTO();
+
+    @Query(value = "select new org.wildcat.camada.persistence.dto.PartnerDTO(" +
+            "   p.id, p.amount, p.paymentFrequency, p.camadaId, p.active, p.subscribedFrom, p.subscribedTo, " +
+            "   pd.id, pd.dni, pd.name, pd.surnames, pd.birthDate, " +
+            "   pd.address, pd.location, pd.province, pd.postCode, pd.phone1, pd.phone2, pd.email, " +
+            "   bd.id, bd.iban, bd.name, bd.surnames) " +
+            "from Partner p " +
+            "    inner join p.bankingData bd " +
+            "    inner join p.personalData pd " +
+            "where (p.subscribedFrom < current_date and p.subscribedTo is null) " +
+            "    or (p.subscribedFrom < current_date and p.subscribedTo > current_date) " +
+            "order by pd.name")
+    List<PartnerDTO> findActivePartnersDTO();
+
+    @Query(value = "select new org.wildcat.camada.persistence.dto.PartnerDTO(" +
+            "   p.id, p.amount, p.paymentFrequency, p.camadaId, p.active, p.subscribedFrom, p.subscribedTo, " +
+            "   pd.id, pd.dni, pd.name, pd.surnames, pd.birthDate, " +
+            "   pd.address, pd.location, pd.province, pd.postCode, pd.phone1, pd.phone2, pd.email, " +
+            "   bd.id, bd.iban, bd.name, bd.surnames) " +
+            "from Partner p " +
+            "    inner join p.bankingData bd " +
+            "    inner join p.personalData pd " +
+            "where pd.dni = :dni ")
+    List<PartnerDTO> findPartnersDTOByDni(String dni);
+
 }
