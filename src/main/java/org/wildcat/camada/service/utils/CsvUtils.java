@@ -8,6 +8,8 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.wildcat.camada.common.validator.Validator;
 
 import java.io.File;
@@ -23,13 +25,34 @@ import java.util.List;
 import java.util.Set;
 
 @Slf4j
+@Component
 public class CsvUtils {
+
+    public static Boolean excelCompatible;
+    public static Character csvDelimiter;
+
+    @Value("${excel.compatible}")
+    public void setExcelCompatible(String value) {
+        excelCompatible = Boolean.valueOf(value);
+    }
+
+    @Value("${csv.delimiter}")
+    public void setCsvDelimiter(Character value) {
+        csvDelimiter = value;
+    }
 
     public static <T> void export(TableView<T> table, String fileName) {
         boolean result = false;
         try {
             FileWriter fileWriter = new FileWriter(fileName);
-            CSVPrinter csvPrinter = new CSVPrinter(fileWriter, CSVFormat.DEFAULT.withHeader(ReportUtils.getVisibleColumns(table)));
+            if (excelCompatible) { // Add a BOM for better Excel support
+                fileWriter.write("\uFEFF");
+            }
+            CSVFormat format = (excelCompatible)
+                    ? CSVFormat.EXCEL.withDelimiter(csvDelimiter).withHeader(ReportUtils.getVisibleColumns(table))
+                    : CSVFormat.DEFAULT.withDelimiter(csvDelimiter).withHeader(ReportUtils.getVisibleColumns(table));
+
+            CSVPrinter csvPrinter = new CSVPrinter(fileWriter, format);
             for (T item : table.getItems()) {
                 csvPrinter.printRecord(ReportUtils.getRecordList(table, item));
             }
@@ -47,11 +70,18 @@ public class CsvUtils {
         }
     }
 
-    public static void export(String [] headers, List<String[]> list, String fileName) {
+    public static void export(String[] headers, List<String[]> list, String fileName) {
         boolean result = false;
         try {
             FileWriter fileWriter = new FileWriter(fileName);
-            CSVPrinter csvPrinter = new CSVPrinter(fileWriter, CSVFormat.DEFAULT.withHeader(headers));
+            if (excelCompatible) { // Add a BOM for better Excel support
+                fileWriter.write("\uFEFF");
+            }
+            CSVFormat format = (excelCompatible)
+                    ? CSVFormat.EXCEL.withDelimiter(csvDelimiter).withHeader(headers)
+                    : CSVFormat.DEFAULT.withDelimiter(csvDelimiter).withHeader(headers);
+
+            CSVPrinter csvPrinter = new CSVPrinter(fileWriter, format);
             for (String[] items : list) {
                 csvPrinter.printRecord((Object[]) items);
             }

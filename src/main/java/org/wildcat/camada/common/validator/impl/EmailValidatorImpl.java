@@ -18,4 +18,9 @@ public class EmailValidatorImpl implements Validator {
         return predicate.test(text);
     }
 
+    @Override
+    public String getErrorMessage() {
+        return "El email debe tener un formato de email correcto";
+    }
+
 }

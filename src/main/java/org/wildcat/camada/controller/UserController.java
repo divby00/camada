@@ -28,6 +28,7 @@ import org.wildcat.camada.persistence.entity.CustomQuery;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.CustomQueryService;
 import org.wildcat.camada.service.TableCommonService;
+import org.wildcat.camada.service.rest.PictureRestClientImpl;
 import org.wildcat.camada.service.utils.CsvUtils;
 import org.wildcat.camada.view.FxmlView;
 
@@ -90,11 +91,15 @@ public class UserController extends BaseController<CamadaUser, CamadaUser> {
     @Resource
     private final CamadaUserService camadaUserService;
 
+    @Resource
+    private final PictureRestClientImpl pictureRestClient;
+
     public UserController(TableCommonService<CamadaUser> tableCommonService, CamadaUserService camadaUserService,
-            CustomQueryService customQueryService) {
-        super(customQueryService, FxmlView.NEW_USER);
+            CustomQueryService customQueryService, PictureRestClientImpl pictureRestClient) {
+        super(customQueryService, pictureRestClient, FxmlView.NEW_USER);
         this.tableCommonService = tableCommonService;
         this.camadaUserService = camadaUserService;
+        this.pictureRestClient = pictureRestClient;
     }
 
     @Override

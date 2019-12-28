@@ -26,4 +26,9 @@ public class TextValidatorImpl implements Validator {
         return triPredicate.test(text, min, max);
     }
 
+    @Override
+    public String getErrorMessage() {
+        return "El valor debe ser una cadena de caracteres con una longitud mayor que " + min + " caracteres y menor que " + max + " caracteres.";
+    }
+
 }

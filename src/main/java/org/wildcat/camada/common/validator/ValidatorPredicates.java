@@ -18,13 +18,14 @@ public interface ValidatorPredicates {
     Pattern passwordPattern = Pattern.compile("((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%]).{6,20})");
     Pattern emailPattern = Pattern.compile("^[\\w-_.+]*[\\w-_.]@([\\w]+\\.)+[\\w]+[\\w]$");
     Pattern phonePattern = Pattern.compile("^(\\+34|0034|34)?[6789]\\d{8}$");
+    Pattern postCodePattern = Pattern.compile("^\\d{5}$");
     String DATE_PATTERN = "dd/MM/yyyy HH:mm";
 
     TriPredicate<String, Integer> isValidTextField = (text, min, max) -> StringUtils.length(text) > min && StringUtils.length(text) < max && StringUtils
             .isAlphanumericSpace(text);
     Predicate<String> isValidPassword = (text) -> passwordPattern.matcher(text).matches();
     Predicate<String> isValidEmail = (text) -> emailPattern.matcher(text).matches();
-    BiPredicate<String, String> passwordsAreTheSame = StringUtils::equals;
+    BiPredicate<String, String> passwordsAreTheSame = (text1, text2) -> StringUtils.equals(text1, text2) && StringUtils.length(text1) > 0;
     Predicate<String> isValidBoolean = (text) -> StringUtils.equalsAnyIgnoreCase(text, "true", "false");
     BiPredicate<String, Double[]> isValidAmount = (text, amounts) -> Stream.of(amounts).anyMatch(amount -> Double.toString(amount).equals(text));
     Predicate<PaymentFrequency> isValidPaymentFrequency = (text) -> Stream.of(PaymentFrequency.values()).anyMatch(freq -> text == freq);
@@ -69,4 +70,5 @@ public interface ValidatorPredicates {
     ).remainder(BigInteger.valueOf(97)).equals(BigInteger.ONE);
 
     Predicate<String> isValidPhone = (text) -> phonePattern.matcher(text).matches();
+    Predicate<String> isValidPostCode = (text) -> postCodePattern.matcher(text).matches();
 }

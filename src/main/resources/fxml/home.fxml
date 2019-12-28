@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.paint.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
@@ -39,17 +40,21 @@
                <children>
                   <AnchorPane style="-fx-background-color: #94bfd8;">
                      <children>
+                        <ImageView fx:id="imageBanner" pickOnBounds="true" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                         <Label layoutX="146.0" layoutY="25.0" text="La Camada - Guadalajara" textFill="WHITE" AnchorPane.bottomAnchor="21.0" AnchorPane.leftAnchor="125.0" AnchorPane.topAnchor="22.0">
                            <font>
                               <Font name="System Bold" size="48.0" />
                            </font>
+                           <effect>
+                              <DropShadow color="WHITE" />
+                           </effect>
                         </Label>
                         <ImageView fitHeight="100.0" fitWidth="394.0" layoutX="10.0" layoutY="10.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="7.0">
                            <image>
                               <Image url="@../camada_small.png" />
                            </image>
                            <effect>
-                              <DropShadow height="10.0" radius="4.5" width="10.0" />
+                              <DropShadow color="WHITE" />
                            </effect>
                         </ImageView>
                      </children>
@@ -144,13 +149,13 @@
             </VBox>
          </center>
          <bottom>
-            <AnchorPane BorderPane.alignment="TOP_CENTER">
+            <AnchorPane fx:id="backgroundPane" BorderPane.alignment="TOP_CENTER">
                <children>
                   <HBox alignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                      <children>
                         <Label prefHeight="0.0" text="Made with ">
                            <font>
-                              <Font size="10.0" />
+                              <Font name="System Bold" size="10.0" />
                            </font>
                         </Label>
                         <ImageView fitHeight="10.0" fitWidth="26.0" pickOnBounds="true" preserveRatio="true">
@@ -163,7 +168,7 @@
                         </ImageView>
                         <Label text="by Jesús Chicharro">
                            <font>
-                              <Font size="10.0" />
+                              <Font name="System Bold" size="10.0" />
                            </font>
                            <HBox.margin>
                               <Insets left="3.0" />
@@ -180,17 +185,20 @@
                            <HBox.margin>
                               <Insets />
                            </HBox.margin>
+                           <effect>
+                              <Glow />
+                           </effect>
                         </ImageView>
-                        <Hyperlink fx:id="linkOpenBrowser" alignment="CENTER" onAction="#onLinkOpenBrowserAction" text="http://github.com/divby00" textAlignment="CENTER">
+                        <Hyperlink fx:id="linkOpenBrowser" alignment="CENTER" onAction="#onLinkOpenBrowserAction" text="http://github.com/divby00" textAlignment="CENTER" textFill="#000001">
                            <font>
-                              <Font size="10.0" />
+                              <Font name="System Bold" size="10.0" />
                            </font>
                         </Hyperlink>
                      </children>
                   </HBox>
                </children>
                <BorderPane.margin>
-                  <Insets bottom="10.0" />
+                  <Insets />
                </BorderPane.margin>
             </AnchorPane>
          </bottom>

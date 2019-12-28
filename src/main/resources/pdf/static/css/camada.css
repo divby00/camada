@@ -56,14 +56,14 @@ thead {
 }
 
 th {
-    font-size: 1.1em;
+    font-size: 0.8em;
     color: white;
     padding: 4px 10px 4px 10px;
     text-align: center;
 }
 
 td {
-    font-size: 1.0em;
+    font-size: 0.8em;
     padding: 4px 10px 4px 10px;
     color: gray;
     border-bottom: 1px solid #ccc;

@@ -1,6 +1,9 @@
 package org.wildcat.camada.controller;
 
+import de.androidpit.colorthief.ColorThief;
+import de.androidpit.colorthief.RGBUtil;
 import javafx.concurrent.Task;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -8,6 +11,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +35,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Optional;
+import java.util.Random;
 import java.util.ResourceBundle;
 
 import static org.wildcat.camada.service.utils.GetUtils.get;
@@ -72,6 +79,12 @@ public class HomeController implements Initializable {
     @FXML
     private VBox contentVbox;
 
+    @FXML
+    private ImageView imageBanner;
+
+    @FXML
+    private AnchorPane backgroundPane;
+
     @Lazy
     @Autowired
     private StageManager stageManager;
@@ -85,6 +98,15 @@ public class HomeController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+
+        Random random = new Random(System.currentTimeMillis());
+        String name = "back0" + random.nextInt(8) + ".png";
+        Image image = new Image(name, false);
+        imageBanner.setImage(image);
+        int[] color = ColorThief.getColor(SwingFXUtils.fromFXImage(image, null));
+        String hexColor = Integer.toHexString(RGBUtil.packRGB(color));
+        backgroundPane.setStyle(" -fx-background-color: linear-gradient(white 10%, #" + hexColor + " 90%)");
+
         String greetingMessage = resources.getString("home.greeting");
         String defaultGreetingMessage = resources.getString("home.greeting.default");
         final Long id = get(() -> camadaUserService.getUser().getId(), -1L);

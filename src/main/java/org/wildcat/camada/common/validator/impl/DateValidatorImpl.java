@@ -13,4 +13,9 @@ public class DateValidatorImpl implements Validator {
     public Boolean validate(String text) {
         return predicate.test(text);
     }
+
+    @Override
+    public String getErrorMessage() {
+        return "El valor debe ser vacío o una fecha con el formato dd/MM/yyyy HH:mm";
+    }
 }

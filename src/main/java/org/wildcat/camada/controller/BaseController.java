@@ -1,9 +1,12 @@
 package org.wildcat.camada.controller;
 
+import de.androidpit.colorthief.ColorThief;
+import de.androidpit.colorthief.RGBUtil;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -19,6 +22,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +36,7 @@ import org.springframework.context.annotation.Lazy;
 import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.persistence.entity.CustomQuery;
 import org.wildcat.camada.service.CustomQueryService;
+import org.wildcat.camada.service.rest.PictureRestClientImpl;
 import org.wildcat.camada.service.utils.AlertUtils;
 import org.wildcat.camada.service.utils.CsvFileDefinitions;
 import org.wildcat.camada.service.utils.CsvUtils;
@@ -39,9 +44,12 @@ import org.wildcat.camada.service.utils.PdfUtils;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -67,8 +75,14 @@ public abstract class BaseController<T, U> implements Initializable {
     @FXML
     private TableView<U> table;
 
+    @FXML
+    private AnchorPane secondaryBar;
+
     @Resource
     private final CustomQueryService customQueryService;
+
+    @Resource
+    private final PictureRestClientImpl pictureRestClient;
 
     @Lazy
     @Autowired
@@ -77,8 +91,9 @@ public abstract class BaseController<T, U> implements Initializable {
     private ResourceBundle resources;
     final private FxmlView newEntityView;
 
-    protected BaseController(CustomQueryService customQueryService, FxmlView newEntityView) {
+    protected BaseController(CustomQueryService customQueryService, PictureRestClientImpl pictureRestClient, FxmlView newEntityView) {
         this.customQueryService = customQueryService;
+        this.pictureRestClient = pictureRestClient;
         this.newEntityView = newEntityView;
     }
 
@@ -100,10 +115,32 @@ public abstract class BaseController<T, U> implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
-        Random random = new Random(System.currentTimeMillis());
-        String name = "back0" + random.nextInt(3) + ".png";
-        imageBanner.setImage(new Image(name, true));
+        final double width = this.stageManager.getPrimaryStage().getWidth();
+        Task<BufferedImage> myTask = new Task<BufferedImage>() {
+            @Override
+            protected BufferedImage call() {
+                return pictureRestClient.getPicture(width);
+            }
+        };
+        progressIndicator.visibleProperty().bind(myTask.runningProperty());
+        new Thread(myTask).start();
+        myTask.setOnSucceeded(worker -> {
+            BufferedImage result = myTask.getValue();
+            if (result != null) {
+                Image image = SwingFXUtils.toFXImage(result, null);
+                imageBanner.setImage(image);
+                int[] pictureColor = ColorThief.getColor(result);
+                secondaryBar.setStyle("-fx-background-color: #" + Integer.toHexString(RGBUtil.packRGB(pictureColor))); // #f3daaa is the fallback color
+            } else {
+                usePackedPicture();
+            }
+        });
+        myTask.setOnFailed(worker -> {
+            //usePackedPicture();
+        });
+        myTask.setOnCancelled(worker -> {
+            //usePackedPicture();
+        });
 
         this.resources = resources;
         Task<ObservableList<CustomQuery>> taskCustomQueries = new Task<ObservableList<CustomQuery>>() {
@@ -162,6 +199,16 @@ public abstract class BaseController<T, U> implements Initializable {
         addContextMenu();
     }
 
+    private void usePackedPicture() {
+        Random random = new Random(System.currentTimeMillis());
+        String name = "back0" + random.nextInt(10) + ".png";
+        Image image = new Image(name, false);
+        imageBanner.setImage(image);
+        BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
+        int[] pictureColor = ColorThief.getColor(bufferedImage);
+        secondaryBar.setStyle("-fx-background-color: #" + Integer.toHexString(RGBUtil.packRGB(pictureColor))); // #f3daaa is the fallback color
+    }
+
     @FXML
     public void onSignoffButtonAction(ActionEvent event) {
         stageManager.switchScene(FxmlView.LOGIN);
@@ -174,10 +221,12 @@ public abstract class BaseController<T, U> implements Initializable {
 
     @FXML
     public void onExportCsvButtonAction(ActionEvent event) {
+        String csvName = stageManager.getView().getExportsFileName();
+        String formattedDate = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(LocalDate.now());
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Guardar fichero CSV");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV (*.csv)", "*.csv"));
-        fileChooser.setInitialFileName("*.csv");
+        fileChooser.setInitialFileName(formattedDate + "_" + csvName + ".csv");
         File file = fileChooser.showSaveDialog(stageManager.getPrimaryStage());
         if (file != null) {
             CsvUtils.export(table, file.getAbsolutePath());
@@ -186,10 +235,12 @@ public abstract class BaseController<T, U> implements Initializable {
 
     @FXML
     public void onExportPdfButtonAction(ActionEvent event) {
+        String pdfName = stageManager.getView().getExportsFileName();
+        String formattedDate = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(LocalDate.now());
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Guardar fichero PDF");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF (*.pdf)", "*.pdf"));
-        fileChooser.setInitialFileName("*.pdf");
+        fileChooser.setInitialFileName(formattedDate + "_" + pdfName + ".pdf");
         File file = fileChooser.showSaveDialog(this.stageManager.getPrimaryStage());
         if (file != null) {
             Task<Boolean> pdfTask = new Task<Boolean>() {

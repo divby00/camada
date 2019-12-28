@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CamadaUserService extends PersistenceService<CamadaUser> {
+
     boolean authenticate(String user, String password);
 
     CamadaUser getUser();

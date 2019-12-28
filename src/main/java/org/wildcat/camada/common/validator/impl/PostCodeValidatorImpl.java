@@ -11,9 +11,9 @@ import java.util.function.Predicate;
 @Getter
 @Setter
 @AllArgsConstructor
-public class IbanValidatorImpl implements Validator {
+public class PostCodeValidatorImpl implements Validator {
 
-    private static Predicate<String> predicate = ValidatorPredicates.isValidIban;
+    private static Predicate<String> predicate = ValidatorPredicates.isValidPostCode;
 
     @Override
     public Boolean validate(String text) {
@@ -22,7 +22,7 @@ public class IbanValidatorImpl implements Validator {
 
     @Override
     public String getErrorMessage() {
-        return "El IBAN debe tener 24 caracteres y ser un IBAN válido.";
+        return "El código postal debe estar formador por 5 números.";
     }
 
 }

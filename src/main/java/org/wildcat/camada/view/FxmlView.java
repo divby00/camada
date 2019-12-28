@@ -39,6 +39,11 @@ public enum FxmlView {
         public String getFxmlFile() {
             return "/fxml/user.fxml";
         }
+
+        @Override
+        public String getExportsFileName() {
+            return "usuarios_la_camada";
+        }
     },
     NEW_USER(false, true) {
         @Override
@@ -83,6 +88,12 @@ public enum FxmlView {
         public String getFxmlFile() {
             return "/fxml/partner.fxml";
         }
+
+        @Override
+        public String getExportsFileName() {
+            return "socios_la_camada";
+        }
+
     },
     SPONSOR(true, false, true) {
         @Override
@@ -126,6 +137,7 @@ public enum FxmlView {
     private boolean modal;
     private boolean maximized;
     private String label;
+    private String exportsFileName;
 
     FxmlView(boolean resizable) {
         this.resizable = resizable;
@@ -168,8 +180,11 @@ public enum FxmlView {
         return this.label;
     }
 
+    public String getExportsFileName() {
+        return "default";
+    }
+
     String getStringFromResourceBundle(String key) {
         return ResourceBundle.getBundle("camada").getString(key);
     }
-
 }

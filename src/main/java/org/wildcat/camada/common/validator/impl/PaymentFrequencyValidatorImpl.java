@@ -29,4 +29,10 @@ public class PaymentFrequencyValidatorImpl implements Validator {
         return predicate.test(paymentFrequency);
     }
 
+    @Override
+    public String getErrorMessage() {
+        String values = Stream.of(PaymentFrequency.values()).map(PaymentFrequency::getLabel).collect(Collectors.joining(", "));
+        return "La frecuencia de pago debe ser alguno de los siguientes valores: " + values;
+    }
+
 }

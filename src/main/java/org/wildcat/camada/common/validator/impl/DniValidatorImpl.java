@@ -20,4 +20,9 @@ public class DniValidatorImpl implements Validator {
         return predicate.test(text);
     }
 
+    @Override
+    public String getErrorMessage() {
+        return "El DNI debe contener ocho cifras y una letra y ser un DNI español válido.";
+    }
+
 }

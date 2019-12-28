@@ -25,6 +25,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.stereotype.Service;
 import org.wildcat.camada.common.enumerations.CustomTableColumn;
+import org.wildcat.camada.common.validator.Validator;
 import org.wildcat.camada.controller.pojo.AppTableColumn;
 import org.wildcat.camada.persistence.PaymentFrequency;
 import org.wildcat.camada.persistence.dto.PartnerDTO;
@@ -70,10 +71,11 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
         tableColumn.getColumn().setOnEditCommit(event -> {
             String newValue = event.getNewValue();
             String oldValue = tableColumn.getCustomTableColumn().getOldValue(event);
-            boolean validates = tableColumn.getValidator().validate(newValue);
+            Validator validator = tableColumn.getValidator();
+            boolean validates = validator.validate(newValue);
             if (newValue.equals(oldValue) || !validates) {
                 if (!validates) {
-                    AlertUtils.showError("El campo es incorrecto.");
+                    AlertUtils.showError(validator.getErrorMessage());
                 }
                 table.refresh();
                 return;

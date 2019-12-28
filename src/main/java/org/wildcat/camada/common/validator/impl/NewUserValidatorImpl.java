@@ -14,7 +14,7 @@ import java.util.Optional;
 @Setter
 public class NewUserValidatorImpl implements Validator {
 
-    private Integer min = 3;
+    private Integer min = 2;
     private Integer max = 20;
     private static TriPredicate<String, Integer> triPredicate = ValidatorPredicates.isValidTextField;
 
@@ -28,5 +28,10 @@ public class NewUserValidatorImpl implements Validator {
     public Boolean validate(String text) {
         Optional<CamadaUser> user = camadaUserService.findByName(text);
         return !user.isPresent() && triPredicate.test(text, min, max);
+    }
+
+    @Override
+    public String getErrorMessage() {
+        return "El valor debe ser una cadena de caracteres con una longitud mayor que " + min + " caracteres y menor que " + max + " caracteres.";
     }
 }

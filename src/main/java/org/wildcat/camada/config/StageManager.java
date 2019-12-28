@@ -1,9 +1,12 @@
 package org.wildcat.camada.config;
 
 import javafx.application.Platform;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -17,6 +20,7 @@ public class StageManager {
     private final Stage primaryStage;
     private Stage modalStage;
     private final SpringFXMLLoader springFXMLLoader;
+    private FxmlView view;
 
     public StageManager(SpringFXMLLoader springFXMLLoader, Stage stage) {
         this.springFXMLLoader = springFXMLLoader;
@@ -25,6 +29,7 @@ public class StageManager {
 
     public void switchScene(final FxmlView view) {
         Parent viewRootNodeHierarchy = loadViewNodeHierarchy(view.getFxmlFile());
+        this.view = view;
         if (view.isModal()) {
             showModalScene(viewRootNodeHierarchy, view);
         } else {
@@ -40,16 +45,36 @@ public class StageManager {
         return this.modalStage;
     }
 
+    public FxmlView getView() {
+        return this.view;
+    }
+
     private void show(final Parent rootnode, FxmlView view) {
         Scene scene = prepareScene(rootnode);
         primaryStage.setTitle(view.getTitle());
         primaryStage.setScene(scene);
-        if (view.isMaximized()) {
-            primaryStage.setMaximized(true);
+
+        boolean isMaximized = view.isMaximized();
+        if (isMaximized) {
+            Screen screen = Screen.getPrimary();
+            Rectangle2D bounds = screen.getVisualBounds();
+            primaryStage.setWidth(bounds.getWidth());
+            primaryStage.setMaxWidth(bounds.getWidth());
+            primaryStage.setMinWidth(bounds.getWidth());
+            primaryStage.setHeight(bounds.getHeight());
+            primaryStage.setMaxHeight(bounds.getHeight());
+            primaryStage.setMinHeight(bounds.getHeight());
         } else {
-            primaryStage.setMaximized(false);
-            primaryStage.sizeToScene();
+            double prefWidth = ((Pane) rootnode).getPrefWidth();
+            double prefHeight = ((Pane) rootnode).getPrefHeight() + 30;
+            primaryStage.setWidth(prefWidth);
+            primaryStage.setMaxWidth(prefWidth);
+            primaryStage.setMinWidth(prefWidth);
+            primaryStage.setHeight(prefHeight);
+            primaryStage.setMaxHeight(prefHeight);
+            primaryStage.setMinHeight(prefHeight);
         }
+        primaryStage.setMaximized(isMaximized);
         primaryStage.centerOnScreen();
         primaryStage.setResizable(view.isResizable());
         primaryStage.getIcons().add(view.getIcon());

@@ -8,6 +8,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -32,7 +33,7 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 @Controller
-public class NewUserController implements Initializable {
+public class NewUserController extends NewEntityController implements Initializable {
 
     @FXML
     private TextField inputUserName;
@@ -101,12 +102,18 @@ public class NewUserController implements Initializable {
         this.imageFirstName.managedProperty().bind(imageFirstName.visibleProperty());
         this.imageLastName.managedProperty().bind(imageLastName.visibleProperty());
         this.imageEmail.managedProperty().bind(imageEmail.visibleProperty());
-        this.userNameValidator = new TextValidatorImpl(3, 20);
-        this.firstNameValidator = new TextValidatorImpl(3, 20);
-        this.lastNameValidator = new TextValidatorImpl(3, 20);
+        this.userNameValidator = new TextValidatorImpl(2, 20);
+        this.firstNameValidator = new TextValidatorImpl(2, 20);
+        this.lastNameValidator = new TextValidatorImpl(2, 20);
         this.passwordValidator = new PasswordValidatorImpl();
         this.passwordCheckValidator = new PasswordCheckValidatorImpl<>(inputPassword);
         this.emailValidator = new EmailValidatorImpl();
+        Tooltip.install(imageUserName, new Tooltip(userNameValidator.getErrorMessage()));
+        Tooltip.install(imagePassword, new Tooltip(passwordValidator.getErrorMessage()));
+        Tooltip.install(imagePasswordCheck, new Tooltip(passwordCheckValidator.getErrorMessage()));
+        Tooltip.install(imageFirstName, new Tooltip(firstNameValidator.getErrorMessage()));
+        Tooltip.install(imageLastName, new Tooltip(lastNameValidator.getErrorMessage()));
+        Tooltip.install(imageEmail, new Tooltip(emailValidator.getErrorMessage()));
     }
 
     @FXML
@@ -176,23 +183,12 @@ public class NewUserController implements Initializable {
 
     @FXML
     public void validate(KeyEvent event) {
-        boolean isValidUserName = userNameValidator.validate(inputUserName.getText());
-        imageUserName.setVisible(!isValidUserName);
-
-        boolean isValidPassword = passwordValidator.validate(inputPassword.getText());
-        imagePassword.setVisible(!isValidPassword);
-
-        boolean isValidPasswordCheck = passwordCheckValidator.validate(inputPasswordCheck.getText());
-        imagePasswordCheck.setVisible(!isValidPasswordCheck);
-
-        boolean isValidFirstName = firstNameValidator.validate(inputFirstName.getText());
-        imageFirstName.setVisible(!isValidFirstName);
-
-        boolean isValidLastName = lastNameValidator.validate(inputLastName.getText());
-        imageLastName.setVisible(!isValidLastName);
-
-        boolean isValidEmail = emailValidator.validate(inputEmail.getText());
-        imageEmail.setVisible(!isValidEmail);
+        boolean isValidUserName = validate(userNameValidator, inputUserName.getText(), imageUserName);
+        boolean isValidPassword = validate(passwordValidator, inputPassword.getText(), imagePassword);
+        boolean isValidPasswordCheck = validate(passwordCheckValidator, inputPasswordCheck.getText(), imagePasswordCheck);
+        boolean isValidFirstName = validate(firstNameValidator, inputFirstName.getText(), imageFirstName);
+        boolean isValidLastName = validate(lastNameValidator, inputLastName.getText(), imageLastName);
+        boolean isValidEmail = validate(emailValidator, inputEmail.getText(), imageEmail);
 
         boolean fieldsAreNotEmpty = StringUtils.isNotBlank(inputUserName.getText()) && StringUtils.isNotBlank(inputFirstName.getText())
                 && StringUtils.isNotBlank(inputLastName.getText()) && StringUtils.isNotBlank(inputPassword.getText())

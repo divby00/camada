@@ -29,8 +29,9 @@ import org.wildcat.camada.common.validator.impl.DateValidatorImpl;
 import org.wildcat.camada.common.validator.impl.DniValidatorImpl;
 import org.wildcat.camada.common.validator.impl.EmailValidatorImpl;
 import org.wildcat.camada.common.validator.impl.IbanValidatorImpl;
-import org.wildcat.camada.common.validator.impl.NewUserValidatorImpl;
 import org.wildcat.camada.common.validator.impl.PaymentFrequencyValidatorImpl;
+import org.wildcat.camada.common.validator.impl.PhoneValidatorImpl;
+import org.wildcat.camada.common.validator.impl.PostCodeValidatorImpl;
 import org.wildcat.camada.common.validator.impl.TextValidatorImpl;
 import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.controller.pojo.AppTableColumn;
@@ -44,6 +45,7 @@ import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.CustomQueryService;
 import org.wildcat.camada.service.PartnerService;
 import org.wildcat.camada.service.TableCommonService;
+import org.wildcat.camada.service.rest.PictureRestClientImpl;
 import org.wildcat.camada.service.utils.CsvUtils;
 import org.wildcat.camada.view.FxmlView;
 
@@ -71,6 +73,9 @@ public class PartnerController extends BaseController<Partner, PartnerDTO> {
 
     @Resource
     private final PartnerService partnerService;
+
+    @Resource
+    private final PictureRestClientImpl pictureRestClient;
 
     @FXML
     private TableView<PartnerDTO> table;
@@ -139,16 +144,18 @@ public class PartnerController extends BaseController<Partner, PartnerDTO> {
     private Button nextPaymentsButton;
 
     public PartnerController(CamadaUserService camadaUserService, PartnerService partnerService,
-            CustomQueryService customQueryService, TableCommonService<PartnerDTO> tableCommonService) {
-        super(customQueryService, FxmlView.NEW_PARTNER);
+            CustomQueryService customQueryService, TableCommonService<PartnerDTO> tableCommonService,
+            PictureRestClientImpl pictureRestClient) {
+        super(customQueryService, pictureRestClient, FxmlView.NEW_PARTNER);
         this.camadaUserService = camadaUserService;
         this.partnerService = partnerService;
         this.tableCommonService = tableCommonService;
+        this.pictureRestClient = pictureRestClient;
     }
 
     @Override
     void initTable() {
-        AppTableColumn<PartnerDTO, String> userNameColumn = new AppTableColumn<>(name, "name", new NewUserValidatorImpl(camadaUserService),
+        AppTableColumn<PartnerDTO, String> userNameColumn = new AppTableColumn<>(name, "name", new TextValidatorImpl(2, 20),
                 CustomTableColumn.PARTNER_NAME);
         tableCommonService.initTextFieldTableCell(userNameColumn, table, progressIndicator, partnerService);
         AppTableColumn<PartnerDTO, String> firstNameColumn = new AppTableColumn<>(surnames, "surnames", new TextValidatorImpl(3, 50),
@@ -158,24 +165,24 @@ public class PartnerController extends BaseController<Partner, PartnerDTO> {
         tableCommonService.initTextFieldTableCell(dniColumn, table, progressIndicator, partnerService);
         AppTableColumn<PartnerDTO, String> addressColumn = new AppTableColumn<>(address, "address", new TextValidatorImpl(3, 50), CustomTableColumn.PARTNER_ADDRESS);
         tableCommonService.initTextFieldTableCell(addressColumn, table, progressIndicator, partnerService);
-        AppTableColumn<PartnerDTO, String> postCodeColumn = new AppTableColumn<>(postCode, "postCode", new TextValidatorImpl(5, 6), CustomTableColumn.PARTNER_POST_CODE);
+        AppTableColumn<PartnerDTO, String> postCodeColumn = new AppTableColumn<>(postCode, "postCode", new PostCodeValidatorImpl(), CustomTableColumn.PARTNER_POST_CODE);
         tableCommonService.initTextFieldTableCell(postCodeColumn, table, progressIndicator, partnerService);
-        AppTableColumn<PartnerDTO, String> locationColumn = new AppTableColumn<>(location, "location", new TextValidatorImpl(3, 20), CustomTableColumn.PARTNER_LOCATION);
+        AppTableColumn<PartnerDTO, String> locationColumn = new AppTableColumn<>(location, "location", new TextValidatorImpl(2, 20), CustomTableColumn.PARTNER_LOCATION);
         tableCommonService.initTextFieldTableCell(locationColumn, table, progressIndicator, partnerService);
-        AppTableColumn<PartnerDTO, String> provinceColumn = new AppTableColumn<>(province, "province", new TextValidatorImpl(3, 20), CustomTableColumn.PARTNER_PROVINCE);
+        AppTableColumn<PartnerDTO, String> provinceColumn = new AppTableColumn<>(province, "province", new TextValidatorImpl(2, 20), CustomTableColumn.PARTNER_PROVINCE);
         tableCommonService.initTextFieldTableCell(provinceColumn, table, progressIndicator, partnerService);
-        AppTableColumn<PartnerDTO, String> phone1Column = new AppTableColumn<>(phone1, "phone1", new TextValidatorImpl(3, 20), CustomTableColumn.PARTNER_PHONE1);
+        AppTableColumn<PartnerDTO, String> phone1Column = new AppTableColumn<>(phone1, "phone1", new PhoneValidatorImpl(), CustomTableColumn.PARTNER_PHONE1);
         tableCommonService.initTextFieldTableCell(phone1Column, table, progressIndicator, partnerService);
-        AppTableColumn<PartnerDTO, String> phone2Column = new AppTableColumn<>(phone2, "phone2", new TextValidatorImpl(3, 20), CustomTableColumn.PARTNER_PHONE2);
+        AppTableColumn<PartnerDTO, String> phone2Column = new AppTableColumn<>(phone2, "phone2", new PhoneValidatorImpl(), CustomTableColumn.PARTNER_PHONE2);
         tableCommonService.initTextFieldTableCell(phone2Column, table, progressIndicator, partnerService);
         AppTableColumn<PartnerDTO, String> emailColumn = new AppTableColumn<>(email, "email", new EmailValidatorImpl(), CustomTableColumn.PARTNER_EMAIL);
         tableCommonService.initTextFieldTableCell(emailColumn, table, progressIndicator, partnerService);
         AppTableColumn<PartnerDTO, String> ibanColumn = new AppTableColumn<>(iban, "iban", new IbanValidatorImpl(), CustomTableColumn.PARTNER_IBAN);
         tableCommonService.initTextFieldTableCell(ibanColumn, table, progressIndicator, partnerService);
-        AppTableColumn<PartnerDTO, String> bankNameColumn = new AppTableColumn<>(bankName, "bankName", new TextValidatorImpl(3, 20),
+        AppTableColumn<PartnerDTO, String> bankNameColumn = new AppTableColumn<>(bankName, "bankName", new TextValidatorImpl(2, 20),
                 CustomTableColumn.PARTNER_BANK_NAME);
         tableCommonService.initTextFieldTableCell(bankNameColumn, table, progressIndicator, partnerService);
-        AppTableColumn<PartnerDTO, String> surnamesBankColumn = new AppTableColumn<>(bankSurnames, "bankSurnames", new TextValidatorImpl(3, 20),
+        AppTableColumn<PartnerDTO, String> surnamesBankColumn = new AppTableColumn<>(bankSurnames, "bankSurnames", new TextValidatorImpl(2, 20),
                 CustomTableColumn.PARTNER_BANK_SURNAMES);
         tableCommonService.initTextFieldTableCell(surnamesBankColumn, table, progressIndicator, partnerService);
 

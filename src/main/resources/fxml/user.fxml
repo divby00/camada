@@ -34,22 +34,21 @@
             <children>
                 <AnchorPane style="-fx-background-color: #94bfd8;" stylesheets="@../styles/camada.css">
                     <children>
-                        <ImageView fx:id="imageBanner" layoutX="597.0" pickOnBounds="true" preserveRatio="true" smooth="false" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                            <image>
-                                <Image url="@../back00.png" />
-                            </image>
-                        </ImageView>
+                        <ImageView fx:id="imageBanner" layoutX="597.0" pickOnBounds="true" AnchorPane.rightAnchor="0.0" />
                         <Label layoutX="136.0" layoutY="15.0" text="Usuarios" textFill="WHITE" AnchorPane.bottomAnchor="21.0" AnchorPane.leftAnchor="125.0" AnchorPane.topAnchor="22.0">
                             <font>
                                 <Font name="System Bold" size="48.0" />
                             </font>
+                     <effect>
+                        <DropShadow color="WHITE" />
+                     </effect>
                         </Label>
                         <ImageView fitHeight="100.0" fitWidth="394.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="7.0">
                             <image>
                                 <Image url="@../camada_small.png" />
                             </image>
                             <effect>
-                                <DropShadow height="10.0" radius="4.5" width="10.0" />
+                                <DropShadow color="WHITE" />
                             </effect>
                         </ImageView>
                         <HBox layoutX="503.0" layoutY="31.0" spacing="10.0" AnchorPane.bottomAnchor="40.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="41.0">
@@ -133,15 +132,18 @@
                            </graphic>
                         </Button>
                             </children>
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
                         </HBox>
                     </children>
                 </AnchorPane>
-                <AnchorPane style="-fx-background-color: #f3daaa;">
+                <AnchorPane fx:id="secondaryBar" style="-fx-background-color: #f3daaa;">
                     <VBox.margin>
                         <Insets />
                     </VBox.margin>
                     <children>
-                        <HBox spacing="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="0.0">
+                        <HBox spacing="10.0" style="-: ;" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="0.0">
                             <children>
                                 <ComboBox fx:id="customQueriesComboBox" prefWidth="200.0" />
                                 <Separator orientation="VERTICAL" />
@@ -153,6 +155,9 @@
                                     <HBox.margin>
                                         <Insets top="5.0" />
                                     </HBox.margin>
+                           <effect>
+                              <DropShadow height="10.0" radius="4.5" width="10.0" />
+                           </effect>
                                 </ImageView>
                             </children>
                         </HBox>
@@ -182,6 +187,9 @@
                     <padding>
                         <Insets bottom="4.0" top="4.0" />
                     </padding>
+               <effect>
+                  <InnerShadow height="1.0" radius="0.0" width="1.0" />
+               </effect>
                 </AnchorPane>
             </children>
         </VBox>

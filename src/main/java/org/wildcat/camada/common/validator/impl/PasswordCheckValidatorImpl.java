@@ -24,4 +24,9 @@ public class PasswordCheckValidatorImpl<T extends TextField> implements Validato
         return biPredicate.test(text, originalPasswordField.getText());
     }
 
+    @Override
+    public String getErrorMessage() {
+        return "El valor no debe estar vacío y ser igual al campo contraseña.";
+    }
+
 }

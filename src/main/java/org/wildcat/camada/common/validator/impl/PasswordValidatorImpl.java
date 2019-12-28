@@ -20,4 +20,9 @@ public class PasswordValidatorImpl implements Validator {
         return predicate.test(text);
     }
 
+    @Override
+    public String getErrorMessage() {
+        return "La contraseña debe tener una longitud de entre 6 y 20 caracteres, debe tener números, letras mayúsculas, letras minúsculas y uno o más de los siguientes caracteres: @ # $ %";
+    }
+
 }

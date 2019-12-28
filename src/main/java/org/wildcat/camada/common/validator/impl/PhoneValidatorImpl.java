@@ -13,4 +13,9 @@ public class PhoneValidatorImpl implements Validator {
     public Boolean validate(String text) {
         return predicate.test(text);
     }
+
+    @Override
+    public String getErrorMessage() {
+        return "El teléfono debe tener 9 cifras, puede contener opcionalmente el prefijo de España (+34) y debe comenzar por 6, 7, 8 o 9";
+    }
 }
