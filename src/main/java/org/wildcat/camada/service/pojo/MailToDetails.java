@@ -1,12 +1,10 @@
 package org.wildcat.camada.service.pojo;
 
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.mail.internet.InternetAddress;
-import java.util.List;
 
 @Getter
 @Setter

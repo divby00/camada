@@ -59,11 +59,11 @@ public class StageManager {
             Screen screen = Screen.getPrimary();
             Rectangle2D bounds = screen.getVisualBounds();
             primaryStage.setWidth(bounds.getWidth());
-            primaryStage.setMaxWidth(bounds.getWidth());
             primaryStage.setMinWidth(bounds.getWidth());
             primaryStage.setHeight(bounds.getHeight());
-            primaryStage.setMaxHeight(bounds.getHeight());
             primaryStage.setMinHeight(bounds.getHeight());
+            primaryStage.setMaxWidth(bounds.getWidth());
+            primaryStage.setMaxHeight(bounds.getHeight());
         } else {
             double prefWidth = ((Pane) rootnode).getPrefWidth();
             double prefHeight = ((Pane) rootnode).getPrefHeight() + 30;

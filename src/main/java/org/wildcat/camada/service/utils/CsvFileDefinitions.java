@@ -12,7 +12,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public enum CsvFileDefinitions {
-    USERS("Nombre de usuario,Nombre,Apellido,Email,Acceso administrador,Acceso socios,Acceso padrinos presenciales,Acceso padrinos virtuales,Acceso voluntarios,Fecha de alta,Última conexión") {
+
+    USERS("Nombre de usuario,Nombre,Apellido,Email,Acceso administrador,Acceso socios,Acceso padrinos presenciales,Acceso padrinos virtuales,Acceso voluntarios,Activo,Fecha de alta,Última conexión") {
         @Override
         public List<Validator> getValidators() {
             Validator[] validators = {
@@ -20,6 +21,7 @@ public enum CsvFileDefinitions {
                     new TextValidatorImpl(3, 20),
                     new TextValidatorImpl(3, 20),
                     new EmailValidatorImpl(),
+                    new BooleanValidatorImpl(),
                     new BooleanValidatorImpl(),
                     new BooleanValidatorImpl(),
                     new BooleanValidatorImpl(),

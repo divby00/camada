@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Controller;
 import org.wildcat.camada.common.enumerations.CustomTableColumn;
@@ -28,7 +27,7 @@ import org.wildcat.camada.persistence.entity.CustomQuery;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.CustomQueryService;
 import org.wildcat.camada.service.TableCommonService;
-import org.wildcat.camada.service.rest.PictureRestClientImpl;
+import org.wildcat.camada.service.picture.PictureService;
 import org.wildcat.camada.service.utils.CsvUtils;
 import org.wildcat.camada.view.FxmlView;
 
@@ -74,6 +73,9 @@ public class UserController extends BaseController<CamadaUser, CamadaUser> {
     private TableColumn<CamadaUser, Boolean> isVolunteer;
 
     @FXML
+    private TableColumn<CamadaUser, Boolean> isActive;
+
+    @FXML
     private TableColumn<CamadaUser, Date> activationDate;
 
     @FXML
@@ -91,15 +93,11 @@ public class UserController extends BaseController<CamadaUser, CamadaUser> {
     @Resource
     private final CamadaUserService camadaUserService;
 
-    @Resource
-    private final PictureRestClientImpl pictureRestClient;
-
-    public UserController(TableCommonService<CamadaUser> tableCommonService, CamadaUserService camadaUserService,
-            CustomQueryService customQueryService, PictureRestClientImpl pictureRestClient) {
-        super(customQueryService, pictureRestClient, FxmlView.NEW_USER);
+    public UserController(TableCommonService<CamadaUser> tableCommonService, PictureService pictureService, CamadaUserService camadaUserService,
+            CustomQueryService customQueryService) {
+        super(customQueryService, pictureService, FxmlView.NEW_USER);
         this.tableCommonService = tableCommonService;
         this.camadaUserService = camadaUserService;
-        this.pictureRestClient = pictureRestClient;
     }
 
     @Override
@@ -113,11 +111,12 @@ public class UserController extends BaseController<CamadaUser, CamadaUser> {
         AppTableColumn<CamadaUser, String> emailColumn = new AppTableColumn<>(email, "email", new EmailValidatorImpl(), CustomTableColumn.EMAIL);
         tableCommonService.initTextFieldTableCell(emailColumn, table, progressIndicator, camadaUserService);
 
-        tableCommonService.initCheckBoxTableCell(isAdmin, CustomTableColumn.IS_ADMIN, table, progressIndicator, camadaUserService);
-        tableCommonService.initCheckBoxTableCell(isVirtualSponsor, CustomTableColumn.IS_VIRTUAL_SPONSOR, table, progressIndicator, camadaUserService);
-        tableCommonService.initCheckBoxTableCell(isPresentialSponsor, CustomTableColumn.IS_PRESENTIAL_SPONSOR, table, progressIndicator, camadaUserService);
-        tableCommonService.initCheckBoxTableCell(isPartner, CustomTableColumn.IS_PARTNER, table, progressIndicator, camadaUserService);
-        tableCommonService.initCheckBoxTableCell(isVolunteer, CustomTableColumn.IS_VOLUNTEER, table, progressIndicator, camadaUserService);
+        tableCommonService.initCheckBoxTableCell(isAdmin, CustomTableColumn.IS_ADMIN, table, progressIndicator, this, camadaUserService);
+        tableCommonService.initCheckBoxTableCell(isVirtualSponsor, CustomTableColumn.IS_VIRTUAL_SPONSOR, table, progressIndicator, this, camadaUserService);
+        tableCommonService.initCheckBoxTableCell(isPresentialSponsor, CustomTableColumn.IS_PRESENTIAL_SPONSOR, table, progressIndicator, this, camadaUserService);
+        tableCommonService.initCheckBoxTableCell(isPartner, CustomTableColumn.IS_PARTNER, table, progressIndicator, this, camadaUserService);
+        tableCommonService.initCheckBoxTableCell(isVolunteer, CustomTableColumn.IS_VOLUNTEER, table, progressIndicator, this, camadaUserService);
+        tableCommonService.initCheckBoxTableCell(isActive, CustomTableColumn.IS_ACTIVE, table, progressIndicator, this, camadaUserService);
 
         activationDate.setCellValueFactory(new PropertyValueFactory<>("activationDate"));
         lastConnection.setCellValueFactory(new PropertyValueFactory<>("lastConnection"));
@@ -170,13 +169,14 @@ public class UserController extends BaseController<CamadaUser, CamadaUser> {
             user.setFirstName(csvRecord.get(1));
             user.setLastName(csvRecord.get(2));
             user.setEmail(csvRecord.get(3));
-            user.setIsAdmin(Boolean.valueOf(csvRecord.get(4)));
-            user.setIsPartner(Boolean.valueOf(csvRecord.get(5)));
-            user.setIsPresentialSponsor(Boolean.valueOf(csvRecord.get(6)));
-            user.setIsVirtualSponsor(Boolean.valueOf(csvRecord.get(7)));
-            user.setIsVolunteer(Boolean.valueOf(csvRecord.get(8)));
-            user.setActivationDate(DateUtils.parseDate(csvRecord.get(9)));
-            user.setIsActive(true);
+            user.setIsAdmin(CsvUtils.getBooleanFromTranslatedValue(csvRecord.get(4)));
+            user.setIsPartner(CsvUtils.getBooleanFromTranslatedValue(csvRecord.get(5)));
+            user.setIsPresentialSponsor(CsvUtils.getBooleanFromTranslatedValue(csvRecord.get(6)));
+            user.setIsVirtualSponsor(CsvUtils.getBooleanFromTranslatedValue(csvRecord.get(7)));
+            user.setIsVolunteer(CsvUtils.getBooleanFromTranslatedValue(csvRecord.get(8)));
+            user.setIsActive(CsvUtils.getBooleanFromTranslatedValue(csvRecord.get(9)));
+            user.setActivationDate(CsvUtils.getDateFromTranslatedValue(csvRecord.get(10)));
+            user.setLastConnection(CsvUtils.getDateFromTranslatedValue(csvRecord.get(11)));
         } catch (Exception ex) {
             log.warn(ExceptionUtils.getStackTrace(ex));
         }

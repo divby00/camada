@@ -12,7 +12,6 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVRecord;
@@ -41,11 +40,10 @@ import org.wildcat.camada.persistence.entity.BankingData;
 import org.wildcat.camada.persistence.entity.CustomQuery;
 import org.wildcat.camada.persistence.entity.Partner;
 import org.wildcat.camada.persistence.entity.PersonalData;
-import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.CustomQueryService;
 import org.wildcat.camada.service.PartnerService;
 import org.wildcat.camada.service.TableCommonService;
-import org.wildcat.camada.service.rest.PictureRestClientImpl;
+import org.wildcat.camada.service.picture.PictureService;
 import org.wildcat.camada.service.utils.CsvUtils;
 import org.wildcat.camada.view.FxmlView;
 
@@ -66,16 +64,10 @@ public class PartnerController extends BaseController<Partner, PartnerDTO> {
     private StageManager stageManager;
 
     @Resource
-    private final CamadaUserService camadaUserService;
-
-    @Resource
     private final TableCommonService<PartnerDTO> tableCommonService;
 
     @Resource
     private final PartnerService partnerService;
-
-    @Resource
-    private final PictureRestClientImpl pictureRestClient;
 
     @FXML
     private TableView<PartnerDTO> table;
@@ -143,14 +135,11 @@ public class PartnerController extends BaseController<Partner, PartnerDTO> {
     @FXML
     private Button nextPaymentsButton;
 
-    public PartnerController(CamadaUserService camadaUserService, PartnerService partnerService,
-            CustomQueryService customQueryService, TableCommonService<PartnerDTO> tableCommonService,
-            PictureRestClientImpl pictureRestClient) {
-        super(customQueryService, pictureRestClient, FxmlView.NEW_PARTNER);
-        this.camadaUserService = camadaUserService;
+    public PartnerController(PartnerService partnerService,
+            CustomQueryService customQueryService, PictureService pictureService, TableCommonService<PartnerDTO> tableCommonService) {
+        super(customQueryService, pictureService, FxmlView.NEW_PARTNER);
         this.partnerService = partnerService;
         this.tableCommonService = tableCommonService;
-        this.pictureRestClient = pictureRestClient;
     }
 
     @Override
@@ -196,10 +185,13 @@ public class PartnerController extends BaseController<Partner, PartnerDTO> {
         AppTableColumn<PartnerDTO, Date> birthDateColumn = new AppTableColumn<>(birthDate, "birthDate", new DateValidatorImpl(), CustomTableColumn.PARTNER_BIRTHDATE);
         tableCommonService.initCalendarTextFieldTableCell(birthDateColumn, table, progressIndicator, partnerService);
 
-        subscribedFrom.setCellValueFactory(new PropertyValueFactory<>("subscribedFrom"));
-        subscribedFrom.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy"));
-        subscribedTo.setCellValueFactory(new PropertyValueFactory<>("subscribedTo"));
-        subscribedTo.setCellFactory(column -> tableCommonService.getDateTableCell("dd/MM/yyyy"));
+        AppTableColumn<PartnerDTO, Date> subscribedFromColumn = new AppTableColumn<>(subscribedFrom, "subscribedFrom", new DateValidatorImpl(),
+                CustomTableColumn.PARTNER_SUBSCRIBED_FROM);
+        tableCommonService.initCalendarTextFieldTableCell(subscribedFromColumn, table, progressIndicator, partnerService);
+
+        AppTableColumn<PartnerDTO, Date> subscribedToColumn = new AppTableColumn<>(subscribedTo, "subscribedTo", new DateValidatorImpl(),
+                CustomTableColumn.PARTNER_SUBSCRIBED_TO);
+        tableCommonService.initCalendarTextFieldTableCell(subscribedToColumn, table, progressIndicator, partnerService);
     }
 
     @Override

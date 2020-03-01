@@ -1,4 +1,4 @@
-package org.wildcat.camada.service.rest.model;
+package org.wildcat.camada.service.picture.rest.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

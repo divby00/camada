@@ -5,9 +5,9 @@ import org.wildcat.camada.common.validator.ValidatorPredicates;
 
 import java.util.function.Predicate;
 
-public class DateValidatorImpl implements Validator {
+public class DateTimeValidatorImpl implements Validator {
 
-    private final static Predicate<String> predicate = ValidatorPredicates.isValidDateOrEmpty;
+    private final static Predicate<String> predicate = ValidatorPredicates.isValidDateTimeOrEmpty;
 
     @Override
     public Boolean validate(String text) {
@@ -16,6 +16,6 @@ public class DateValidatorImpl implements Validator {
 
     @Override
     public String getErrorMessage() {
-        return "El valor debe ser vacío o una fecha con el formato dd/MM/yyyy";
+        return "El valor debe ser vacío o una fecha con el formato dd/MM/yyyy HH:mm";
     }
 }

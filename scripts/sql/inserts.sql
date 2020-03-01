@@ -289,9 +289,9 @@ commit;
 delete
 from custom_query;
 insert into custom_query (description, query, zorder)
-    value ('Todos los usuarios', 'ACTIVE_AND_INACTIVE_USERS', 0);
+    value ('Usuarios activos', 'ACTIVE_USERS', 0);
 insert into custom_query (description, query, zorder)
-    value ('Usuarios activos', 'ACTIVE_USERS', 1);
+    value ('Todos los usuarios', 'ACTIVE_AND_INACTIVE_USERS', 1);
 insert into custom_query (description, query, zorder)
     value ('Usuarios inactivos', 'INACTIVE_USERS', 2);
 insert into custom_query (description, query, zorder)

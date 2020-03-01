@@ -1,21 +1,19 @@
 package org.wildcat.camada.controller;
 
-import de.androidpit.colorthief.ColorThief;
-import de.androidpit.colorthief.RGBUtil;
 import javafx.concurrent.Task;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -25,6 +23,9 @@ import org.springframework.stereotype.Controller;
 import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.persistence.entity.CamadaUser;
 import org.wildcat.camada.service.CamadaUserService;
+import org.wildcat.camada.service.picture.PictureService;
+import org.wildcat.camada.service.picture.rest.impl.PictureRestClientImpl;
+import org.wildcat.camada.service.pojo.PictureData;
 import org.wildcat.camada.service.utils.AlertUtils;
 import org.wildcat.camada.view.FxmlView;
 
@@ -34,8 +35,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.ResourceBundle;
 
 import static org.wildcat.camada.service.utils.GetUtils.get;
@@ -92,20 +93,18 @@ public class HomeController implements Initializable {
     @Resource
     private final CamadaUserService camadaUserService;
 
-    public HomeController(CamadaUserService camadaUserService) {
+    @Resource
+    private final PictureService pictureService;
+
+    public HomeController(CamadaUserService camadaUserService, PictureService pictureService) {
         this.camadaUserService = camadaUserService;
+        this.pictureService = pictureService;
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
-        Random random = new Random(System.currentTimeMillis());
-        String name = "back0" + random.nextInt(8) + ".png";
-        Image image = new Image(name, false);
-        imageBanner.setImage(image);
-        int[] color = ColorThief.getColor(SwingFXUtils.fromFXImage(image, null));
-        String hexColor = Integer.toHexString(RGBUtil.packRGB(color));
-        backgroundPane.setStyle(" -fx-background-color: linear-gradient(white 10%, #" + hexColor + " 90%)");
+        final double width = this.stageManager.getPrimaryStage().getWidth();
+        pictureService.setPictureData(width, 5, 100, imageBanner, null, backgroundPane);
 
         String greetingMessage = resources.getString("home.greeting");
         String defaultGreetingMessage = resources.getString("home.greeting.default");
@@ -200,4 +199,5 @@ public class HomeController implements Initializable {
             }
         }
     }
+
 }

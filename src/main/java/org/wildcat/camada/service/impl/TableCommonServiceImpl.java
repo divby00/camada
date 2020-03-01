@@ -26,6 +26,7 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.stereotype.Service;
 import org.wildcat.camada.common.enumerations.CustomTableColumn;
 import org.wildcat.camada.common.validator.Validator;
+import org.wildcat.camada.controller.BaseController;
 import org.wildcat.camada.controller.pojo.AppTableColumn;
 import org.wildcat.camada.persistence.PaymentFrequency;
 import org.wildcat.camada.persistence.dto.PartnerDTO;
@@ -43,9 +44,9 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
 
     @Override
     public void initCheckBoxTableCell(TableColumn<T, Boolean> column, CustomTableColumn param, TableView<T> table, ProgressIndicator progressIndicator,
-            PersistenceService persistenceService) {
+            BaseController baseController, PersistenceService... persistenceServices) {
         column.setCellValueFactory(c -> new SimpleBooleanProperty(param.getBoolean(c)));
-        column.setCellFactory(p -> getCheckBoxTableCell(param, table, progressIndicator, persistenceService));
+        column.setCellFactory(p -> getCheckBoxTableCell(param, table, progressIndicator, baseController, persistenceServices));
     }
 
     @Override
@@ -65,7 +66,7 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
 
     @Override
     public void initTextFieldTableCell(AppTableColumn<T, String> tableColumn, TableView table, ProgressIndicator progressIndicator,
-            PersistenceService persistenceService) {
+            PersistenceService... persistenceServices) {
         tableColumn.getColumn().setCellValueFactory(new PropertyValueFactory<>(tableColumn.getColumnName()));
         tableColumn.getColumn().setCellFactory(TextFieldTableCell.forTableColumn());
         tableColumn.getColumn().setOnEditCommit(event -> {
@@ -87,7 +88,7 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
                     protected Boolean call() {
                         boolean result = false;
                         try {
-                            tableColumn.getCustomTableColumn().setNewValue(event, newValue, persistenceService);
+                            tableColumn.getCustomTableColumn().setNewValue(event, newValue, persistenceServices[0]);
                             result = true;
                         } catch (Exception ex) {
                             log.error(ExceptionUtils.getStackTrace(ex));
@@ -120,7 +121,7 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
 
     @Override
     public void initPaymentFrequencyFieldTableCell(AppTableColumn<T, String> tableColumn, TableView table, ProgressIndicator progressIndicator,
-            PersistenceService persistenceService) {
+            PersistenceService... persistenceServices) {
         tableColumn.getColumn().setCellValueFactory(param -> {
             PartnerDTO partnerDTO = (PartnerDTO) param.getValue();
             return Bindings.createStringBinding(() -> partnerDTO.getPaymentFrequency().getLabel());
@@ -141,7 +142,7 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
                     protected Boolean call() {
                         boolean result = false;
                         try {
-                            tableColumn.getCustomTableColumn().setNewValue(event, getPaymentFrequencyName(newValue), persistenceService);
+                            tableColumn.getCustomTableColumn().setNewValue(event, getPaymentFrequencyName(newValue), persistenceServices[0]);
                             result = true;
                         } catch (Exception ex) {
                             log.error(ExceptionUtils.getStackTrace(ex));
@@ -189,7 +190,7 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
     }
 
     private TableCell<T, Boolean> getCheckBoxTableCell(CustomTableColumn param, TableView table, ProgressIndicator progressIndicator,
-            PersistenceService persistenceService) {
+            BaseController baseController, PersistenceService... persistenceServices) {
         CheckBox checkBox = new CheckBox();
         TableCell<T, Boolean> tableCell = new TableCell<T, Boolean>() {
             @Override
@@ -210,7 +211,8 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
                 try {
                     T item = (T) tableCell.getTableRow().getItem();
                     param.setBoolean(item, checkBox);
-                    persistenceService.saveEntity(item);
+                    persistenceServices[0].saveEntity(item);
+                    baseController.fetchData();
                     table.refresh();
                     result = true;
                 } catch (Exception ex) {
@@ -268,17 +270,18 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
 
     @Override
     public void initCalendarTextFieldTableCell(AppTableColumn<T, Date> tableColumn, TableView table, ProgressIndicator progressIndicator,
-            PersistenceService persistenceService) {
+            PersistenceService... persistenceServices) {
         tableColumn.getColumn().setCellValueFactory(p -> {
             PartnerDTO partnerDTO = (PartnerDTO) p.getValue();
-            return Bindings.createObjectBinding(partnerDTO::getBirthDate);
+            return tableColumn.getCustomTableColumn().getDateValue(partnerDTO);
         });
-        tableColumn.getColumn().setCellFactory(p -> getCalendarTextFieldTableCell(tableColumn.getCustomTableColumn(), table, progressIndicator, persistenceService));
+        tableColumn.getColumn().setCellFactory(p -> getCalendarTextFieldTableCell(tableColumn.getCustomTableColumn(), table, progressIndicator, persistenceServices));
     }
 
     private TableCell<T, Date> getCalendarTextFieldTableCell(CustomTableColumn param, TableView table, ProgressIndicator progressIndicator,
-            PersistenceService persistenceService) {
+            PersistenceService... persistenceServices) {
         CalendarTextField calendarTextField = new CalendarTextField();
+
         TableCell<T, Date> tableCell = new TableCell<T, Date>() {
             @Override
             protected void updateItem(Date item, boolean empty) {
@@ -299,7 +302,7 @@ public class TableCommonServiceImpl<T> implements TableCommonService<T> {
                 Date result = null;
                 try {
                     T item = (T) tableCell.getTableRow().getItem();
-                    param.setDate(item, calendarTextField, persistenceService);
+                    param.setDate(item, calendarTextField, persistenceServices[0]);
                     table.refresh();
                     result = calendarTextField.getCalendar().getTime();
                 } catch (Exception ex) {

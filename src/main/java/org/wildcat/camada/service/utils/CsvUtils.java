@@ -6,7 +6,9 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -18,7 +20,9 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -103,7 +107,10 @@ public class CsvUtils {
         CSVParser csvParser = null;
         try {
             Reader reader = Files.newBufferedReader(Paths.get(file.getAbsolutePath()));
-            csvParser = CSVParser.parse(reader, CSVFormat.DEFAULT
+            CSVFormat format = (excelCompatible)
+                    ? CSVFormat.EXCEL.withDelimiter(csvDelimiter)
+                    : CSVFormat.DEFAULT.withDelimiter(csvDelimiter);
+            csvParser = CSVParser.parse(reader, format
                     .withFirstRecordAsHeader()
                     .withIgnoreHeaderCase()
                     .withTrim());
@@ -117,17 +124,19 @@ public class CsvUtils {
         boolean result = false;
         List<String> errors = new ArrayList<>();
         try {
-            int recordNumber = 1;
             List<Validator> validators = csvFileDefinitions.getValidators();
             CSVParser csvParser = CsvUtils.getCsvParser(file);
             for (CSVRecord csvRecord : csvParser) {
-                for (int i = 0; i < csvFileDefinitions.getFields().size(); ++i) {
+                List<String> fields = csvFileDefinitions.getFields();
+                for (int i = 0; i < fields.size(); ++i) {
                     String field = csvRecord.get(i);
-                    if (!validators.get(i).validate(field)) {
-                        errors.add("El campo [ " + field + " ] en la posición (" + recordNumber + ", " + i + ") es incorrecto.");
+                    Validator validator = validators.get(i);
+                    if (!validator.validate(field)) {
+                        errors.add(
+                                "El campo [ " + field + " ] de la columna [" + fields.get(i) + "] en el registro número ["
+                                        + csvRecord.getRecordNumber() + "] es incorrecto: " + validator.getErrorMessage());
                     }
                 }
-                recordNumber++;
             }
             csvParser.close();
             result = errors.size() == 0;
@@ -146,4 +155,19 @@ public class CsvUtils {
         return entitiesSet.size() == entities.size() && entities.size() != 0;
     }
 
+    public static boolean getBooleanFromTranslatedValue(String value) {
+        boolean result = Boolean.FALSE;
+        if (StringUtils.equalsIgnoreCase(value, "si")) {
+            result = Boolean.TRUE;
+        }
+        return result;
+    }
+
+    public static Date getDateFromTranslatedValue(String value) throws ParseException {
+        Date result = null;
+        if (value != null) {
+            result = DateUtils.parseDate(value, "dd/MM/yyyy");
+        }
+        return result;
+    }
 }

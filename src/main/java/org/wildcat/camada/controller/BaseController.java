@@ -1,12 +1,9 @@
 package org.wildcat.camada.controller;
 
-import de.androidpit.colorthief.ColorThief;
-import de.androidpit.colorthief.RGBUtil;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -20,7 +17,6 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
@@ -36,7 +32,7 @@ import org.springframework.context.annotation.Lazy;
 import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.persistence.entity.CustomQuery;
 import org.wildcat.camada.service.CustomQueryService;
-import org.wildcat.camada.service.rest.PictureRestClientImpl;
+import org.wildcat.camada.service.picture.PictureService;
 import org.wildcat.camada.service.utils.AlertUtils;
 import org.wildcat.camada.service.utils.CsvFileDefinitions;
 import org.wildcat.camada.service.utils.CsvUtils;
@@ -44,7 +40,6 @@ import org.wildcat.camada.service.utils.PdfUtils;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -52,7 +47,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.ResourceBundle;
 
 @Slf4j
@@ -82,7 +76,7 @@ public abstract class BaseController<T, U> implements Initializable {
     private final CustomQueryService customQueryService;
 
     @Resource
-    private final PictureRestClientImpl pictureRestClient;
+    private final PictureService pictureService;
 
     @Lazy
     @Autowired
@@ -91,9 +85,9 @@ public abstract class BaseController<T, U> implements Initializable {
     private ResourceBundle resources;
     final private FxmlView newEntityView;
 
-    protected BaseController(CustomQueryService customQueryService, PictureRestClientImpl pictureRestClient, FxmlView newEntityView) {
+    protected BaseController(CustomQueryService customQueryService, PictureService pictureService, FxmlView newEntityView) {
         this.customQueryService = customQueryService;
-        this.pictureRestClient = pictureRestClient;
+        this.pictureService = pictureService;
         this.newEntityView = newEntityView;
     }
 
@@ -116,31 +110,7 @@ public abstract class BaseController<T, U> implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         final double width = this.stageManager.getPrimaryStage().getWidth();
-        Task<BufferedImage> myTask = new Task<BufferedImage>() {
-            @Override
-            protected BufferedImage call() {
-                return pictureRestClient.getPicture(width);
-            }
-        };
-        progressIndicator.visibleProperty().bind(myTask.runningProperty());
-        new Thread(myTask).start();
-        myTask.setOnSucceeded(worker -> {
-            BufferedImage result = myTask.getValue();
-            if (result != null) {
-                Image image = SwingFXUtils.toFXImage(result, null);
-                imageBanner.setImage(image);
-                int[] pictureColor = ColorThief.getColor(result);
-                secondaryBar.setStyle("-fx-background-color: #" + Integer.toHexString(RGBUtil.packRGB(pictureColor))); // #f3daaa is the fallback color
-            } else {
-                usePackedPicture();
-            }
-        });
-        myTask.setOnFailed(worker -> {
-            //usePackedPicture();
-        });
-        myTask.setOnCancelled(worker -> {
-            //usePackedPicture();
-        });
+        pictureService.setPictureData(width, 5, 100, imageBanner, secondaryBar, null);
 
         this.resources = resources;
         Task<ObservableList<CustomQuery>> taskCustomQueries = new Task<ObservableList<CustomQuery>>() {
@@ -158,19 +128,7 @@ public abstract class BaseController<T, U> implements Initializable {
             customQueriesComboBox.setItems(queries);
             initCustomQueriesCombo(customQueriesComboBox);
 
-            Task<ObservableList<U>> taskTableItems = getObservableListTask(customQueriesComboBox.getValue());
-            progressIndicator.visibleProperty().bind(taskTableItems.runningProperty());
-            new Thread(taskTableItems).start();
-            taskTableItems.setOnSucceeded(workerState -> {
-                tableData = taskTableItems.getValue();
-                setTableItems(taskTableItems);
-            });
-            taskTableItems.setOnCancelled(workerState -> {
-                AlertUtils.showError("Ha ocurrido un error al obtener la lista de items.");
-            });
-            taskTableItems.setOnFailed(workerState -> {
-                AlertUtils.showError("Ha ocurrido un error al obtener la lista de items.");
-            });
+            fetchData();
 
             customQueriesComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
                 Task<ObservableList<U>> taskListListener = getObservableListTask(newVal);
@@ -199,14 +157,20 @@ public abstract class BaseController<T, U> implements Initializable {
         addContextMenu();
     }
 
-    private void usePackedPicture() {
-        Random random = new Random(System.currentTimeMillis());
-        String name = "back0" + random.nextInt(10) + ".png";
-        Image image = new Image(name, false);
-        imageBanner.setImage(image);
-        BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
-        int[] pictureColor = ColorThief.getColor(bufferedImage);
-        secondaryBar.setStyle("-fx-background-color: #" + Integer.toHexString(RGBUtil.packRGB(pictureColor))); // #f3daaa is the fallback color
+    public void fetchData() {
+        Task<ObservableList<U>> taskTableItems = getObservableListTask(customQueriesComboBox.getValue());
+        progressIndicator.visibleProperty().bind(taskTableItems.runningProperty());
+        new Thread(taskTableItems).start();
+        taskTableItems.setOnSucceeded(workerState -> {
+            tableData = taskTableItems.getValue();
+            setTableItems(taskTableItems);
+        });
+        taskTableItems.setOnCancelled(workerState -> {
+            AlertUtils.showError("Ha ocurrido un error al obtener la lista de items.");
+        });
+        taskTableItems.setOnFailed(workerState -> {
+            AlertUtils.showError("Ha ocurrido un error al obtener la lista de items.");
+        });
     }
 
     @FXML
@@ -279,7 +243,7 @@ public abstract class BaseController<T, U> implements Initializable {
             } else {
                 // Passes file validation, start database validation
                 if (!CsvUtils.checkDuplicatedEntriesInCsv(file)) {
-                    AlertUtils.showError("Se han encontrado entradas duplicadas en el CSV.");
+                    AlertUtils.showError("Se han encontrado entradas duplicadas en el CSV o el fichero CSV no incluye la información de cabecera.");
                 } else {
                     Pair<Boolean, List<String>> dbResult = validateDatabaseEntities(file, 0);
                     if (!dbResult.getKey()) {
@@ -294,6 +258,7 @@ public abstract class BaseController<T, U> implements Initializable {
                         for (T data : dataToSave) {
                             save(data);
                         }
+                        AlertUtils.showInfo("El fichero CSV se ha procesado correctamente.");
                     }
                 }
             }
@@ -302,6 +267,7 @@ public abstract class BaseController<T, U> implements Initializable {
 
     @FXML
     public void onSendEmailButtonAction(ActionEvent event) {
+        fetchData();
         stageManager.getPrimaryStage().setUserData(getEmails());
         stageManager.switchScene(FxmlView.EMAIL);
     }

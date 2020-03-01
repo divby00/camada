@@ -4,7 +4,14 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TextField;
+import javafx.stage.Screen;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -13,8 +20,9 @@ import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.persistence.entity.CamadaUser;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.MailService;
-import org.wildcat.camada.service.pojo.MailToDetails;
 import org.wildcat.camada.service.impl.PasswordGenerator;
+import org.wildcat.camada.service.picture.PictureService;
+import org.wildcat.camada.service.pojo.MailToDetails;
 import org.wildcat.camada.service.utils.AlertUtils;
 import org.wildcat.camada.view.FxmlView;
 
@@ -56,10 +64,14 @@ public class LoginController implements Initializable {
     private final CamadaUserService camadaUserService;
 
     @Resource
+    private final PictureService pictureService;
+
+    @Resource
     private final MailService mailService;
 
-    public LoginController(CamadaUserService camadaUserService, MailService mailService) {
+    public LoginController(CamadaUserService camadaUserService, PictureService pictureService, MailService mailService) {
         this.camadaUserService = camadaUserService;
+        this.pictureService = pictureService;
         this.mailService = mailService;
     }
 
@@ -77,7 +89,8 @@ public class LoginController implements Initializable {
 
     @FXML
     public void onBtnLoginAction(ActionEvent event) {
-        if (btnLogin.isDisabled()) return;
+        if (btnLogin.isDisabled())
+            return;
         Task<Boolean> authenticateTask = new Task<Boolean>() {
             @Override
             protected Boolean call() throws Exception {
@@ -88,7 +101,21 @@ public class LoginController implements Initializable {
         new Thread(authenticateTask).start();
         authenticateTask.setOnSucceeded(worker -> {
             if (authenticateTask.getValue()) {
-                stageManager.switchScene(FxmlView.HOME);
+                //final double width = this.stageManager.getPrimaryStage().getWidth();
+                Task<Boolean> loadingPicturesTask = new Task<Boolean>() {
+                    @Override
+                    protected Boolean call() {
+                        Screen primary = Screen.getPrimary();
+                        Rectangle2D visualBounds = primary.getVisualBounds();
+                        pictureService.getPicturesData(visualBounds.getWidth(), 5, 100);
+                        return true;
+                    }
+                };
+                new Thread(loadingPicturesTask).start();
+                progressIndicator.visibleProperty().bind(loadingPicturesTask.runningProperty());
+                loadingPicturesTask.setOnSucceeded(pictureLoadingWorker -> {
+                    stageManager.switchScene(FxmlView.HOME);
+                });
             } else {
                 AlertUtils.showError("Nombre de usuario o contraseña incorrectos.");
             }

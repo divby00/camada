@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.wildcat.camada.persistence.PaymentFrequency;
 
 import java.math.BigInteger;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -19,32 +20,35 @@ public interface ValidatorPredicates {
     Pattern emailPattern = Pattern.compile("^[\\w-_.+]*[\\w-_.]@([\\w]+\\.)+[\\w]+[\\w]$");
     Pattern phonePattern = Pattern.compile("^(\\+34|0034|34)?[6789]\\d{8}$");
     Pattern postCodePattern = Pattern.compile("^\\d{5}$");
-    String DATE_PATTERN = "dd/MM/yyyy HH:mm";
+    String DATE_PATTERN = "dd/MM/yyyy";
+    String DATE_TIME_PATTERN = "dd/MM/yyyy HH:mm";
 
     TriPredicate<String, Integer> isValidTextField = (text, min, max) -> StringUtils.length(text) > min && StringUtils.length(text) < max && StringUtils
             .isAlphanumericSpace(text);
     Predicate<String> isValidPassword = (text) -> passwordPattern.matcher(text).matches();
     Predicate<String> isValidEmail = (text) -> emailPattern.matcher(text).matches();
     BiPredicate<String, String> passwordsAreTheSame = (text1, text2) -> StringUtils.equals(text1, text2) && StringUtils.length(text1) > 0;
-    Predicate<String> isValidBoolean = (text) -> StringUtils.equalsAnyIgnoreCase(text, "true", "false");
+    Predicate<String> isValidBoolean = (text) -> StringUtils.equalsAnyIgnoreCase(text, "si", "no");
     BiPredicate<String, Double[]> isValidAmount = (text, amounts) -> Stream.of(amounts).anyMatch(amount -> Double.toString(amount).equals(text));
     Predicate<PaymentFrequency> isValidPaymentFrequency = (text) -> Stream.of(PaymentFrequency.values()).anyMatch(freq -> text == freq);
-    Predicate<String> isValidDate = (text) -> {
-        boolean result = false;
-        try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
-            LocalDateTime.parse(text, formatter);
-            result = true;
-        } catch (DateTimeParseException ignored) {
-        }
-        return result;
-    };
     Predicate<String> isValidDateOrEmpty = (text) -> {
         if (StringUtils.isBlank(text))
             return true;
         boolean result = false;
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
+            LocalDate.parse(text, formatter);
+            result = true;
+        } catch (DateTimeParseException ignored) {
+        }
+        return result;
+    };
+    Predicate<String> isValidDateTimeOrEmpty = (text) -> {
+        if (StringUtils.isBlank(text))
+            return true;
+        boolean result = false;
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_TIME_PATTERN);
             LocalDateTime.parse(text, formatter);
             result = true;
         } catch (DateTimeParseException ignored) {

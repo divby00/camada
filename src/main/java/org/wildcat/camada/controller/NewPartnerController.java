@@ -9,6 +9,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import org.apache.commons.lang3.StringUtils;
@@ -174,6 +175,23 @@ public class NewPartnerController implements Initializable {
         List<String> comboValues = Stream.of(PaymentFrequency.values()).map(PaymentFrequency::getLabel).collect(Collectors.toList());
         this.comboPaymentFrequency.getItems().setAll(comboValues);
         this.comboPaymentFrequency.getSelectionModel().select(PaymentFrequency.MONTHLY.getLabel());
+
+        Tooltip.install(imageName, new Tooltip(nameValidator.getErrorMessage()));
+        Tooltip.install(imageSurnames, new Tooltip(surnamesValidator.getErrorMessage()));
+        //Tooltip.install(imageBirthDate, new Tooltip(bir.getErrorMessage()));
+        Tooltip.install(imageDni, new Tooltip(dniValidator.getErrorMessage()));
+        Tooltip.install(imageAddress, new Tooltip(addressValidator.getErrorMessage()));
+        Tooltip.install(imagePostCode, new Tooltip(postCodeValidator.getErrorMessage()));
+        Tooltip.install(imageLocation, new Tooltip(locationValidator.getErrorMessage()));
+        Tooltip.install(imageProvince, new Tooltip(provinceValidator.getErrorMessage()));
+        Tooltip.install(imagePhone1, new Tooltip(phoneValidator.getErrorMessage()));
+        Tooltip.install(imagePhone2, new Tooltip(phoneValidator.getErrorMessage()));
+        Tooltip.install(imageEmail, new Tooltip(emailValidator.getErrorMessage()));
+        Tooltip.install(imageBankName, new Tooltip(nameValidator.getErrorMessage()));
+        Tooltip.install(imageBankSurnames, new Tooltip(surnamesValidator.getErrorMessage()));
+        Tooltip.install(imageIban, new Tooltip(ibanValidator.getErrorMessage()));
+        //Tooltip.install(imageAmount, new Tooltip(.getErrorMessage()));
+        Tooltip.install(imagePaymentFrequency, new Tooltip(paymentFrequencyValidator.getErrorMessage()));
     }
 
     @FXML

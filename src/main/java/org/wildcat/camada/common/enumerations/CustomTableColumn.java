@@ -1,5 +1,7 @@
 package org.wildcat.camada.common.enumerations;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableColumn;
 import jfxtras.scene.control.CalendarTextField;
@@ -61,6 +63,11 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
     },
     PARTNER_BIRTHDATE {
         @Override
+        public <T> ObjectProperty<Date> getDateValue(T item) {
+            return new SimpleObjectProperty(((PartnerDTO) item).getBirthDate());
+        }
+
+        @Override
         public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {
             return DateFormatUtils.format(((PartnerDTO) event.getRowValue()).getBirthDate(), "dd/MM/yyyy");
         }
@@ -85,6 +92,82 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
             if (partner != null) {
                 try {
                     partner.getPersonalData().setBirthDate(date);
+                    service.saveEntity(partner);
+                } catch (Exception ex) {
+                    log.error(ExceptionUtils.getStackTrace(ex));
+                }
+            }
+        }
+    },
+    PARTNER_SUBSCRIBED_FROM {
+        @Override
+        public <T> ObjectProperty<Date> getDateValue(T item) {
+            return new SimpleObjectProperty(((PartnerDTO) item).getSubscribedFrom());
+        }
+
+        @Override
+        public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {
+            return DateFormatUtils.format(((PartnerDTO) event.getRowValue()).getSubscribedFrom(), "dd/MM/yyyy");
+        }
+
+        @Override
+        public <T> void setOldValue(TableColumn.CellEditEvent<T, String> event, String oldValue) {
+            try {
+                Date date = DateUtils.parseDate(oldValue, "dd/MM/yyyy");
+                ((PartnerDTO) event.getRowValue()).setSubscribedFrom(date);
+
+            } catch (Exception ex) {
+                log.error(ExceptionUtils.getStackTrace(ex));
+            }
+        }
+
+        @Override
+        public <T> void setDate(T item, CalendarTextField datePicker, PersistenceService service) {
+            Date date = datePicker.getCalendar().getTime();
+            ((PartnerDTO) item).setSubscribedFrom(date);
+            Long id = ((PartnerDTO) item).getId();
+            Partner partner = (Partner) service.find(id);
+            if (partner != null) {
+                try {
+                    partner.setSubscribedFrom(date);
+                    service.saveEntity(partner);
+                } catch (Exception ex) {
+                    log.error(ExceptionUtils.getStackTrace(ex));
+                }
+            }
+        }
+    },
+    PARTNER_SUBSCRIBED_TO {
+        @Override
+        public <T> ObjectProperty<Date> getDateValue(T item) {
+            return new SimpleObjectProperty(((PartnerDTO) item).getSubscribedTo());
+        }
+
+        @Override
+        public <T> String getOldValue(TableColumn.CellEditEvent<T, String> event) {
+            return DateFormatUtils.format(((PartnerDTO) event.getRowValue()).getSubscribedTo(), "dd/MM/yyyy");
+        }
+
+        @Override
+        public <T> void setOldValue(TableColumn.CellEditEvent<T, String> event, String oldValue) {
+            try {
+                Date date = DateUtils.parseDate(oldValue, "dd/MM/yyyy");
+                ((PartnerDTO) event.getRowValue()).setSubscribedTo(date);
+
+            } catch (Exception ex) {
+                log.error(ExceptionUtils.getStackTrace(ex));
+            }
+        }
+
+        @Override
+        public <T> void setDate(T item, CalendarTextField datePicker, PersistenceService service) {
+            Date date = datePicker.getCalendar().getTime();
+            ((PartnerDTO) item).setSubscribedTo(date);
+            Long id = ((PartnerDTO) item).getId();
+            Partner partner = (Partner) service.find(id);
+            if (partner != null) {
+                try {
+                    partner.setSubscribedTo(date);
                     service.saveEntity(partner);
                 } catch (Exception ex) {
                     log.error(ExceptionUtils.getStackTrace(ex));
@@ -489,6 +572,17 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
         public <T> Boolean getBoolean(TableColumn.CellDataFeatures<T, Boolean> cellDataFeatures) {
             return ((CamadaUser) cellDataFeatures.getValue()).getIsVolunteer();
         }
+    },
+    IS_ACTIVE {
+        @Override
+        public <T> void setBoolean(T item, CheckBox checkBox) {
+            ((CamadaUser) item).setIsActive(checkBox.isSelected());
+        }
+
+        @Override
+        public <T> Boolean getBoolean(TableColumn.CellDataFeatures<T, Boolean> cellDataFeatures) {
+            return ((CamadaUser) cellDataFeatures.getValue()).getIsActive();
+        }
     };
 
     @Override
@@ -510,6 +604,10 @@ public enum CustomTableColumn implements TextFieldTableColumn, CheckBoxTableColu
 
     @Override
     public <T> Boolean getBoolean(TableColumn.CellDataFeatures<T, Boolean> cellDataFeatures) {
+        return null;
+    }
+
+    public <T> ObjectProperty<Date> getDateValue(T item) {
         return null;
     }
 
