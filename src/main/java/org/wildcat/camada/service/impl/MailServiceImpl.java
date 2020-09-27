@@ -103,4 +103,14 @@ public class MailServiceImpl implements MailService {
         }
         return result;
     }
+
+    @Override
+    public boolean containsPlaceholder(String message) {
+        return StringUtils.containsAny(message, "{{") && StringUtils.containsAny(message,"}}");
+    }
+
+    private String customizeMessage(String message) {
+        return "";
+    }
+
 }

@@ -22,7 +22,7 @@ import org.wildcat.camada.common.enumerations.CustomTableColumn;
 import org.wildcat.camada.common.validator.impl.*;
 import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.controller.pojo.AppTableColumn;
-import org.wildcat.camada.controller.pojo.EmailData;
+import org.wildcat.camada.controller.pojo.EmailUserData;
 import org.wildcat.camada.persistence.PaymentFrequency;
 import org.wildcat.camada.persistence.dto.PartnerDTO;
 import org.wildcat.camada.persistence.entity.BankingData;
@@ -265,7 +265,7 @@ public class PartnerController extends BaseController<Partner, PartnerDTO> {
     }
 
     @Override
-    EmailData getEmailsData() {
+    EmailUserData getEmailUserData() {
         List<String> emails = table.getItems().stream()
                 .map(PartnerDTO::getEmail)
                 .collect(Collectors.toList());
@@ -273,7 +273,7 @@ public class PartnerController extends BaseController<Partner, PartnerDTO> {
                 .filter(TableColumnBase::isVisible)
                 .map(TableColumnBase::getText)
                 .collect(Collectors.toList());
-        return EmailData.builder().emails(emails).placeholders(placeholders).build();
+        return EmailUserData.builder().emails(emails).placeholders(placeholders).build();
     }
 
     @FXML

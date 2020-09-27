@@ -18,11 +18,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
 import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.controller.listener.WebViewEditorListener;
-import org.wildcat.camada.controller.pojo.EmailData;
+import org.wildcat.camada.controller.pojo.EmailUserData;
 import org.wildcat.camada.persistence.entity.EmailTemplate;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.EmailTemplateService;
@@ -33,6 +34,7 @@ import org.wildcat.camada.service.utils.AlertUtils;
 import javax.annotation.Resource;
 import javax.mail.internet.InternetAddress;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -40,6 +42,9 @@ import java.util.ResourceBundle;
 @Slf4j
 @Controller
 public class EmailController implements Initializable {
+
+    @Value("${threshold.email.placeholders.warning}")
+    private Integer threshold;
 
     @FXML
     private Button saveTemplateButton;
@@ -95,9 +100,9 @@ public class EmailController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        EmailData emailData = (EmailData) stageManager.getPrimaryStage().getUserData();
-        areaTo.setText(String.join(",", emailData.getEmails()));
-        placeholdersList.getItems().setAll(FXCollections.observableList(emailData.getPlaceholders()));
+        EmailUserData emailUserData = (EmailUserData) stageManager.getPrimaryStage().getUserData();
+        areaTo.setText(String.join(",", emailUserData.getEmails()));
+        placeholdersList.getItems().setAll(FXCollections.observableList(emailUserData.getPlaceholders()));
         setComboSelectionModel();
         // Fill combo
         Task<ObservableList<EmailTemplate>> emailTemplatesTask = getEmailTemplatesTask();
@@ -135,35 +140,47 @@ public class EmailController implements Initializable {
         });
     }
 
+    private boolean checkPlaceholdersThreshold() {
+        boolean result = true;
+        int to = Arrays.asList(areaTo.getText().split(",")).size();
+        if (mailService.containsPlaceholder(htmlEditor.getHtmlText()) && to >= threshold) {
+            ButtonType buttonType = AlertUtils.showConfirmation("Enviar un correo con marcadores a " + to + " destinatarios\npuede ser lento. ¿Quieres continuar?");
+            result = ButtonType.YES.equals(buttonType);
+        }
+        return result;
+    }
+
     @FXML
     public void onSendEmailButtonAction(ActionEvent event) {
-        Task<Boolean> emailSendingTask = new Task<Boolean>() {
-            @Override
-            protected Boolean call() {
-                MailToDetails mailToDetails = MailToDetails.builder()
-                        .isHtml(true)
-                        .internetAddresses(getInternetAddresses(areaTo.getText()))
-                        .message(htmlEditor.getHtmlText())
-                        .subject(subjectTextField.getText())
-                        .build();
-                return mailService.send(mailToDetails);
-            }
-        };
-        progressIndicator.visibleProperty().bind(emailSendingTask.runningProperty());
-        new Thread(emailSendingTask).start();
-        emailSendingTask.setOnSucceeded(worker -> {
-            if (emailSendingTask.getValue()) {
-                AlertUtils.showInfo("Los correos electrónicos se han envíado correctamente.");
-            } else {
+        if (checkPlaceholdersThreshold()) {
+            Task<Boolean> emailSendingTask = new Task<Boolean>() {
+                @Override
+                protected Boolean call() {
+                    MailToDetails mailToDetails = MailToDetails.builder()
+                            .isHtml(true)
+                            .internetAddresses(getInternetAddresses(areaTo.getText()))
+                            .message(htmlEditor.getHtmlText())
+                            .subject(subjectTextField.getText())
+                            .build();
+                    return mailService.send(mailToDetails);
+                }
+            };
+            progressIndicator.visibleProperty().bind(emailSendingTask.runningProperty());
+            new Thread(emailSendingTask).start();
+            emailSendingTask.setOnSucceeded(worker -> {
+                if (emailSendingTask.getValue()) {
+                    AlertUtils.showInfo("Los correos electrónicos se han envíado correctamente.");
+                } else {
+                    AlertUtils.showError("Ha habido un error al enviar el correo electrónico.");
+                }
+            });
+            emailSendingTask.setOnCancelled(worker -> {
                 AlertUtils.showError("Ha habido un error al enviar el correo electrónico.");
-            }
-        });
-        emailSendingTask.setOnCancelled(worker -> {
-            AlertUtils.showError("Ha habido un error al enviar el correo electrónico.");
-        });
-        emailSendingTask.setOnFailed(worker -> {
-            AlertUtils.showError("Ha habido un error al enviar el correo electrónico.");
-        });
+            });
+            emailSendingTask.setOnFailed(worker -> {
+                AlertUtils.showError("Ha habido un error al enviar el correo electrónico.");
+            });
+        }
     }
 
     @FXML

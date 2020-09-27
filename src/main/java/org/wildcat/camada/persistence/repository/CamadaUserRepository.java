@@ -15,6 +15,9 @@ public interface CamadaUserRepository extends CrudRepository<CamadaUser, Long> {
 
     Optional<CamadaUser> findByName(String name);
 
+    @Query("SELECT cu FROM CamadaUser cu WHERE lower(cu.email) = :email")
+    Optional<CamadaUser> findByEmail(String email);
+
     List<CamadaUser> findAllByOrderByName();
 
     List<CamadaUser> findAllByIsActiveTrueOrderByName();

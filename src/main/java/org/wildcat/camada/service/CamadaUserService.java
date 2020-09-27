@@ -18,6 +18,8 @@ public interface CamadaUserService extends PersistenceService<CamadaUser> {
 
     Optional<CamadaUser> findByName(String name);
 
+    Optional<CamadaUser> findByEmail(String email);
+
     List<CamadaUser> findAllByName(List<String> names);
 
     List<CamadaUser> findAllByCustomQuery(CustomQuery customQuery);

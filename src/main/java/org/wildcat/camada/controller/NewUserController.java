@@ -4,11 +4,7 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -118,19 +114,31 @@ public class NewUserController extends NewEntityController implements Initializa
 
     @FXML
     public void onButtonSaveAction(ActionEvent event) {
-        Task<Boolean> userExistsTask = new Task<Boolean>() {
+        Task<Integer> userExistsTask = new Task<Integer>() {
             @Override
-            protected Boolean call() throws Exception {
+            protected Integer call() throws Exception {
+                Optional<CamadaUser> emailUser = camadaUserService.findByEmail(StringUtils.lowerCase(inputEmail.getText()));
                 Optional<CamadaUser> camadaUser = camadaUserService.findByName(inputUserName.getText());
-                return camadaUser.isPresent();
+                int error = 0;
+                if (emailUser.isPresent()) {
+                    error += 1;
+                }
+                if (camadaUser.isPresent()) {
+                    error += 2;
+                }
+                return error;
             }
         };
         progressIndicator.visibleProperty().bind(userExistsTask.runningProperty());
         new Thread(userExistsTask).start();
         userExistsTask.setOnSucceeded(worker -> {
-            boolean result = userExistsTask.getValue();
-            if (result) {
-                AlertUtils.showError("Lo siento, no puedes usar ese nombre de usuario porque ya está elegido");
+            Integer exists = userExistsTask.getValue();
+            if (exists != 0) {
+                String message = "Lo siento, no puedes usar ese nombre de usuario porque ya está elegido.";
+                if (exists == 1) {
+                    message = "Lo siento, no puedes usar ese email porque el correo electrónico ya está elegido.";
+                }
+                AlertUtils.showError(message);
             } else {
                 Task<CamadaUser> saveUserTask = new Task<CamadaUser>() {
                     @Override
@@ -139,7 +147,7 @@ public class NewUserController extends NewEntityController implements Initializa
                                 .name(inputUserName.getText())
                                 .firstName(inputFirstName.getText())
                                 .lastName(inputLastName.getText())
-                                .email(inputEmail.getText())
+                                .email(StringUtils.lowerCase(inputEmail.getText()))
                                 .password(DigestUtils.sha1Hex(inputPassword.getText()))
                                 .isAdmin(isAdmin.isSelected())
                                 .isPartner(isPartner.isSelected())

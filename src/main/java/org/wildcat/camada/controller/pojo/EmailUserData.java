@@ -9,7 +9,7 @@ import java.util.List;
 @Builder
 @Getter
 @Setter
-public class EmailData {
+public class EmailUserData {
     private List<String> emails;
     private List<String> placeholders;
 }

@@ -128,6 +128,11 @@ public class CamadaUserServiceImpl implements CamadaUserService {
     }
 
     @Override
+    public Optional<CamadaUser> findByEmail(String email) {
+        return camadaUserRepository.findByEmail(email);
+    }
+
+    @Override
     public List<CamadaUser> findAllByName(List<String> names) {
         return camadaUserRepository.findAllByName(names);
     }

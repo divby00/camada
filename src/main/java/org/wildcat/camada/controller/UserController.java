@@ -19,7 +19,7 @@ import org.wildcat.camada.common.validator.impl.EmailValidatorImpl;
 import org.wildcat.camada.common.validator.impl.NewUserValidatorImpl;
 import org.wildcat.camada.common.validator.impl.TextValidatorImpl;
 import org.wildcat.camada.controller.pojo.AppTableColumn;
-import org.wildcat.camada.controller.pojo.EmailData;
+import org.wildcat.camada.controller.pojo.EmailUserData;
 import org.wildcat.camada.persistence.entity.CamadaUser;
 import org.wildcat.camada.persistence.entity.CustomQuery;
 import org.wildcat.camada.service.CamadaUserService;
@@ -31,9 +31,7 @@ import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -197,15 +195,24 @@ public class UserController extends BaseController<CamadaUser, CamadaUser> {
 
 
     @Override
-    public EmailData getEmailsData() {
+    public EmailUserData getEmailUserData() {
         List<String> emails = table.getItems().stream()
                 .map(CamadaUser::getEmail)
                 .collect(Collectors.toList());
+        Map<String, Map<String, String>> map = new HashMap<>();
+        emails.forEach(email -> {
+            table.getItems().stream()
+                    .filter(item -> StringUtils.equalsIgnoreCase(email, item.getEmail()))
+                    .forEach(item -> {
+                        Map<String, String> values = new HashMap<>();
+                        map.put(email, values);
+                    });
+        });
         List<String> placeholders = table.getColumns().stream()
                 .filter(TableColumnBase::isVisible)
                 .map(TableColumnBase::getText)
                 .collect(Collectors.toList());
-        return EmailData.builder().emails(emails).placeholders(placeholders).build();
+        return EmailUserData.builder().emails(emails).placeholders(placeholders).build();
     }
 
 }

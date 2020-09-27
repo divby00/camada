@@ -30,7 +30,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.wildcat.camada.config.StageManager;
-import org.wildcat.camada.controller.pojo.EmailData;
+import org.wildcat.camada.controller.pojo.EmailUserData;
 import org.wildcat.camada.persistence.entity.CustomQuery;
 import org.wildcat.camada.service.CustomQueryService;
 import org.wildcat.camada.service.picture.PictureService;
@@ -106,7 +106,7 @@ public abstract class BaseController<T, U> implements Initializable {
 
     abstract Pair<Boolean, List<String>> validateDatabaseEntities(File file, int key);
 
-    abstract EmailData getEmailsData();
+    abstract EmailUserData getEmailUserData();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -269,7 +269,7 @@ public abstract class BaseController<T, U> implements Initializable {
     @FXML
     public void onSendEmailButtonAction(ActionEvent event) {
         fetchData();
-        stageManager.getPrimaryStage().setUserData(getEmailsData());
+        stageManager.getPrimaryStage().setUserData(getEmailUserData());
         stageManager.switchScene(FxmlView.EMAIL);
     }
 
