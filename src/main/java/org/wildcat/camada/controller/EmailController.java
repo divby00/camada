@@ -1,19 +1,16 @@
 package org.wildcat.camada.controller;
 
+import com.sun.javafx.webkit.Accessor;
+import com.sun.webkit.WebPage;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.web.HTMLEditor;
 import javafx.scene.web.WebView;
 import javafx.util.Callback;
@@ -25,6 +22,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
 import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.controller.listener.WebViewEditorListener;
+import org.wildcat.camada.controller.pojo.EmailData;
 import org.wildcat.camada.persistence.entity.EmailTemplate;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.EmailTemplateService;
@@ -73,6 +71,9 @@ public class EmailController implements Initializable {
     @FXML
     private TextArea areaTo;
 
+    @FXML
+    private ListView<String> placeholdersList;
+
     @Lazy
     @Autowired
     protected StageManager stageManager;
@@ -94,8 +95,9 @@ public class EmailController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        List<String> emails = (List<String>) stageManager.getPrimaryStage().getUserData();
-        areaTo.setText(String.join(",", emails));
+        EmailData emailData = (EmailData) stageManager.getPrimaryStage().getUserData();
+        areaTo.setText(String.join(",", emailData.getEmails()));
+        placeholdersList.getItems().setAll(FXCollections.observableList(emailData.getPlaceholders()));
         setComboSelectionModel();
         // Fill combo
         Task<ObservableList<EmailTemplate>> emailTemplatesTask = getEmailTemplatesTask();
@@ -209,6 +211,16 @@ public class EmailController implements Initializable {
         saveTemplateTask.setOnCancelled(worker -> {
             AlertUtils.showError("Se ha producido un error al guardar la plantilla.");
         });
+    }
+
+    @FXML
+    public void onPlaceholdersListMouseClicked(MouseEvent event) {
+        if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() == 2) {
+            String placeholder = placeholdersList.getSelectionModel().getSelectedItem();
+            WebView webView = (WebView) htmlEditor.lookup("WebView");
+            WebPage webPage = Accessor.getPageFor(webView.getEngine());
+            webPage.executeCommand("insertText", "{{" + placeholder + "}}");
+        }
     }
 
     @FXML
@@ -344,7 +356,7 @@ public class EmailController implements Initializable {
     }
 
     private boolean isEmptyHtml(String htmlText) {
-        final String[] emptyHtml = new String[] {
+        final String[] emptyHtml = new String[]{
                 "<html dir=\"ltr\"><head></head><body contenteditable=\"true\"></body></html>",
                 "<html dir=\"ltr\"><head></head><body contenteditable=\"true\"><p></p></body></html>",
                 "<html dir=\"ltr\"><head></head><body contenteditable=\"true\"><p><br></p></body></html>",

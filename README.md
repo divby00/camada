@@ -3,7 +3,7 @@ This is a partners management application for the animal welfare association 'La
 
 ## Building
 
-This is a Java 8 application, using Maven as the building system, in order to build the application from the sources just clone the repository and build it with the command:
+This is a Java 11 application, using Maven as the building system, in order to build the application from the sources just clone the repository and build it with the command:
 
 `mvn clean install -DskipTests`
   

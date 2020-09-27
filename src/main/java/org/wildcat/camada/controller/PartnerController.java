@@ -7,11 +7,7 @@ import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVRecord;
@@ -23,17 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
 import org.wildcat.camada.common.enumerations.CustomTableColumn;
-import org.wildcat.camada.common.validator.impl.AmountValidatorImpl;
-import org.wildcat.camada.common.validator.impl.DateValidatorImpl;
-import org.wildcat.camada.common.validator.impl.DniValidatorImpl;
-import org.wildcat.camada.common.validator.impl.EmailValidatorImpl;
-import org.wildcat.camada.common.validator.impl.IbanValidatorImpl;
-import org.wildcat.camada.common.validator.impl.PaymentFrequencyValidatorImpl;
-import org.wildcat.camada.common.validator.impl.PhoneValidatorImpl;
-import org.wildcat.camada.common.validator.impl.PostCodeValidatorImpl;
-import org.wildcat.camada.common.validator.impl.TextValidatorImpl;
+import org.wildcat.camada.common.validator.impl.*;
 import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.controller.pojo.AppTableColumn;
+import org.wildcat.camada.controller.pojo.EmailData;
 import org.wildcat.camada.persistence.PaymentFrequency;
 import org.wildcat.camada.persistence.dto.PartnerDTO;
 import org.wildcat.camada.persistence.entity.BankingData;
@@ -136,7 +125,7 @@ public class PartnerController extends BaseController<Partner, PartnerDTO> {
     private Button nextPaymentsButton;
 
     public PartnerController(PartnerService partnerService,
-            CustomQueryService customQueryService, PictureService pictureService, TableCommonService<PartnerDTO> tableCommonService) {
+                             CustomQueryService customQueryService, PictureService pictureService, TableCommonService<PartnerDTO> tableCommonService) {
         super(customQueryService, pictureService, FxmlView.NEW_PARTNER);
         this.partnerService = partnerService;
         this.tableCommonService = tableCommonService;
@@ -276,10 +265,15 @@ public class PartnerController extends BaseController<Partner, PartnerDTO> {
     }
 
     @Override
-    List<String> getEmails() {
-        return table.getItems().stream()
+    EmailData getEmailsData() {
+        List<String> emails = table.getItems().stream()
                 .map(PartnerDTO::getEmail)
                 .collect(Collectors.toList());
+        List<String> placeholders = table.getColumns().stream()
+                .filter(TableColumnBase::isVisible)
+                .map(TableColumnBase::getText)
+                .collect(Collectors.toList());
+        return EmailData.builder().emails(emails).placeholders(placeholders).build();
     }
 
     @FXML
@@ -292,10 +286,10 @@ public class PartnerController extends BaseController<Partner, PartnerDTO> {
         File file = fileChooser.showSaveDialog(stageManager.getPrimaryStage());
         if (file != null) {
             List<PartnerDTO> nextPaymentsPartners = partnerService.generateNextPayments();
-            String[] headers = new String[] {
+            String[] headers = new String[]{
                     "Nombre", "Apellidos", "Nombre del titular", "Apellidos del titular", "IBAN", "Cantidad"
             };
-            List<String[]> nextPaymentPartners = nextPaymentsPartners.stream().map(partner -> new String[] {
+            List<String[]> nextPaymentPartners = nextPaymentsPartners.stream().map(partner -> new String[]{
                     partner.getName(), partner.getSurnames(), partner.getBankName(), partner.getBankSurnames(), partner.getIban(), partner.getAmount()
             }).collect(Collectors.toList());
             CsvUtils.export(headers, nextPaymentPartners, file.getAbsolutePath());
