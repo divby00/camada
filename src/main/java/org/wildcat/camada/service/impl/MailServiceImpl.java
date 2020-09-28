@@ -77,6 +77,7 @@ public class MailServiceImpl implements MailService {
 
     @Override
     public boolean sendReplacingPlaceholders(MailToDetails mailToDetails, Map<String, Map<String, Object>> rowInfo) {
+        boolean result = false;
         try {
             Session session = getSession();
             Message message = new MimeMessage(getSession());
@@ -91,10 +92,11 @@ public class MailServiceImpl implements MailService {
                 transport.sendMessage(message, message.getAllRecipients());
             }
             transport.close();
+            result = true;
         } catch (Throwable exception) {
             log.error(ExceptionUtils.getStackTrace(exception));
         }
-        return false;
+        return result;
     }
 
     @Override
