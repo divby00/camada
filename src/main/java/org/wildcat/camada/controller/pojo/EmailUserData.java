@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Map;
 
 @Builder
 @Getter
@@ -12,4 +13,5 @@ import java.util.List;
 public class EmailUserData {
     private List<String> emails;
     private List<String> placeholders;
+    private Map<String, Map<String, Object>> rowInfo;
 }

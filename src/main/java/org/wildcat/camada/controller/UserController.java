@@ -193,26 +193,38 @@ public class UserController extends BaseController<CamadaUser, CamadaUser> {
         return Pair.of(errors.size() == 0 && entities.size() > 0, errors);
     }
 
-
     @Override
     public EmailUserData getEmailUserData() {
         List<String> emails = table.getItems().stream()
                 .map(CamadaUser::getEmail)
                 .collect(Collectors.toList());
-        Map<String, Map<String, String>> map = new HashMap<>();
-        emails.forEach(email -> {
-            table.getItems().stream()
-                    .filter(item -> StringUtils.equalsIgnoreCase(email, item.getEmail()))
-                    .forEach(item -> {
-                        Map<String, String> values = new HashMap<>();
-                        map.put(email, values);
-                    });
-        });
         List<String> placeholders = table.getColumns().stream()
                 .filter(TableColumnBase::isVisible)
                 .map(TableColumnBase::getText)
                 .collect(Collectors.toList());
-        return EmailUserData.builder().emails(emails).placeholders(placeholders).build();
+        Map<String, Map<String, Object>> rowInfo = new HashMap<>();
+        emails.forEach(email -> {
+            table.getItems().stream()
+                    .filter(item -> StringUtils.equalsIgnoreCase(email, item.getEmail()))
+                    .forEach(item -> {
+                        rowInfo.put(email, getRowInfo(item));
+                    });
+        });
+        return EmailUserData.builder()
+                .emails(emails)
+                .placeholders(placeholders)
+                .rowInfo(rowInfo)
+                .build();
+    }
+
+    private Map<String, Object> getRowInfo(CamadaUser item) {
+        Map<String, Object> rowInfo = new HashMap<>();
+        table.getColumns().forEach(column -> {
+            String title = column.getText();
+            Object value = column.getCellObservableValue(item).getValue();
+            rowInfo.put(title, value);
+        });
+        return rowInfo;
     }
 
 }

@@ -34,10 +34,7 @@ import org.wildcat.camada.service.utils.AlertUtils;
 import javax.annotation.Resource;
 import javax.mail.internet.InternetAddress;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 @Slf4j
 @Controller
@@ -153,6 +150,8 @@ public class EmailController implements Initializable {
     @FXML
     public void onSendEmailButtonAction(ActionEvent event) {
         if (checkPlaceholdersThreshold()) {
+            EmailUserData emailUserData = (EmailUserData) stageManager.getPrimaryStage().getUserData();
+            Map<String, Map<String, Object>> rowInfo = emailUserData.getRowInfo();
             Task<Boolean> emailSendingTask = new Task<Boolean>() {
                 @Override
                 protected Boolean call() {
@@ -162,7 +161,11 @@ public class EmailController implements Initializable {
                             .message(htmlEditor.getHtmlText())
                             .subject(subjectTextField.getText())
                             .build();
-                    return mailService.send(mailToDetails);
+                    if (mailService.containsPlaceholder(htmlEditor.getHtmlText())) {
+                        return mailService.sendReplacingPlaceholders(mailToDetails, rowInfo);
+                    } else {
+                        return mailService.send(mailToDetails);
+                    }
                 }
             };
             progressIndicator.visibleProperty().bind(emailSendingTask.runningProperty());
