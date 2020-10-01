@@ -1,7 +1,12 @@
 package org.wildcat.camada;
 
 import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.hibernate.boot.jaxb.internal.FileXmlSource;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -27,6 +32,10 @@ public class CamadaApplication extends Application {
 
     @Override
     public void start(Stage stage) {
+        Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
+            stageManager.getPrimaryStage().setUserData(throwable);
+            stageManager.switchScene(FxmlView.ERROR);
+        });
         stageManager = springContext.getBean(StageManager.class, stage);
         displayInitialScene();
     }

@@ -117,6 +117,17 @@ public enum FxmlView {
             return "/fxml/volunteer.fxml";
         }
     },
+    ERROR(false, true, false) {
+        @Override
+        public String getTitle() {
+            return "La Camada - " + getStringFromResourceBundle("home.error");
+        }
+
+        @Override
+        public String getFxmlFile() {
+            return "/fxml/error.fxml";
+        }
+    },
     NOT_FOUND(true) {
         @Override
         public String getTitle() {
