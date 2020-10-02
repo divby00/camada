@@ -39,7 +39,7 @@ public class AlertUtils {
         return alert.getResult();
     }
 
-    public static void showDialog(Alert.AlertType type, String title, String content) {
+    private static void showDialog(Alert.AlertType type, String title, String content) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(null);
