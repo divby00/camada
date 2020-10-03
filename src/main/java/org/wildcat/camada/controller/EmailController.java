@@ -13,8 +13,10 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.web.HTMLEditor;
 import javafx.scene.web.WebView;
+import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,11 +30,13 @@ import org.wildcat.camada.persistence.entity.EmailTemplate;
 import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.EmailTemplateService;
 import org.wildcat.camada.service.MailService;
+import org.wildcat.camada.service.pojo.AttachmentDetails;
 import org.wildcat.camada.service.pojo.MailToDetails;
 import org.wildcat.camada.service.utils.AlertUtils;
 
 import javax.annotation.Resource;
 import javax.mail.internet.InternetAddress;
+import java.io.File;
 import java.net.URL;
 import java.util.*;
 
@@ -89,6 +93,8 @@ public class EmailController implements Initializable {
     @Resource
     private final MailService mailService;
 
+    private Set<AttachmentDetails> attachments;
+
     public EmailController(CamadaUserService camadaUserService, EmailTemplateService emailTemplateService, MailService mailService) {
         this.camadaUserService = camadaUserService;
         this.emailTemplateService = emailTemplateService;
@@ -97,6 +103,7 @@ public class EmailController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        attachments = new HashSet<>();
         EmailUserData emailUserData = (EmailUserData) stageManager.getPrimaryStage().getUserData();
         areaTo.setText(String.join(",", emailUserData.getEmails()));
         placeholdersList.getItems().setAll(FXCollections.observableList(emailUserData.getPlaceholders()));
@@ -148,6 +155,35 @@ public class EmailController implements Initializable {
     }
 
     @FXML
+    public void onAddAttachmentAction(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Selecciona un fichero adjunto");
+        File file = fileChooser.showOpenDialog(stageManager.getPrimaryStage());
+        if (file != null) {
+            byte[] attachmentBytes = getAttachmentBytes(file);
+            if (attachmentBytes != null && attachmentBytes.length > 0) {
+                attachments.add(AttachmentDetails.builder()
+                        .bytes(attachmentBytes)
+                        .filename(file.getName())
+                        .size(FileUtils.sizeOf(file))
+                        .build());
+            } else {
+                AlertUtils.showError("Ha ocurrido un error al leer el fichero " + file.getName());
+            }
+        }
+    }
+
+    private byte[] getAttachmentBytes(File file) {
+        byte[] result = null;
+        try {
+            result = FileUtils.readFileToByteArray(file);
+        } catch (Exception exception) {
+            log.error(ExceptionUtils.getStackTrace(exception));
+        }
+        return result;
+    }
+
+    @FXML
     public void onSendEmailButtonAction(ActionEvent event) {
         if (checkPlaceholdersThreshold()) {
             EmailUserData emailUserData = (EmailUserData) stageManager.getPrimaryStage().getUserData();
@@ -160,6 +196,7 @@ public class EmailController implements Initializable {
                             .internetAddresses(getInternetAddresses(areaTo.getText()))
                             .message(htmlEditor.getHtmlText())
                             .subject(subjectTextField.getText())
+                            .attachments(new ArrayList<>(attachments))
                             .build();
                     if (mailService.containsPlaceholder(htmlEditor.getHtmlText())) {
                         return mailService.sendReplacingPlaceholders(mailToDetails, rowInfo);

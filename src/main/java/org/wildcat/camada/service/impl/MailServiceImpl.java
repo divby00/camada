@@ -6,7 +6,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.wildcat.camada.service.MailService;
+import org.wildcat.camada.service.pojo.AttachmentDetails;
 import org.wildcat.camada.service.pojo.MailToDetails;
+import org.wildcat.camada.service.utils.AlertUtils;
 
 import javax.activation.DataHandler;
 import javax.mail.*;
@@ -14,9 +16,11 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -80,20 +84,45 @@ public class MailServiceImpl implements MailService {
         boolean result = false;
         try {
             Session session = getSession();
-            Message message = new MimeMessage(getSession());
+            Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(userName));
             message.setSubject(mailToDetails.getSubject());
             Transport transport = session.getTransport(protocol);
             transport.connect(host, officialName, password);
             InternetAddress[] internetAddresses = mailToDetails.getInternetAddresses();
+            Map<String, Boolean> sendingResults = new HashMap<>();
             for (InternetAddress internetAddress : internetAddresses) {
                 message.setRecipient(Message.RecipientType.TO, internetAddress);
                 message.setContent(getMultiPart(internetAddress.getAddress(), mailToDetails, rowInfo));
-                transport.sendMessage(message, message.getAllRecipients());
+                message.saveChanges();
+                sendingResults.put(internetAddress.getAddress(), sendMessage(transport, message));
             }
             transport.close();
+
+            // Check if there was any problem
+            List<Map.Entry<String, Boolean>> faultySendings = sendingResults.entrySet().stream()
+                    .filter(entry -> !entry.getValue())
+                    .collect(Collectors.toList());
+            if (faultySendings.size() > 0) {
+                String emailFailures = faultySendings.stream()
+                        .map(Map.Entry::getKey)
+                        .collect(Collectors.joining(", "));
+                log.error("There has been some problems delivering the email to the following addresses: " + emailFailures);
+                AlertUtils.showError("Ha fallado el envío del email a los siguientes destinatarios: " + emailFailures);
+            }
             result = true;
         } catch (Throwable exception) {
+            log.error(ExceptionUtils.getStackTrace(exception));
+        }
+        return result;
+    }
+
+    private boolean sendMessage(Transport transport, Message message) {
+        boolean result = false;
+        try {
+            transport.sendMessage(message, message.getRecipients(Message.RecipientType.TO));
+            result = false;
+        } catch (MessagingException exception) {
             log.error(ExceptionUtils.getStackTrace(exception));
         }
         return result;
@@ -159,10 +188,11 @@ public class MailServiceImpl implements MailService {
     }
 
     private void addAttachments(MailToDetails mailToDetails, Multipart multiPart) throws MessagingException {
-        if (StringUtils.isNotBlank(mailToDetails.getAttachment())) {
+        List<AttachmentDetails> attachments = mailToDetails.getAttachments();
+        for (AttachmentDetails attachment : attachments) {
             BodyPart attachFilePart = new MimeBodyPart();
-            attachFilePart.setDataHandler(new DataHandler(mailToDetails.getAttachment().getBytes(StandardCharsets.UTF_8), "application/octet-stream"));
-            attachFilePart.setFileName(mailToDetails.getFileName());
+            attachFilePart.setDataHandler(new DataHandler(attachment.getBytes(), "application/octet-stream"));
+            attachFilePart.setFileName(attachment.getFilename());
             multiPart.addBodyPart(attachFilePart);
         }
     }
