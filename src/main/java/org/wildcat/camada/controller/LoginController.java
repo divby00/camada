@@ -159,7 +159,7 @@ public class LoginController implements Initializable {
             new Thread(sendingEmailTask).start();
             sendingEmailTask.setOnSucceeded(emailWorker -> {
                 List<MailResponse> mailResponses = sendingEmailTask.getValue();
-                boolean allOk = mailResponses.stream().allMatch(MailResponse::getSuccess);
+                boolean allOk = mailResponses.size() > 0 && mailResponses.stream().allMatch(MailResponse::getSuccess);
                 String message = (allOk) ? "Se ha envíado correctamente el email de recuperación."
                         : "Ha ocurrido un error al enviar el email de recuperación.";
                 if (allOk) {

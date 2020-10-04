@@ -101,13 +101,22 @@ public class MailServiceImpl implements MailService {
             transport.connect(host, officialName, password);
             InternetAddress[] internetAddresses = mailRequest.getInternetAddresses();
             for (InternetAddress internetAddress : internetAddresses) {
-                message.setRecipient(Message.RecipientType.TO, internetAddress);
-                message.setContent(getMultiPart(internetAddress.getAddress(), mailRequest, rowInfo));
-                message.saveChanges();
-                mailResponses.add(sendMessage(transport, message, internetAddress.getAddress()));
+                try {
+                    message.setRecipient(Message.RecipientType.TO, internetAddress);
+                    message.setContent(getMultiPart(internetAddress.getAddress(), mailRequest, rowInfo));
+                    message.saveChanges();
+                    mailResponses.add(sendMessage(transport, message, internetAddress.getAddress()));
+                } catch (Exception exception) {
+                    log.error(ExceptionUtils.getStackTrace(exception));
+                    mailResponses.add(MailResponse.builder()
+                            .email(internetAddress.getAddress())
+                            .success(false)
+                            .errorMessage(exception.getMessage())
+                            .build());
+                }
             }
             transport.close();
-        } catch (Throwable exception) {
+        } catch (Exception exception) {
             log.error(ExceptionUtils.getStackTrace(exception));
         }
         return mailResponses;

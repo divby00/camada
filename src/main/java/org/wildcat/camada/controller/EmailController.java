@@ -234,7 +234,7 @@ public class EmailController implements Initializable {
             new Thread(emailSendingTask).start();
             emailSendingTask.setOnSucceeded(worker -> {
                 List<MailResponse> mailResponses = emailSendingTask.getValue();
-                boolean allOk = mailResponses.stream().allMatch(MailResponse::getSuccess);
+                boolean allOk = mailResponses.size() > 0 && mailResponses.stream().allMatch(MailResponse::getSuccess);
                 if (allOk) {
                     AlertUtils.showInfo("Los correos electrónicos se han envíado correctamente.");
                 } else {
