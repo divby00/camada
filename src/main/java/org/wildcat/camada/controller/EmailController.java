@@ -11,6 +11,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.web.HTMLEditor;
 import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
@@ -33,6 +34,7 @@ import org.wildcat.camada.service.MailService;
 import org.wildcat.camada.service.pojo.AttachmentDetails;
 import org.wildcat.camada.service.pojo.MailToDetails;
 import org.wildcat.camada.service.utils.AlertUtils;
+import org.wildcat.camada.service.utils.FileSizeUtils;
 
 import javax.annotation.Resource;
 import javax.mail.internet.InternetAddress;
@@ -57,6 +59,9 @@ public class EmailController implements Initializable {
     private Button sendEmailButton;
 
     @FXML
+    private Button addAttachmentButton;
+
+    @FXML
     private TextField nameTextField;
 
     @FXML
@@ -79,6 +84,9 @@ public class EmailController implements Initializable {
 
     @FXML
     private ListView<String> placeholdersList;
+
+    @FXML
+    private HBox attachmentsHbox;
 
     @Lazy
     @Autowired
@@ -125,6 +133,7 @@ public class EmailController implements Initializable {
 
         saveTemplateButton.setDisable(true);
         deleteTemplateButton.setDisable(true);
+        addAttachmentButton.setDisable(true);
 
         nameTextField.textProperty().addListener((obs, oldVal, newVal) -> {
             saveTemplateButton.setDisable(hasToDisableSaveButton());
@@ -132,15 +141,18 @@ public class EmailController implements Initializable {
         areaTo.textProperty().addListener((obs, oldVal, newVal) -> {
             saveTemplateButton.setDisable(hasToDisableSaveButton());
             sendEmailButton.setDisable(hasToDisableSendButton());
+            addAttachmentButton.setDisable(hasToDisableSendButton());
         });
         subjectTextField.textProperty().addListener((obs, oldVal, newVal) -> {
             saveTemplateButton.setDisable(hasToDisableSaveButton());
             sendEmailButton.setDisable(hasToDisableSendButton());
+            addAttachmentButton.setDisable(hasToDisableSendButton());
         });
         WebView webView = (WebView) htmlEditor.lookup("WebView");
         new WebViewEditorListener(webView, (obs, oldVal, newVal) -> {
             saveTemplateButton.setDisable(hasToDisableSaveButton());
             sendEmailButton.setDisable(hasToDisableSendButton());
+            addAttachmentButton.setDisable(hasToDisableSendButton());
         });
     }
 
@@ -155,22 +167,34 @@ public class EmailController implements Initializable {
     }
 
     @FXML
-    public void onAddAttachmentAction(ActionEvent event) {
+    public void onAddAttachmentButtonAction(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Selecciona un fichero adjunto");
         File file = fileChooser.showOpenDialog(stageManager.getPrimaryStage());
         if (file != null) {
             byte[] attachmentBytes = getAttachmentBytes(file);
+            long size = FileUtils.sizeOf(file);
+            String filename = file.getName();
             if (attachmentBytes != null && attachmentBytes.length > 0) {
                 attachments.add(AttachmentDetails.builder()
                         .bytes(attachmentBytes)
-                        .filename(file.getName())
-                        .size(FileUtils.sizeOf(file))
+                        .filename(filename)
+                        .size(size)
                         .build());
+                Button button = new Button();
+                button.setText(filename + ", " + FileSizeUtils.getFormattedBytes(size));
+                button.setOnAction(this::onRemoveAttachmentsButtonAction);
+                attachmentsHbox.getChildren().add(button);
             } else {
                 AlertUtils.showError("Ha ocurrido un error al leer el fichero " + file.getName());
             }
         }
+    }
+
+    private void onRemoveAttachmentsButtonAction(ActionEvent event) {
+        String filename = StringUtils.substringBefore(((Button) event.getSource()).getText(), ",");
+        attachments.removeIf(attachment -> StringUtils.equals(filename, attachment.getFilename()));
+        attachmentsHbox.getChildren().remove(event.getSource());
     }
 
     private byte[] getAttachmentBytes(File file) {
@@ -340,6 +364,7 @@ public class EmailController implements Initializable {
                 htmlEditor.setHtmlText(newVal.getContent());
                 saveTemplateButton.setDisable(hasToDisableSaveButton());
                 sendEmailButton.setDisable(hasToDisableSendButton());
+                addAttachmentButton.setDisable(hasToDisableSendButton());
                 deleteTemplateButton.setDisable(hasToDisableDeleteButton());
                 publicCheck.setDisable(hasToDisableDeleteButton());
                 nameTextField.setDisable(hasToDisableDeleteButton());

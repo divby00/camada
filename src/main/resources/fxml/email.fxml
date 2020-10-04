@@ -63,8 +63,8 @@
             <AnchorPane styleClass="container">
                <children>
                   <Button fx:id="sendEmailButton" alignment="CENTER" contentDisplay="CENTER" disable="true" mnemonicParsing="false" onAction="#onSendEmailButtonAction" prefHeight="32.0" prefWidth="132.0" styleClass="primary" text="Enviar correo" textAlignment="CENTER" AnchorPane.rightAnchor="0.0" />
-                  <Button fx:id="addAttachmemtButton" alignment="CENTER" contentDisplay="CENTER" disable="true" layoutY="-15.0" mnemonicParsing="false" onAction="#onAddAttachmentButtonAction" prefHeight="32.0" prefWidth="132.0" styleClass="primary" text="Añadir adjunto" textAlignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                  <Label fx:id="attachmentsLabel" layoutX="162.0" layoutY="8.0" text="No hay ficheros adjuntos" AnchorPane.leftAnchor="150.0" />
+                  <Button fx:id="addAttachmentButton" alignment="CENTER" contentDisplay="CENTER" disable="true" layoutY="-15.0" mnemonicParsing="false" onAction="#onAddAttachmentButtonAction" prefHeight="32.0" prefWidth="132.0" styleClass="primary" text="Añadir adjunto" textAlignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                  <HBox fx:id="attachmentsHbox" alignment="CENTER_LEFT" layoutX="150.0" spacing="10.0" AnchorPane.leftAnchor="150.0" AnchorPane.rightAnchor="230.0" />
                </children>
             </AnchorPane>
          </children>
