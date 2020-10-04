@@ -1,13 +1,15 @@
 package org.wildcat.camada.service;
 
-import org.wildcat.camada.service.pojo.MailToDetails;
+import org.wildcat.camada.service.pojo.MailResponse;
+import org.wildcat.camada.service.pojo.MailRequest;
 
+import java.util.List;
 import java.util.Map;
 
 public interface MailService {
-    boolean send(MailToDetails mailToDetails);
+    List<MailResponse> send(MailRequest mailRequest);
 
-    boolean sendReplacingPlaceholders(MailToDetails mailToDetails, Map<String, Map<String, Object>> rowInfo);
+    List<MailResponse> sendReplacingPlaceholders(MailRequest mailRequest, Map<String, Map<String, Object>> rowInfo);
 
     boolean containsPlaceholder(String message);
 }

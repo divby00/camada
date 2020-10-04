@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.wildcat.camada.service.MailService;
 import org.wildcat.camada.service.pojo.AttachmentDetails;
-import org.wildcat.camada.service.pojo.MailToDetails;
-import org.wildcat.camada.service.utils.AlertUtils;
+import org.wildcat.camada.service.pojo.MailRequest;
+import org.wildcat.camada.service.pojo.MailResponse;
 
 import javax.activation.DataHandler;
 import javax.mail.*;
@@ -16,11 +16,12 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -53,16 +54,20 @@ public class MailServiceImpl implements MailService {
     private String protocol;
 
     @Override
-    public boolean send(MailToDetails mailToDetails) {
+    public List<MailResponse> send(MailRequest mailRequest) {
         boolean result = false;
+        StringBuilder sb = new StringBuilder();
+        String emails = Stream.of(mailRequest.getInternetAddresses())
+                .map(InternetAddress::getAddress)
+                .collect(Collectors.joining(", "));
         try {
             Session session = getSession();
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(userName));
-            message.setSubject(mailToDetails.getSubject());
-            message.setContent(getMultiPart(mailToDetails));
-            InternetAddress[] internetAddresses = mailToDetails.getInternetAddresses();
-            String to = mailToDetails.getTo();
+            message.setSubject(mailRequest.getSubject());
+            message.setContent(getMultiPart(mailRequest));
+            InternetAddress[] internetAddresses = mailRequest.getInternetAddresses();
+            String to = mailRequest.getTo();
             if (StringUtils.isNotBlank(to)) {
                 message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
             } else if (internetAddresses != null) {
@@ -75,57 +80,57 @@ public class MailServiceImpl implements MailService {
             result = true;
         } catch (Throwable exception) {
             log.error(ExceptionUtils.getStackTrace(exception));
+            sb.append(exception.getMessage());
         }
-        return result;
+        return List.of(MailResponse.builder()
+                .success(result)
+                .email(emails)
+                .errorMessage(sb.toString())
+                .build());
     }
 
     @Override
-    public boolean sendReplacingPlaceholders(MailToDetails mailToDetails, Map<String, Map<String, Object>> rowInfo) {
-        boolean result = false;
+    public List<MailResponse> sendReplacingPlaceholders(MailRequest mailRequest, Map<String, Map<String, Object>> rowInfo) {
+        List<MailResponse> mailResponses = new ArrayList<>();
         try {
             Session session = getSession();
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(userName));
-            message.setSubject(mailToDetails.getSubject());
+            message.setSubject(mailRequest.getSubject());
             Transport transport = session.getTransport(protocol);
             transport.connect(host, officialName, password);
-            InternetAddress[] internetAddresses = mailToDetails.getInternetAddresses();
-            Map<String, Boolean> sendingResults = new HashMap<>();
+            InternetAddress[] internetAddresses = mailRequest.getInternetAddresses();
             for (InternetAddress internetAddress : internetAddresses) {
                 message.setRecipient(Message.RecipientType.TO, internetAddress);
-                message.setContent(getMultiPart(internetAddress.getAddress(), mailToDetails, rowInfo));
+                message.setContent(getMultiPart(internetAddress.getAddress(), mailRequest, rowInfo));
                 message.saveChanges();
-                sendingResults.put(internetAddress.getAddress(), sendMessage(transport, message));
+                mailResponses.add(sendMessage(transport, message, internetAddress.getAddress()));
             }
             transport.close();
-
-            // Check if there was any problem
-            List<Map.Entry<String, Boolean>> faultySendings = sendingResults.entrySet().stream()
-                    .filter(entry -> !entry.getValue())
-                    .collect(Collectors.toList());
-            if (faultySendings.size() > 0) {
-                String emailFailures = faultySendings.stream()
-                        .map(Map.Entry::getKey)
-                        .collect(Collectors.joining(", "));
-                log.error("There has been some problems delivering the email to the following addresses: " + emailFailures);
-                AlertUtils.showError("Ha fallado el envío del email a los siguientes destinatarios: " + emailFailures);
-            }
-            result = true;
         } catch (Throwable exception) {
             log.error(ExceptionUtils.getStackTrace(exception));
         }
-        return result;
+        return mailResponses;
     }
 
-    private boolean sendMessage(Transport transport, Message message) {
-        boolean result = false;
+    private MailResponse sendMessage(Transport transport, Message message, String email) {
         try {
             transport.sendMessage(message, message.getRecipients(Message.RecipientType.TO));
-            result = false;
+            log.info("Email sent to " + email + " successfully.");
+            return MailResponse.builder()
+                    .success(true)
+                    .email(email)
+                    .errorMessage(StringUtils.EMPTY)
+                    .build();
         } catch (MessagingException exception) {
+            log.error("Sending email to " + email + " failed!");
             log.error(ExceptionUtils.getStackTrace(exception));
+            return MailResponse.builder()
+                    .success(false)
+                    .email(email)
+                    .errorMessage(exception.getMessage())
+                    .build();
         }
-        return result;
     }
 
     @Override
@@ -152,34 +157,34 @@ public class MailServiceImpl implements MailService {
         return properties;
     }
 
-    private Multipart getMultiPart(MailToDetails mailToDetails) throws MessagingException {
+    private Multipart getMultiPart(MailRequest mailRequest) throws MessagingException {
         Multipart multiPart = new MimeMultipart();
-        multiPart.addBodyPart(getBodyPart(mailToDetails));
-        addAttachments(mailToDetails, multiPart);
+        multiPart.addBodyPart(getBodyPart(mailRequest));
+        addAttachments(mailRequest, multiPart);
         return multiPart;
     }
 
-    private Multipart getMultiPart(String email, MailToDetails mailToDetails, Map<String, Map<String, Object>> rowInfo) throws MessagingException {
+    private Multipart getMultiPart(String email, MailRequest mailRequest, Map<String, Map<String, Object>> rowInfo) throws MessagingException {
         Multipart multiPart = new MimeMultipart();
-        multiPart.addBodyPart(getBodyPart(email, mailToDetails, rowInfo));
-        addAttachments(mailToDetails, multiPart);
+        multiPart.addBodyPart(getBodyPart(email, mailRequest, rowInfo));
+        addAttachments(mailRequest, multiPart);
         return multiPart;
     }
 
-    private BodyPart getBodyPart(MailToDetails mailToDetails) throws MessagingException {
+    private BodyPart getBodyPart(MailRequest mailRequest) throws MessagingException {
         BodyPart messageBodyPart = new MimeBodyPart();
-        if (mailToDetails.getIsHtml()) {
-            messageBodyPart.setContent(mailToDetails.getMessage(), TEXT_HTML_CHARSET_UTF_8);
+        if (mailRequest.getIsHtml()) {
+            messageBodyPart.setContent(mailRequest.getMessage(), TEXT_HTML_CHARSET_UTF_8);
         } else {
-            messageBodyPart.setText(mailToDetails.getMessage());
+            messageBodyPart.setText(mailRequest.getMessage());
         }
         return messageBodyPart;
     }
 
-    private BodyPart getBodyPart(String email, MailToDetails mailToDetails, Map<String, Map<String, Object>> rowInfo) throws MessagingException {
+    private BodyPart getBodyPart(String email, MailRequest mailRequest, Map<String, Map<String, Object>> rowInfo) throws MessagingException {
         BodyPart messageBodyPart = new MimeBodyPart();
-        String message = replacePlaceholders(email, mailToDetails.getMessage(), rowInfo);
-        if (mailToDetails.getIsHtml()) {
+        String message = replacePlaceholders(email, mailRequest.getMessage(), rowInfo);
+        if (mailRequest.getIsHtml()) {
             messageBodyPart.setContent(message, TEXT_HTML_CHARSET_UTF_8);
         } else {
             messageBodyPart.setText(message);
@@ -187,8 +192,8 @@ public class MailServiceImpl implements MailService {
         return messageBodyPart;
     }
 
-    private void addAttachments(MailToDetails mailToDetails, Multipart multiPart) throws MessagingException {
-        List<AttachmentDetails> attachments = mailToDetails.getAttachments();
+    private void addAttachments(MailRequest mailRequest, Multipart multiPart) throws MessagingException {
+        List<AttachmentDetails> attachments = mailRequest.getAttachments();
         for (AttachmentDetails attachment : attachments) {
             BodyPart attachFilePart = new MimeBodyPart();
             attachFilePart.setDataHandler(new DataHandler(attachment.getBytes(), "application/octet-stream"));
@@ -200,12 +205,16 @@ public class MailServiceImpl implements MailService {
     private String replacePlaceholders(String email, String message, Map<String, Map<String, Object>> rowInfo) {
         Map<String, Object> row = rowInfo.get(email);
         StringBuilder sb = new StringBuilder(message);
-        row.entrySet().forEach(entry -> {
-            String pattern = "{{" + entry.getKey() + "}}";
-            Object value = entry.getValue();
-            String replacement = (value != null) ? value.toString() : StringUtils.EMPTY;
-            replaceString(sb, pattern, replacement);
-        });
+        if (row != null) {
+            row.entrySet().forEach(entry -> {
+                String pattern = "{{" + entry.getKey() + "}}";
+                Object value = entry.getValue();
+                String replacement = (value != null) ? value.toString() : StringUtils.EMPTY;
+                replaceString(sb, pattern, replacement);
+            });
+        } else {
+            // TODO: Notify the user that placeholder replacement won't work with this email.
+        }
         return sb.toString();
     }
 

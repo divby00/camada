@@ -14,11 +14,13 @@ import org.springframework.stereotype.Controller;
 import org.wildcat.camada.config.StageManager;
 import org.wildcat.camada.service.ErrorService;
 import org.wildcat.camada.service.MailService;
-import org.wildcat.camada.service.pojo.MailToDetails;
+import org.wildcat.camada.service.pojo.MailResponse;
+import org.wildcat.camada.service.pojo.MailRequest;
 import org.wildcat.camada.service.utils.AlertUtils;
 
 import javax.annotation.Resource;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 @Controller
@@ -59,10 +61,10 @@ public class ErrorController implements Initializable {
 
     @FXML
     public void onSendErrorReportButtonAction(ActionEvent event) {
-        Task<Boolean> sendEmailTask = new Task<Boolean>() {
+        Task<List<MailResponse>> sendEmailTask = new Task<>() {
             @Override
-            protected Boolean call() throws Exception {
-                return mailService.send(MailToDetails.builder()
+            protected List<MailResponse> call() {
+                return mailService.send(MailRequest.builder()
                         .to(email)
                         .subject("Informe de error de aplicación La Camada")
                         .message(errorMessageTextArea.getText())

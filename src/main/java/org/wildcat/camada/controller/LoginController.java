@@ -5,12 +5,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.Screen;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,17 +17,15 @@ import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.MailService;
 import org.wildcat.camada.service.impl.PasswordGenerator;
 import org.wildcat.camada.service.picture.PictureService;
-import org.wildcat.camada.service.pojo.MailToDetails;
+import org.wildcat.camada.service.pojo.MailRequest;
+import org.wildcat.camada.service.pojo.MailResponse;
 import org.wildcat.camada.service.utils.AlertUtils;
 import org.wildcat.camada.view.FxmlView;
 
 import javax.annotation.Resource;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -152,23 +145,24 @@ public class LoginController implements Initializable {
             Optional<CamadaUser> camadaUser = fetchUserTask.getValue();
             final String password = PasswordGenerator.generate();
             final String email = camadaUser.map(CamadaUser::getEmail).orElse(EMPTY);
-            Task<Boolean> sendingEmailTask = new Task<Boolean>() {
+            Task<List<MailResponse>> sendingEmailTask = new Task<>() {
                 @Override
-                protected Boolean call() throws Exception {
+                protected List<MailResponse> call() {
                     String subject = "Recuperación de contraseña de La Camada";
                     String message = "Hola.\nAquí tienes una contraseña nueva para La Camada:\n"
                             + password + "\nSi no has solicitado nada ignora este email, por favor.\nGracias.\n¡Hasta luego!";
-                    MailToDetails mailDetails = MailToDetails.builder().to(email).subject(subject).message(message).isHtml(false).build();
+                    MailRequest mailDetails = MailRequest.builder().to(email).subject(subject).message(message).isHtml(false).build();
                     return mailService.send(mailDetails);
                 }
             };
             progressIndicator.visibleProperty().bind(sendingEmailTask.runningProperty());
             new Thread(sendingEmailTask).start();
             sendingEmailTask.setOnSucceeded(emailWorker -> {
-                Boolean result = sendingEmailTask.getValue();
-                String message = (result) ? "Se ha envíado correctamente el email de recuperación."
+                List<MailResponse> mailResponses = sendingEmailTask.getValue();
+                boolean allOk = mailResponses.stream().allMatch(MailResponse::getSuccess);
+                String message = (allOk) ? "Se ha envíado correctamente el email de recuperación."
                         : "Ha ocurrido un error al enviar el email de recuperación.";
-                if (result) {
+                if (allOk) {
                     camadaUser.ifPresent(user -> {
                         Calendar calendar = Calendar.getInstance();
                         calendar.setTime(new Date());

@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder(toBuilder = true)
-public class MailToDetails {
+public class MailRequest {
     private String to;
     private String subject;
     private String message;

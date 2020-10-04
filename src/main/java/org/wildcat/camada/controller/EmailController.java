@@ -32,7 +32,8 @@ import org.wildcat.camada.service.CamadaUserService;
 import org.wildcat.camada.service.EmailTemplateService;
 import org.wildcat.camada.service.MailService;
 import org.wildcat.camada.service.pojo.AttachmentDetails;
-import org.wildcat.camada.service.pojo.MailToDetails;
+import org.wildcat.camada.service.pojo.MailRequest;
+import org.wildcat.camada.service.pojo.MailResponse;
 import org.wildcat.camada.service.utils.AlertUtils;
 import org.wildcat.camada.service.utils.FileSizeUtils;
 
@@ -212,10 +213,10 @@ public class EmailController implements Initializable {
         if (checkPlaceholdersThreshold()) {
             EmailUserData emailUserData = (EmailUserData) stageManager.getPrimaryStage().getUserData();
             Map<String, Map<String, Object>> rowInfo = emailUserData.getRowInfo();
-            Task<Boolean> emailSendingTask = new Task<Boolean>() {
+            Task<List<MailResponse>> emailSendingTask = new Task<>() {
                 @Override
-                protected Boolean call() {
-                    MailToDetails mailToDetails = MailToDetails.builder()
+                protected List<MailResponse> call() {
+                    MailRequest mailRequest = MailRequest.builder()
                             .isHtml(true)
                             .internetAddresses(getInternetAddresses(areaTo.getText()))
                             .message(htmlEditor.getHtmlText())
@@ -223,16 +224,18 @@ public class EmailController implements Initializable {
                             .attachments(new ArrayList<>(attachments))
                             .build();
                     if (mailService.containsPlaceholder(htmlEditor.getHtmlText())) {
-                        return mailService.sendReplacingPlaceholders(mailToDetails, rowInfo);
+                        return mailService.sendReplacingPlaceholders(mailRequest, rowInfo);
                     } else {
-                        return mailService.send(mailToDetails);
+                        return mailService.send(mailRequest);
                     }
                 }
             };
             progressIndicator.visibleProperty().bind(emailSendingTask.runningProperty());
             new Thread(emailSendingTask).start();
             emailSendingTask.setOnSucceeded(worker -> {
-                if (emailSendingTask.getValue()) {
+                List<MailResponse> mailResponses = emailSendingTask.getValue();
+                boolean allOk = mailResponses.stream().allMatch(MailResponse::getSuccess);
+                if (allOk) {
                     AlertUtils.showInfo("Los correos electrónicos se han envíado correctamente.");
                 } else {
                     AlertUtils.showError("Ha habido un error al enviar el correo electrónico.");
